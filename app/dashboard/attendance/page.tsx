@@ -17,11 +17,20 @@ interface Attendance {
 export default function AttendancePage() {
     const user = useUser();
 
-    // Set default date range to today only
+    // Set default date range from first day of current month to today
     const getDefaultDateRange = () => {
-        const today = new Date();
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+
+        // Get today in local timezone
+        const today = new Date(now.getTime() - offset);
+
+        // Get first day of current month in local timezone
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const firstDayLocal = new Date(firstDayOfMonth.getTime() - offset);
+
         return {
-            startDate: today.toISOString().split('T')[0],
+            startDate: firstDayLocal.toISOString().split('T')[0],
             endDate: today.toISOString().split('T')[0]
         };
     };
