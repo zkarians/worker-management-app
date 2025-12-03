@@ -1,0 +1,141 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      String   @default("WORKER") // "MANAGER", "WORKER"
+  name      String
+  companyId String?
+  hireDate  DateTime?
+  carNumber String?
+  isApproved Boolean @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  attendances Attendance[]
+  leaveRequests LeaveRequest[]
+  rosterAssignments RosterAssignment[]
+  dailyLogs DailyLog[]
+  announcements Announcement[]
+  products Product[]
+}
+
+model Company {
+  id   String @id @default(uuid())
+  name String @unique
+  users User[]
+}
+
+model Team {
+  id    String @id @default(uuid())
+  name  String @unique
+  order Int    @default(0)
+  
+  paletteRosters  Roster[] @relation("PaletteTeam")
+  cleaningRosters Roster[] @relation("CleaningTeam")
+}
+
+model Attendance {
+  id            String   @id @default(uuid())
+  userId        String
+  date          DateTime
+  status        String   // "PRESENT", "ABSENT", "LATE", "EARLY_LEAVE"
+  overtimeHours Float    @default(0)
+  workHours     Float    @default(8)
+  
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}
+
+model LeaveRequest {
+  id        String   @id @default(uuid())
+  userId    String
+  startDate DateTime
+  endDate   DateTime
+  type      String   // "SICK", "VACATION", "PERSONAL"
+  reason    String?
+  status    String   @default("PENDING") // "PENDING", "APPROVED", "REJECTED"
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Roster {
+  id            String   @id @default(uuid())
+  date          DateTime @unique
+  paletteTeamId String?  // 파레트 정리조
+  cleaningTeamId String? // 청소조
+  assignments   RosterAssignment[]
+  
+  paletteTeam   Team?    @relation("PaletteTeam", fields: [paletteTeamId], references: [id])
+  cleaningTeam  Team?    @relation("CleaningTeam", fields: [cleaningTeamId], references: [id])
+}
+
+model RosterAssignment {
+  id        String   @id @default(uuid())
+  rosterId  String
+  userId    String
+  position  String   // "INSPECTION", "FORK", "CLAMP", "LOADING"
+  team      String   // "1조", "2조", "3조" etc.
+
+  roster Roster @relation(fields: [rosterId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+}
+
+model DailyLog {
+  id        String   @id @default(uuid())
+  date      DateTime
+  content   String
+  authorId  String
+
+  author User @relation(fields: [authorId], references: [id])
+}
+
+model Announcement {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  authorId  String
+
+  author User @relation(fields: [authorId], references: [id])
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  products  Product[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Product {
+  id         String   @id @default(uuid())
+  name       String
+  width      Float
+  depth      Float
+  height     Float
+  weight     Float?   // 무게
+  cbm        Float?   // CBM
+  division   String?  // 사업부
+  notes      String?  // 비고
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+  authorId   String?
+  author     User?     @relation(fields: [authorId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
