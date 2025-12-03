@@ -10,7 +10,7 @@ export async function GET(request: Request) {
         let where: any = {};
         if (search) {
             where.name = {
-                startsWith: search,
+                contains: search,
                 mode: 'insensitive'
             };
         }

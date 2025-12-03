@@ -285,7 +285,7 @@ export default function ProductsPage() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                     <input
                         type="text"
-                        placeholder="제품명 검색 (첫 글자부터 일치)..."
+                        placeholder="제품명 검색..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full glass-input pl-10 bg-slate-50 border-slate-200"
