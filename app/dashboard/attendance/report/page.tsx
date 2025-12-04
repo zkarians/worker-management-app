@@ -260,13 +260,13 @@ export default function AttendanceReportPage() {
 
     const getStatusDisplay = (status: string) => {
         switch (status) {
-            case 'PRESENT': return { text: '출근', color: 'bg-green-500/20 text-green-400' };
-            case 'ABSENT': return { text: '결근', color: 'bg-red-500/20 text-red-400' };
-            case 'LATE': return { text: '지각', color: 'bg-yellow-500/20 text-yellow-400' };
-            case 'EARLY_LEAVE': return { text: '조퇴', color: 'bg-yellow-500/20 text-yellow-400' };
-            case 'SCHEDULED': return { text: '예정', color: 'bg-blue-500/20 text-blue-400' };
-            case 'OFF_DAY': return { text: '휴무', color: 'bg-slate-500/20 text-slate-500' };
-            default: return { text: status || '-', color: 'bg-slate-500/20 text-slate-400' };
+            case 'PRESENT': return { text: '출근', color: 'bg-emerald-100 border-emerald-300 text-emerald-700' };
+            case 'ABSENT': return { text: '결근', color: 'bg-red-100 border-red-300 text-red-700' };
+            case 'LATE': return { text: '지각', color: 'bg-orange-100 border-orange-300 text-orange-700' };
+            case 'EARLY_LEAVE': return { text: '조퇴', color: 'bg-yellow-100 border-yellow-400 text-yellow-700' };
+            case 'SCHEDULED': return { text: '예정', color: 'bg-blue-100 border-blue-300 text-blue-700' };
+            case 'OFF_DAY': return { text: '휴무', color: 'bg-slate-100 border-slate-300 text-slate-700' };
+            default: return { text: status || '-', color: 'bg-slate-100 border-slate-300 text-slate-600' };
         }
     };
 
@@ -404,79 +404,79 @@ export default function AttendanceReportPage() {
             )}
 
             {/* User Statistics Table */}
-            <GlassCard className="overflow-hidden p-0 bg-white border-slate-200">
+            <GlassCard className="overflow-hidden p-0 bg-white border-slate-200 shadow-md">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-slate-50 text-slate-700 uppercase font-medium border-b border-slate-200">
+                    <table className="w-full text-left">
+                        <thead className="bg-gradient-to-r from-slate-100 to-slate-50 border-b-2 border-slate-300">
                             <tr>
-                                <th className="px-6 py-4">이름</th>
-                                <th className="px-6 py-4">소속</th>
-                                <th className="px-6 py-4 text-center">출근</th>
-                                <th className="px-6 py-4 text-center">결근</th>
-                                <th className="px-6 py-4 text-center">휴무</th>
-                                <th className="px-6 py-4 text-center">지각</th>
-                                <th className="px-6 py-4 text-center">조퇴</th>
-                                <th className="px-6 py-4 text-center">예정</th>
-                                <th className="px-6 py-4 text-center">근무시간</th>
-                                <th className="px-6 py-4 text-center">잔업시간</th>
+                                <th className="px-4 py-3 text-sm font-bold text-slate-700">이름</th>
+                                <th className="px-4 py-3 text-sm font-bold text-slate-700">소속</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">출근</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">결근</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">휴무</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">지각</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">조퇴</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">예정</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">근무시간</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">잔업시간</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-200">
+                        <tbody className="divide-y-2 divide-slate-100">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={10} className="px-6 py-8 text-center text-slate-500">
+                                    <td colSpan={10} className="px-4 py-6 text-center text-slate-500 text-sm">
                                         조회 중...
                                     </td>
                                 </tr>
                             ) : userStats.length === 0 ? (
                                 <tr>
-                                    <td colSpan={10} className="px-6 py-8 text-center text-slate-500">
+                                    <td colSpan={10} className="px-4 py-6 text-center text-slate-500 text-sm">
                                         데이터가 없습니다.
                                     </td>
                                 </tr>
                             ) : (
                                 userStats.map((stat) => (
-                                    <tr key={stat.userId} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-slate-900">{stat.userName}</td>
-                                        <td className={`px-6 py-4 font-medium ${stat.companyName?.includes('디티에스') ? 'text-purple-600' :
+                                    <tr key={stat.userId} className="hover:bg-slate-50/80 transition-all duration-200">
+                                        <td className="px-4 py-3 font-bold text-slate-900 text-sm">{stat.userName}</td>
+                                        <td className={`px-4 py-3 font-bold text-sm ${stat.companyName?.includes('디티에스') ? 'text-purple-600' :
                                             stat.companyName?.includes('신항만') ? 'text-emerald-600' :
                                                 stat.companyName?.includes('보람') ? 'text-blue-600' :
                                                     'text-slate-700'
                                             }`}>
                                             {stat.companyName || '-'}
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="px-2 py-1 rounded-full text-xs bg-green-500/20 text-green-400">
+                                        <td className="px-4 py-3 text-center">
+                                            <span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-emerald-100 border border-emerald-300 text-emerald-700">
                                                 {stat.presentDays}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="px-2 py-1 rounded-full text-xs bg-red-500/20 text-red-400">
+                                        <td className="px-4 py-3 text-center">
+                                            <span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-red-100 border border-red-300 text-red-700">
                                                 {stat.absentDays}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="px-2 py-1 rounded-full text-xs bg-slate-500/20 text-slate-500">
+                                        <td className="px-4 py-3 text-center">
+                                            <span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-slate-100 border border-slate-300 text-slate-700">
                                                 {stat.offDays}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="px-2 py-1 rounded-full text-xs bg-yellow-500/20 text-yellow-400">
+                                        <td className="px-4 py-3 text-center">
+                                            <span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-orange-100 border border-orange-300 text-orange-700">
                                                 {stat.lateDays}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="px-2 py-1 rounded-full text-xs bg-yellow-500/20 text-yellow-400">
+                                        <td className="px-4 py-3 text-center">
+                                            <span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-yellow-100 border border-yellow-400 text-yellow-700">
                                                 {stat.earlyLeaveDays}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <span className="px-2 py-1 rounded-full text-xs bg-blue-500/20 text-blue-400">
+                                        <td className="px-4 py-3 text-center">
+                                            <span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-blue-100 border border-blue-300 text-blue-700">
                                                 {stat.scheduledDays}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center text-slate-700">{stat.totalWorkHours.toFixed(1)}h</td>
-                                        <td className="px-6 py-4 text-center text-slate-700">{stat.totalOvertimeHours.toFixed(1)}h</td>
+                                        <td className="px-4 py-3 text-center font-bold text-slate-900 text-sm">{stat.totalWorkHours.toFixed(1)}h</td>
+                                        <td className="px-4 py-3 text-center font-bold text-slate-900 text-sm">{stat.totalOvertimeHours.toFixed(1)}h</td>
                                     </tr>
                                 ))
                             )}
@@ -486,33 +486,33 @@ export default function AttendanceReportPage() {
             </GlassCard>
 
             {/* Detailed Attendance Records */}
-            <GlassCard className="overflow-hidden p-0 bg-white border-slate-200">
-                <div className="p-4 border-b border-slate-200">
-                    <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                        <Clock size={18} /> 상세 근태 내역
+            <GlassCard className="overflow-hidden p-0 bg-white border-slate-200 shadow-md">
+                <div className="p-4 border-b-2 border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+                    <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                        <Clock size={20} className="text-indigo-600" /> 상세 근태 내역
                     </h2>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm">
-                        <thead className="bg-slate-50 text-slate-700 uppercase font-medium border-b border-slate-200">
+                    <table className="w-full text-left">
+                        <thead className="bg-gradient-to-r from-slate-100 to-slate-50 border-b-2 border-slate-300">
                             <tr>
-                                <th className="px-6 py-4">이름</th>
-                                <th className="px-6 py-4">날짜</th>
-                                <th className="px-6 py-4">상태</th>
-                                <th className="px-6 py-4 text-center">근무시간</th>
-                                <th className="px-6 py-4 text-center">잔업시간</th>
+                                <th className="px-4 py-3 text-sm font-bold text-slate-700">이름</th>
+                                <th className="px-4 py-3 text-sm font-bold text-slate-700">날짜</th>
+                                <th className="px-4 py-3 text-sm font-bold text-slate-700">상태</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">근무시간</th>
+                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">잔업시간</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-200">
+                        <tbody className="divide-y-2 divide-slate-100">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                                    <td colSpan={5} className="px-4 py-6 text-center text-slate-500 text-sm">
                                         조회 중...
                                     </td>
                                 </tr>
                             ) : attendanceData.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
+                                    <td colSpan={5} className="px-4 py-6 text-center text-slate-500 text-sm">
                                         데이터가 없습니다.
                                     </td>
                                 </tr>
@@ -520,18 +520,18 @@ export default function AttendanceReportPage() {
                                 attendanceData.map((record, index) => {
                                     const statusDisplay = getStatusDisplay(record.status);
                                     return (
-                                        <tr key={`${record.userId}-${record.date}-${index}`} className="hover:bg-slate-50 transition-colors">
-                                            <td className="px-6 py-4 font-medium text-slate-900">{record.user.name}</td>
-                                            <td className="px-6 py-4 text-slate-700">
+                                        <tr key={`${record.userId}-${record.date}-${index}`} className="hover:bg-slate-50/80 transition-all duration-200">
+                                            <td className="px-4 py-3 font-bold text-slate-900 text-sm">{record.user.name}</td>
+                                            <td className="px-4 py-3 text-slate-700 text-sm font-medium">
                                                 {new Date(record.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 py-1 rounded-full text-xs ${statusDisplay.color}`}>
+                                            <td className="px-4 py-3">
+                                                <span className={`px-3 py-1.5 rounded-lg text-sm font-bold border ${statusDisplay.color}`}>
                                                     {statusDisplay.text}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 text-center text-slate-700">{record.workHours.toFixed(1)}h</td>
-                                            <td className="px-6 py-4 text-center text-slate-700">{record.overtimeHours.toFixed(1)}h</td>
+                                            <td className="px-4 py-3 text-center font-bold text-slate-900 text-sm">{record.workHours.toFixed(1)}h</td>
+                                            <td className="px-4 py-3 text-center font-bold text-slate-900 text-sm">{record.overtimeHours.toFixed(1)}h</td>
                                         </tr>
                                     );
                                 })

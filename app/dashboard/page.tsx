@@ -468,60 +468,61 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
                 {/* Main Roster Table */}
                 <div className="lg:col-span-3 space-y-4 lg:space-y-6">
-                    <GlassCard className="overflow-hidden p-0">
+                    <GlassCard className="overflow-hidden p-0 shadow-md">
                         <div className="overflow-x-auto">
                             <table className="w-full text-center border-collapse">
                                 <thead>
-                                    <tr className="bg-slate-50 text-slate-600 border-b border-slate-200">
-                                        <th className="p-2 md:p-2 lg:p-2.5 border-r border-slate-200 w-14 md:w-20 lg:w-20 text-[10px] md:text-xs lg:text-xs font-semibold">구분</th>
+                                    <tr className="bg-gradient-to-r from-slate-100 to-slate-50 border-b-2 border-slate-300">
+                                        <th className="p-3 md:p-3 lg:p-4 border-r-2 border-white w-14 md:w-20 lg:w-24 text-xs md:text-sm lg:text-sm font-bold text-slate-700 shadow-sm">구분</th>
                                         {POSITIONS.map(pos => {
                                             const headerColor = getPositionHeaderColor(pos);
                                             return (
-                                                <th key={pos} className={`p-2 md:p-2 lg:p-2.5 border-r border-slate-200 last:border-r-0 w-[21%] text-[10px] md:text-xs lg:text-xs font-semibold ${headerColor}`}>{pos}</th>
+                                                <th key={pos} className={`p-3 md:p-3 lg:p-4 border-r-2 border-white last:border-r-0 w-[21%] text-xs md:text-sm lg:text-sm font-bold shadow-sm ${headerColor}`}>{pos}</th>
                                             );
                                         })}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-200">
+                                <tbody className="divide-y-2 divide-slate-100">
                                     {teams.map(team => {
                                         // Extract team number from team name (e.g., "1조" -> 1)
                                         const teamNumber = parseInt(team.name.replace(/[^0-9]/g, '')) || 0;
                                         const isTeam1 = teamNumber === 1;
-                                        // 1조: 하늘색(sky/cyan), 2-5조: 주황색(orange)
-                                        const teamNameColor = isTeam1 ? 'text-sky-600' : 'text-orange-600';
+                                        // 1조: 하늘색(sky), 2-5조: 주황색(orange)
+                                        const teamNameBg = isTeam1 ? 'bg-sky-100' : 'bg-orange-100';
+                                        const teamNameText = isTeam1 ? 'text-sky-700' : 'text-orange-700';
+                                        const teamNameBorder = isTeam1 ? 'border-sky-200' : 'border-orange-200';
 
                                         return (
-                                            <tr key={team.id} className="hover:bg-slate-50 transition-colors">
-                                                <td className={`p-2 lg:p-2.5 font-bold ${teamNameColor} bg-slate-50/50 border-r border-slate-200 text-xs lg:text-sm`}>
+                                            <tr key={team.id} className="hover:bg-slate-50/80 transition-all duration-200">
+                                                <td className={`p-3 lg:p-4 font-bold ${teamNameBg} ${teamNameText} border-r-2 ${teamNameBorder} text-sm lg:text-base shadow-sm`}>
                                                     {team.name}
                                                 </td>
                                                 {POSITIONS.map(pos => {
                                                     const workers = getWorkersFor(team.name, pos);
                                                     return (
-                                                        <td key={pos} className="p-1.5 lg:p-2 border-r border-slate-200 last:border-r-0 align-top lg:h-20">
-                                                            <div className="flex flex-wrap gap-1.5 lg:gap-2 justify-center">
+                                                        <td key={pos} className="p-2 lg:p-3 border-r border-slate-100 last:border-r-0 align-top lg:h-24 bg-white">
+                                                            <div className="flex flex-wrap gap-2 lg:gap-2.5 justify-center">
                                                                 {workers.length > 0 ? (
                                                                     workers.map((assignment, idx) => {
-                                                                        // Use company name for color, even for managers
+                                                                        // Use company name for color
                                                                         const companyName = assignment.user.company?.name;
                                                                         const companyStyle = getCompanyStyle(companyName);
-                                                                        // Use only company style for worker cards
                                                                         return (
                                                                             <div
                                                                                 key={idx}
-                                                                                className={`flex flex-col items-center px-1.5 lg:px-2 py-0.5 lg:py-1 rounded-lg border shadow-sm ${companyStyle.bg} ${companyStyle.border}`}
+                                                                                className={`group relative flex flex-col items-center px-2.5 lg:px-3 py-1.5 lg:py-2 rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 ${companyStyle.bg} ${companyStyle.border}`}
                                                                             >
-                                                                                <span className={`text-[10px] lg:text-xs font-medium ${companyStyle.text}`}>
+                                                                                <span className={`text-xs lg:text-sm font-bold ${companyStyle.text}`}>
                                                                                     {assignment.user.name}
                                                                                 </span>
-                                                                                <span className={`text-[8px] lg:text-[9px] ${companyStyle.subtext} leading-none mt-0.5`}>
+                                                                                <span className={`text-[9px] lg:text-[10px] font-semibold ${companyStyle.subtext} leading-none mt-1 opacity-80 group-hover:opacity-100 transition-opacity`}>
                                                                                     {companyName || '소속없음'}
                                                                                 </span>
                                                                             </div>
                                                                         );
                                                                     })
                                                                 ) : (
-                                                                    <span className="text-slate-300 text-xs">-</span>
+                                                                    <span className="text-slate-300 text-sm font-medium">-</span>
                                                                 )}
                                                             </div>
                                                         </td>
