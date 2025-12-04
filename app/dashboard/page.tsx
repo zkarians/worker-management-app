@@ -678,31 +678,44 @@ export default function DashboardPage() {
                                     <div
                                         key={log.id}
                                         onClick={() => handleDateClick(log.date.split('T')[0])}
-                                        className="group p-3 rounded-lg bg-slate-50 border border-slate-200 text-sm hover:border-slate-300 transition-colors cursor-pointer"
+                                        className="group relative p-4 rounded-xl bg-gradient-to-br from-white to-slate-50 border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
                                     >
-                                        <div className="flex justify-between items-start gap-2 mb-1">
-                                            <span className="text-xs text-indigo-600 font-medium">
-                                                {new Date(log.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}
-                                            </span>
-                                            <div className="flex items-center gap-2">
-                                                {isManager && (
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent modal opening when clicking delete
-                                                            handleDeleteNote(log.id);
-                                                        }}
-                                                        className="text-slate-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
-                                                    >
-                                                        <Trash2 size={12} />
-                                                    </button>
-                                                )}
+                                        {/* Hover effect overlay */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/0 to-indigo-100/0 group-hover:from-indigo-50/50 group-hover:to-indigo-100/20 transition-all duration-200 pointer-events-none"></div>
+
+                                        <div className="relative z-10">
+                                            <div className="flex justify-between items-start gap-2 mb-2">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1.5 px-2.5 py-1 bg-indigo-100 rounded-full">
+                                                        <CalendarIcon size={12} className="text-indigo-600" />
+                                                        <span className="text-xs text-indigo-700 font-semibold">
+                                                            {new Date(log.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    {isManager && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteNote(log.id);
+                                                            }}
+                                                            className="p-1.5 text-slate-400 hover:text-white hover:bg-rose-500 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-sm"
+                                                        >
+                                                            <Trash2 size={14} />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </div>
+                                            <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
+                                                {log.content}
+                                            </p>
                                         </div>
-                                        <p className="text-slate-700 whitespace-pre-wrap">{log.content}</p>
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center py-8 text-slate-400 text-sm">
+                                <div className="text-center py-12 text-slate-400 text-sm">
+                                    <AlertCircle size={32} className="mx-auto mb-2 opacity-20" />
                                     등록된 특이사항이 없습니다.
                                 </div>
                             )}
