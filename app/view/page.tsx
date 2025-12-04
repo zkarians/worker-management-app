@@ -633,13 +633,27 @@ function MonthlyCalendarView() {
                                     {/* Logs */}
                                     {dayLogs.map(log => {
                                         const isMissingNote = log.content.includes('근무성립불가');
+
+                                        // 상태별 색상 설정
+                                        let logColor = '';
+                                        if (isMissingNote) {
+                                            logColor = 'bg-red-100 border-red-400 text-red-900';
+                                        } else if (log.content.includes('[휴무]')) {
+                                            logColor = 'bg-blue-100 border-blue-300 text-blue-800';
+                                        } else if (log.content.includes('[결근]')) {
+                                            logColor = 'bg-red-100 border-red-400 text-red-900';
+                                        } else if (log.content.includes('[지각]')) {
+                                            logColor = 'bg-orange-100 border-orange-300 text-orange-800';
+                                        } else if (log.content.includes('[조퇴]')) {
+                                            logColor = 'bg-yellow-100 border-yellow-400 text-yellow-900';
+                                        } else {
+                                            logColor = 'bg-gray-100 border-gray-300 text-gray-800';
+                                        }
+
                                         return (
                                             <div
                                                 key={log.id}
-                                                className={`text-[9px] p-1 rounded border font-medium ${isMissingNote
-                                                    ? 'bg-red-100 border-red-300 text-red-800'
-                                                    : 'bg-amber-100 border-amber-200 text-amber-800'
-                                                    }`}
+                                                className={`text-[9px] p-1 rounded border font-semibold ${logColor}`}
                                                 title={log.content}
                                             >
                                                 <div className="line-clamp-2">{log.content}</div>

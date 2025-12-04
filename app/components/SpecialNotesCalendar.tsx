@@ -288,10 +288,29 @@ export function SpecialNotesCalendar({
                                                     {Object.values(groupedLogs).map((group) => {
                                                         const content = `[${group.status}] ${group.names.join(', ')}`;
 
+                                                        // 상태별 색상 설정
+                                                        let statusColor = '';
+                                                        switch (group.status) {
+                                                            case '휴무':
+                                                                statusColor = 'bg-blue-100 border-blue-300 text-blue-800';
+                                                                break;
+                                                            case '결근':
+                                                                statusColor = 'bg-red-100 border-red-400 text-red-900';
+                                                                break;
+                                                            case '지각':
+                                                                statusColor = 'bg-orange-100 border-orange-300 text-orange-800';
+                                                                break;
+                                                            case '조퇴':
+                                                                statusColor = 'bg-yellow-100 border-yellow-400 text-yellow-900';
+                                                                break;
+                                                            default:
+                                                                statusColor = 'bg-gray-100 border-gray-300 text-gray-800';
+                                                        }
+
                                                         return (
                                                             <div
                                                                 key={`group-${group.status}-${group.ids[0]}`}
-                                                                className={`group/note relative text-[7px] sm:text-[8px] p-0.5 px-1 rounded border font-medium truncate flex items-center gap-0.5 sm:gap-1 bg-amber-100 border-amber-200 text-amber-800`}
+                                                                className={`group/note relative text-[7px] sm:text-[8px] p-0.5 px-1 rounded border font-semibold truncate flex items-center gap-0.5 sm:gap-1 ${statusColor}`}
                                                                 title={content}
                                                             >
                                                                 <span className="flex-1 truncate">{content}</span>
@@ -302,13 +321,27 @@ export function SpecialNotesCalendar({
                                                     {/* Render Other Logs */}
                                                     {otherLogs.map(log => {
                                                         const isMissingPositionNote = log.content.includes('근무성립불가');
+
+                                                        // 상태별 색상 설정
+                                                        let logColor = '';
+                                                        if (isMissingPositionNote) {
+                                                            logColor = 'bg-red-100 border-red-400 text-red-900';
+                                                        } else if (log.content.includes('[휴무]')) {
+                                                            logColor = 'bg-blue-100 border-blue-300 text-blue-800';
+                                                        } else if (log.content.includes('[결근]')) {
+                                                            logColor = 'bg-red-100 border-red-400 text-red-900';
+                                                        } else if (log.content.includes('[지각]')) {
+                                                            logColor = 'bg-orange-100 border-orange-300 text-orange-800';
+                                                        } else if (log.content.includes('[조퇴]')) {
+                                                            logColor = 'bg-yellow-100 border-yellow-400 text-yellow-900';
+                                                        } else {
+                                                            logColor = 'bg-gray-100 border-gray-300 text-gray-800';
+                                                        }
+
                                                         return (
                                                             <div
                                                                 key={log.id}
-                                                                className={`group/note relative text-[7px] sm:text-[8px] p-0.5 px-1 rounded border font-medium truncate flex items-center gap-0.5 sm:gap-1 ${isMissingPositionNote
-                                                                    ? 'bg-red-100 border-red-300 text-red-800'
-                                                                    : 'bg-amber-100 border-amber-200 text-amber-800'
-                                                                    }`}
+                                                                className={`group/note relative text-[7px] sm:text-[8px] p-0.5 px-1 rounded border font-semibold truncate flex items-center gap-0.5 sm:gap-1 ${logColor}`}
                                                                 title={log.content}
                                                             >
                                                                 <span className="flex-1 truncate">{log.content}</span>
