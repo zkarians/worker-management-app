@@ -80,6 +80,25 @@ export async function POST(request: Request) {
         // Save as UTC midnight to ensure consistency
         const date = new Date(dateStr);
 
+        // Check if log with same content already exists on this date
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        const existingLog = await prisma.dailyLog.findFirst({
+            where: {
+                date: { gte: startOfDay, lte: endOfDay },
+                content: content
+            },
+            include: { author: { select: { name: true } } }
+        });
+
+        // If log already exists, return the existing one instead of creating duplicate
+        if (existingLog) {
+            return NextResponse.json({ log: existingLog, duplicate: true });
+        }
+
         const log = await prisma.dailyLog.create({
             data: {
                 date,

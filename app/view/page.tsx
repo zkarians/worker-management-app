@@ -619,15 +619,16 @@ function MonthlyCalendarView() {
 
                                 {/* Events List */}
                                 <div className="space-y-1 overflow-y-auto max-h-[70px]">
-                                    {/* Leaves */}
-                                    {dayLeaves.map(leave => (
+                                    {/* Leaves - Hidden to prevent duplication with DailyLog */}
+                                    {/* Leaves are already recorded in DailyLog as "[휴무] name" format */}
+                                    {/* {dayLeaves.map(leave => (
                                         <div
                                             key={leave.id}
                                             className="text-[9px] p-1 rounded border font-medium bg-blue-50 border-blue-200 text-blue-700"
                                         >
                                             {leave.user.name} 휴무
                                         </div>
-                                    ))}
+                                    ))} */}
 
                                     {/* Logs */}
                                     {dayLogs.map(log => {
