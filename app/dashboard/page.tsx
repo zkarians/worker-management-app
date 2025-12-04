@@ -516,10 +516,10 @@ export default function DashboardPage() {
                                                                                 key={idx}
                                                                                 className={`group relative flex flex-col items-center px-2 lg:px-2.5 py-1 lg:py-1.5 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 ${companyStyle.bg} ${companyStyle.border}`}
                                                                             >
-                                                                                <span className={`text-xs lg:text-sm font-bold text-slate-900`}>
+                                                                                <span className={`text-xs lg:text-sm font-medium text-slate-900`}>
                                                                                     {assignment.user.name}
                                                                                 </span>
-                                                                                <span className={`text-[9px] lg:text-[10px] font-semibold ${companyStyle.subtext} leading-none mt-1 opacity-80 group-hover:opacity-100 transition-opacity`}>
+                                                                                <span className={`text-[9px] lg:text-[10px] font-medium ${companyStyle.subtext} leading-none mt-1 opacity-80 group-hover:opacity-100 transition-opacity`}>
                                                                                     {companyName || '소속없음'}
                                                                                 </span>
                                                                             </div>
@@ -563,10 +563,10 @@ export default function DashboardPage() {
                                                 key={idx}
                                                 className={`flex flex-col items-center px-3 py-1.5 rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
                                             >
-                                                <span className={`text-sm font-bold ${style.text}`}>
+                                                <span className={`text-sm font-medium text-slate-900`}>
                                                     {assignment.user.name}
                                                 </span>
-                                                <span className={`text-xs font-semibold ${style.subtext} leading-none mt-0.5`}>
+                                                <span className={`text-xs font-medium ${style.subtext} leading-none mt-0.5`}>
                                                     {companyName || '소속없음'}
                                                 </span>
                                             </div>
@@ -597,10 +597,10 @@ export default function DashboardPage() {
                                                 key={idx}
                                                 className={`flex flex-col items-center px-3 py-1.5 rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
                                             >
-                                                <span className={`text-sm font-bold ${style.text}`}>
+                                                <span className={`text-sm font-medium text-slate-900`}>
                                                     {assignment.user.name}
                                                 </span>
-                                                <span className={`text-xs font-semibold ${style.subtext} leading-none mt-0.5`}>
+                                                <span className={`text-xs font-medium ${style.subtext} leading-none mt-0.5`}>
                                                     {companyName || '소속없음'}
                                                 </span>
                                             </div>
