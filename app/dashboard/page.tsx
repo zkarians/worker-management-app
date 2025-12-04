@@ -516,7 +516,7 @@ export default function DashboardPage() {
                                                                                 key={idx}
                                                                                 className={`group relative flex flex-col items-center px-2 lg:px-2.5 py-1 lg:py-1.5 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 ${companyStyle.bg} ${companyStyle.border}`}
                                                                             >
-                                                                                <span className={`text-xs lg:text-sm font-bold ${companyStyle.text}`}>
+                                                                                <span className={`text-xs lg:text-sm font-bold text-slate-900`}>
                                                                                     {assignment.user.name}
                                                                                 </span>
                                                                                 <span className={`text-[9px] lg:text-[10px] font-semibold ${companyStyle.subtext} leading-none mt-1 opacity-80 group-hover:opacity-100 transition-opacity`}>
