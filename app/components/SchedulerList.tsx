@@ -2,6 +2,7 @@
 
 import { GlassCard } from './GlassCard';
 import { isHoliday } from '@/app/lib/holidays';
+import { Calendar, AlertCircle } from 'lucide-react';
 
 interface DailyLog {
     id: string;
@@ -54,77 +55,88 @@ export function SchedulerList({ year, month, logs, leaves, onDateClick }: Schedu
     };
 
     const getDayLabel = (date: Date) => {
-        const days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
         return days[date.getDay()];
     };
 
-    const formatDate = (year: number, month: number, day: number) => {
-        const yy = String(year).slice(-2);
-        const mm = String(month).padStart(2, '0');
-        const dd = String(day).padStart(2, '0');
-        return `${yy}-${mm}-${dd}`;
-    };
-
     return (
-        <GlassCard className="w-full bg-white border-slate-200 shadow-sm h-full overflow-hidden flex flex-col p-0">
-            <div className="overflow-y-auto flex-1">
-                <table className="w-full text-xs border-collapse">
-                    <tbody className="divide-y divide-slate-200">
-                        {days.map(day => {
-                            const date = new Date(year, month - 1, day);
-                            const dayOfWeek = date.getDay();
-                            const holiday = isHoliday(date);
-                            const isSunday = dayOfWeek === 0;
-                            const isSaturday = dayOfWeek === 6;
+        <GlassCard className="w-full bg-white border-slate-200 shadow-sm h-full overflow-hidden flex flex-col">
+            <div className="overflow-y-auto flex-1 p-3 space-y-2 custom-scrollbar">
+                {days.map(day => {
+                    const date = new Date(year, month - 1, day);
+                    const dayOfWeek = date.getDay();
+                    const holiday = isHoliday(date);
+                    const isSunday = dayOfWeek === 0;
+                    const isSaturday = dayOfWeek === 6;
 
-                            const { dayLogs, dayLeaves } = getDataForDate(day);
+                    const { dayLogs, dayLeaves } = getDataForDate(day);
 
-                            // Determine row style
-                            let dateColor = 'text-slate-900';
-                            if (isSunday || holiday) dateColor = 'text-red-600 font-bold';
-                            else if (isSaturday) dateColor = 'text-blue-600 font-bold';
+                    // Determine color
+                    let dateColorClass = 'text-slate-700';
+                    let bgColorClass = 'bg-slate-100';
+                    if (isSunday || holiday) {
+                        dateColorClass = 'text-red-700';
+                        bgColorClass = 'bg-red-100';
+                    } else if (isSaturday) {
+                        dateColorClass = 'text-blue-700';
+                        bgColorClass = 'bg-blue-100';
+                    }
 
-                            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const hasContent = dayLogs.length > 0 || dayLeaves.length > 0;
 
-                            return (
-                                <tr
-                                    key={day}
-                                    onClick={() => onDateClick(dateStr)}
-                                    className="hover:bg-slate-50 cursor-pointer transition-colors group"
-                                >
-                                    <td className={`p-2 border-r border-slate-200 w-[100px] whitespace-nowrap ${dateColor} bg-slate-50/30 text-[10px]`}>
-                                        {formatDate(year, month, day)} {getDayLabel(date)}
-                                    </td>
-                                    <td className="p-2 align-top">
-                                        <div className="flex flex-col gap-0.5">
-                                            {/* Leaves */}
-                                            {dayLeaves.length > 0 && (
-                                                <div className="text-slate-700 text-[10px]">
-                                                    <span className="font-medium">{dayLeaves.map(l => l.user.name).join(', ')}</span>
-                                                    <span className="text-slate-500 ml-1">휴무</span>
-                                                </div>
-                                            )}
+                    return (
+                        <div
+                            key={day}
+                            onClick={() => onDateClick(dateStr)}
+                            className="group relative p-3 rounded-xl bg-gradient-to-br from-white to-slate-50 border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
+                        >
+                            {/* Hover effect overlay */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/0 to-indigo-100/0 group-hover:from-indigo-50/50 group-hover:to-indigo-100/20 transition-all duration-200 pointer-events-none"></div>
 
-                                            {/* Logs */}
-                                            {dayLogs.map(log => (
-                                                <div key={log.id} className="text-slate-800 font-medium whitespace-pre-wrap text-[10px]">
-                                                    {log.content}
-                                                </div>
-                                            ))}
+                            <div className="relative z-10">
+                                {/* Date header */}
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className={`flex items-center gap-1.5 px-2.5 py-1 ${bgColorClass} rounded-full`}>
+                                        <Calendar size={11} className={dateColorClass} />
+                                        <span className={`text-xs font-bold ${dateColorClass}`}>
+                                            {String(month).padStart(2, '0')}-{String(day).padStart(2, '0')} {getDayLabel(date)}
+                                        </span>
+                                    </div>
 
-                                            {/* Empty state placeholder for hover effect */}
-                                            {dayLeaves.length === 0 && dayLogs.length === 0 && (
-                                                <div className="text-slate-300 text-[9px] opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    + 내용 추가
-                                                </div>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            );
-                        })}
-                    </tbody>
-                </table>
+                                    {!hasContent && (
+                                        <span className="text-[9px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            + 추가
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Content */}
+                                {hasContent ? (
+                                    <div className="space-y-1.5">
+                                        {/* Leaves */}
+                                        {dayLeaves.map(leave => (
+                                            <div key={leave.id} className="text-xs px-2 py-1 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-medium">
+                                                {leave.user.name} 휴무
+                                            </div>
+                                        ))}
+
+                                        {/* Logs */}
+                                        {dayLogs.map(log => (
+                                            <div key={log.id} className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-medium px-2 py-1 bg-slate-50 rounded-lg">
+                                                {log.content}
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-center py-2">
+                                        <AlertCircle size={16} className="text-slate-300 opacity-0 group-hover:opacity-50 transition-opacity" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
         </GlassCard>
     );
