@@ -5,7 +5,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 interface SettingsContextType {
     sidebarFontSize: string; // 'small' | 'medium' | 'large'
     mainFontSize: string; // 'small' | 'medium' | 'large'
-    fontFamily: string; // 'Pretendard' | 'Noto Sans KR' | 'Nanum Gothic'
+    fontFamily: string; // 'LG Smart' | 'Pretendard' | 'Noto Sans KR' | 'Nanum Gothic'
     setSidebarFontSize: (size: string) => void;
     setMainFontSize: (size: string) => void;
     setFontFamily: (font: string) => void;
@@ -16,7 +16,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [sidebarFontSize, setSidebarFontSize] = useState('medium');
     const [mainFontSize, setMainFontSize] = useState('medium');
-    const [fontFamily, setFontFamily] = useState('Pretendard');
+    const [fontFamily, setFontFamily] = useState('LG Smart');
 
     useEffect(() => {
         // Load settings from localStorage
@@ -44,12 +44,26 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem('fontFamily', font);
 
         // Apply font family globally
-        document.documentElement.style.setProperty('--font-family-base', font === 'Pretendard' ? '"Pretendard Variable", Pretendard, sans-serif' : font === 'Noto Sans KR' ? '"Noto Sans KR", sans-serif' : '"Nanum Gothic", sans-serif');
+        const fontValue = font === 'LG Smart'
+            ? 'var(--font-lg-smart, "Pretendard Variable", Pretendard, sans-serif)'
+            : font === 'Pretendard'
+                ? '"Pretendard Variable", Pretendard, sans-serif'
+                : font === 'Noto Sans KR'
+                    ? '"Noto Sans KR", sans-serif'
+                    : '"Nanum Gothic", sans-serif';
+        document.documentElement.style.setProperty('--font-family-base', fontValue);
     };
 
     // Apply initial font family
     useEffect(() => {
-        document.documentElement.style.setProperty('--font-family-base', fontFamily === 'Pretendard' ? '"Pretendard Variable", Pretendard, sans-serif' : fontFamily === 'Noto Sans KR' ? '"Noto Sans KR", sans-serif' : '"Nanum Gothic", sans-serif');
+        const fontValue = fontFamily === 'LG Smart'
+            ? 'var(--font-lg-smart, "Pretendard Variable", Pretendard, sans-serif)'
+            : fontFamily === 'Pretendard'
+                ? '"Pretendard Variable", Pretendard, sans-serif'
+                : fontFamily === 'Noto Sans KR'
+                    ? '"Noto Sans KR", sans-serif'
+                    : '"Nanum Gothic", sans-serif';
+        document.documentElement.style.setProperty('--font-family-base', fontValue);
     }, [fontFamily]);
 
     return (
