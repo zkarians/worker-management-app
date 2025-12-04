@@ -489,16 +489,16 @@ export default function DashboardPage() {
                                         const isTeam1 = teamNumber === 1;
 
                                         // 모던하고 세련된 색상 팔레트
-                                        // 1조: 딥 인디고/퍼플, 2-5조: 엘레갤트한 블루/틸
+                                        // 1조: 파란색 계열, 2-5조: 붉은색 계열
                                         const teamNameBg = isTeam1
-                                            ? 'bg-gradient-to-r from-indigo-50 to-purple-50'
-                                            : 'bg-gradient-to-r from-blue-50 to-cyan-50';
-                                        const teamNameText = isTeam1 ? 'text-indigo-700' : 'text-blue-700';
-                                        const teamNameBorder = isTeam1 ? 'border-l-4 border-indigo-500' : 'border-l-4 border-blue-500';
+                                            ? 'bg-gradient-to-r from-blue-50 to-sky-50'
+                                            : 'bg-gradient-to-r from-rose-50 to-pink-50';
+                                        const teamNameText = isTeam1 ? 'text-blue-700' : 'text-rose-700';
+                                        const teamNameBorder = isTeam1 ? 'border-l-4 border-blue-500' : 'border-l-4 border-rose-500';
 
                                         return (
                                             <tr key={team.id} className="hover:bg-slate-50/80 transition-all duration-200">
-                                                <td className={`p-2.5 lg:p-3 font-bold ${teamNameBg} ${teamNameText} ${teamNameBorder} border-r-2 border-slate-200 text-base lg:text-lg shadow-sm`}>
+                                                <td className={`p-2.5 lg:p-3 font-bold ${teamNameBg} ${teamNameText} ${teamNameBorder} border-r-2 border-slate-200 text-xs md:text-sm lg:text-sm shadow-sm`}>
                                                     {team.name}
                                                 </td>
                                                 {POSITIONS.map(pos => {
