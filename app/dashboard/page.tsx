@@ -487,14 +487,18 @@ export default function DashboardPage() {
                                         // Extract team number from team name (e.g., "1조" -> 1)
                                         const teamNumber = parseInt(team.name.replace(/[^0-9]/g, '')) || 0;
                                         const isTeam1 = teamNumber === 1;
-                                        // 1조: 하늘색(sky), 2-5조: 주황색(orange)
-                                        const teamNameBg = isTeam1 ? 'bg-sky-100' : 'bg-orange-100';
-                                        const teamNameText = isTeam1 ? 'text-sky-700' : 'text-orange-700';
-                                        const teamNameBorder = isTeam1 ? 'border-sky-200' : 'border-orange-200';
+
+                                        // 모던하고 세련된 색상 팔레트
+                                        // 1조: 딥 인디고/퍼플, 2-5조: 엘레갤트한 블루/틸
+                                        const teamNameBg = isTeam1
+                                            ? 'bg-gradient-to-r from-indigo-50 to-purple-50'
+                                            : 'bg-gradient-to-r from-blue-50 to-cyan-50';
+                                        const teamNameText = isTeam1 ? 'text-indigo-700' : 'text-blue-700';
+                                        const teamNameBorder = isTeam1 ? 'border-l-4 border-indigo-500' : 'border-l-4 border-blue-500';
 
                                         return (
                                             <tr key={team.id} className="hover:bg-slate-50/80 transition-all duration-200">
-                                                <td className={`p-2 lg:p-2.5 font-bold ${teamNameBg} ${teamNameText} border-r-2 ${teamNameBorder} text-sm lg:text-base shadow-sm`}>
+                                                <td className={`p-2.5 lg:p-3 font-bold ${teamNameBg} ${teamNameText} ${teamNameBorder} border-r-2 border-slate-200 text-base lg:text-lg shadow-sm`}>
                                                     {team.name}
                                                 </td>
                                                 {POSITIONS.map(pos => {
@@ -541,15 +545,15 @@ export default function DashboardPage() {
                 <div className="space-y-3">
                     {/* Management Section - Displayed above OP (only if management workers are assigned) */}
                     {getManagementWorkers().length > 0 && (
-                        <GlassCard className="overflow-hidden p-0">
-                            <div className="bg-blue-50 p-2 border-b border-blue-200">
-                                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                                    <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                        <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-blue-500">
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 border-b-2 border-blue-200">
+                                <h3 className="text-lg font-bold text-blue-800 flex items-center gap-2">
+                                    <div className="w-1.5 h-5 bg-blue-600 rounded-full"></div>
                                     {MANAGEMENT_POSITION}
                                 </h3>
                             </div>
-                            <div className="p-2.5">
-                                <div className="flex flex-wrap gap-1.5 min-h-[30px]">
+                            <div className="p-3">
+                                <div className="flex flex-wrap gap-2 min-h-[35px]">
                                     {getManagementWorkers().map((assignment, idx) => {
                                         // Use company name for color, even for managers
                                         const companyName = assignment.user.company?.name;
@@ -557,12 +561,12 @@ export default function DashboardPage() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex flex-col items-center px-2 py-0.5 rounded-lg border shadow-sm ${style.bg} ${style.border}`}
+                                                className={`flex flex-col items-center px-3 py-1.5 rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
                                             >
-                                                <span className={`text-xs font-medium ${style.text}`}>
+                                                <span className={`text-sm font-bold ${style.text}`}>
                                                     {assignment.user.name}
                                                 </span>
-                                                <span className={`text-[9px] ${style.subtext} leading-none mt-0.5`}>
+                                                <span className={`text-xs font-semibold ${style.subtext} leading-none mt-0.5`}>
                                                     {companyName || '소속없음'}
                                                 </span>
                                             </div>
@@ -575,15 +579,15 @@ export default function DashboardPage() {
 
                     {/* OP Section - Displayed above special notes (only if OP workers are assigned) */}
                     {getOPWorkers().length > 0 && (
-                        <GlassCard className="overflow-hidden p-0">
-                            <div className="bg-purple-50 p-2 border-b border-purple-200">
-                                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                                    <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                        <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-purple-500">
+                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-3 border-b-2 border-purple-200">
+                                <h3 className="text-lg font-bold text-purple-800 flex items-center gap-2">
+                                    <div className="w-1.5 h-5 bg-purple-600 rounded-full"></div>
                                     {OP_POSITION}
                                 </h3>
                             </div>
-                            <div className="p-2.5">
-                                <div className="flex flex-wrap gap-1.5 min-h-[30px]">
+                            <div className="p-3">
+                                <div className="flex flex-wrap gap-2 min-h-[35px]">
                                     {getOPWorkers().map((assignment, idx) => {
                                         // Use company name for color, even for managers
                                         const companyName = assignment.user.company?.name;
@@ -591,12 +595,12 @@ export default function DashboardPage() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex flex-col items-center px-2 py-0.5 rounded-lg border shadow-sm ${style.bg} ${style.border}`}
+                                                className={`flex flex-col items-center px-3 py-1.5 rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
                                             >
-                                                <span className={`text-xs font-medium ${style.text}`}>
+                                                <span className={`text-sm font-bold ${style.text}`}>
                                                     {assignment.user.name}
                                                 </span>
-                                                <span className={`text-[9px] ${style.subtext} leading-none mt-0.5`}>
+                                                <span className={`text-xs font-semibold ${style.subtext} leading-none mt-0.5`}>
                                                     {companyName || '소속없음'}
                                                 </span>
                                             </div>
