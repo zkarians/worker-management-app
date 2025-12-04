@@ -452,32 +452,32 @@ export default function DashboardPage() {
             {/* Summary Cards - Mobile First */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
                 <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
-                    <span className="text-slate-500 text-[10px] sm:text-xs">총원</span>
-                    <span className="text-lg sm:text-xl font-bold text-slate-900 mt-1">{stats.total}</span>
+                    <span className="text-slate-600 text-xs sm:text-sm font-semibold">총원</span>
+                    <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{stats.total}</span>
                 </GlassCard>
                 <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
-                    <span className="text-slate-500 text-[10px] sm:text-xs">결근/휴무</span>
-                    <span className="text-lg sm:text-xl font-bold text-red-500 mt-1">{stats.absent}</span>
+                    <span className="text-slate-600 text-xs sm:text-sm font-semibold">결근/휴무</span>
+                    <span className="text-xl sm:text-2xl font-bold text-red-500 mt-1">{stats.absent}</span>
                 </GlassCard>
                 <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
-                    <span className="text-slate-500 text-[10px] sm:text-xs">근무</span>
-                    <span className="text-lg sm:text-xl font-bold text-emerald-600 mt-1">{stats.present}</span>
+                    <span className="text-slate-600 text-xs sm:text-sm font-semibold">근무</span>
+                    <span className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">{stats.present}</span>
                 </GlassCard>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 {/* Main Roster Table */}
-                <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+                <div className="lg:col-span-3">
                     <GlassCard className="overflow-hidden p-0 shadow-md">
                         <div className="overflow-x-auto">
                             <table className="w-full text-center border-collapse">
                                 <thead>
                                     <tr className="bg-gradient-to-r from-slate-100 to-slate-50 border-b-2 border-slate-300">
-                                        <th className="p-3 md:p-3 lg:p-4 border-r-2 border-white w-14 md:w-20 lg:w-24 text-xs md:text-sm lg:text-sm font-bold text-slate-700 shadow-sm">구분</th>
+                                        <th className="p-2 md:p-2 lg:p-2.5 border-r-2 border-white w-14 md:w-20 lg:w-20 text-xs md:text-sm lg:text-sm font-bold text-slate-700 shadow-sm">구분</th>
                                         {POSITIONS.map(pos => {
                                             const headerColor = getPositionHeaderColor(pos);
                                             return (
-                                                <th key={pos} className={`p-3 md:p-3 lg:p-4 border-r-2 border-white last:border-r-0 w-[21%] text-xs md:text-sm lg:text-sm font-bold shadow-sm ${headerColor}`}>{pos}</th>
+                                                <th key={pos} className={`p-2 md:p-2 lg:p-2.5 border-r-2 border-white last:border-r-0 w-[21%] text-xs md:text-sm lg:text-sm font-bold shadow-sm ${headerColor}`}>{pos}</th>
                                             );
                                         })}
                                     </tr>
@@ -494,14 +494,14 @@ export default function DashboardPage() {
 
                                         return (
                                             <tr key={team.id} className="hover:bg-slate-50/80 transition-all duration-200">
-                                                <td className={`p-3 lg:p-4 font-bold ${teamNameBg} ${teamNameText} border-r-2 ${teamNameBorder} text-sm lg:text-base shadow-sm`}>
+                                                <td className={`p-2 lg:p-2.5 font-bold ${teamNameBg} ${teamNameText} border-r-2 ${teamNameBorder} text-sm lg:text-base shadow-sm`}>
                                                     {team.name}
                                                 </td>
                                                 {POSITIONS.map(pos => {
                                                     const workers = getWorkersFor(team.name, pos);
                                                     return (
-                                                        <td key={pos} className="p-2 lg:p-3 border-r border-slate-100 last:border-r-0 align-top lg:h-24 bg-white">
-                                                            <div className="flex flex-wrap gap-2 lg:gap-2.5 justify-center">
+                                                        <td key={pos} className="p-1.5 lg:p-2 border-r border-slate-100 last:border-r-0 align-top lg:h-auto bg-white">
+                                                            <div className="flex flex-wrap gap-1.5 lg:gap-2 justify-center">
                                                                 {workers.length > 0 ? (
                                                                     workers.map((assignment, idx) => {
                                                                         // Use company name for color
@@ -510,7 +510,7 @@ export default function DashboardPage() {
                                                                         return (
                                                                             <div
                                                                                 key={idx}
-                                                                                className={`group relative flex flex-col items-center px-2.5 lg:px-3 py-1.5 lg:py-2 rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 ${companyStyle.bg} ${companyStyle.border}`}
+                                                                                className={`group relative flex flex-col items-center px-2 lg:px-2.5 py-1 lg:py-1.5 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 transform hover:-translate-y-0.5 ${companyStyle.bg} ${companyStyle.border}`}
                                                                             >
                                                                                 <span className={`text-xs lg:text-sm font-bold ${companyStyle.text}`}>
                                                                                     {assignment.user.name}
@@ -538,18 +538,18 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Side Panel (Management, OP & Notes) */}
-                <div className="space-y-6">
+                <div className="space-y-3">
                     {/* Management Section - Displayed above OP (only if management workers are assigned) */}
                     {getManagementWorkers().length > 0 && (
                         <GlassCard className="overflow-hidden p-0">
-                            <div className="bg-blue-50 p-3 border-b border-blue-200">
-                                <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                            <div className="bg-blue-50 p-2 border-b border-blue-200">
+                                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                                     <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
                                     {MANAGEMENT_POSITION}
                                 </h3>
                             </div>
-                            <div className="p-4">
-                                <div className="flex flex-wrap gap-2 min-h-[40px]">
+                            <div className="p-2.5">
+                                <div className="flex flex-wrap gap-1.5 min-h-[30px]">
                                     {getManagementWorkers().map((assignment, idx) => {
                                         // Use company name for color, even for managers
                                         const companyName = assignment.user.company?.name;
@@ -557,7 +557,7 @@ export default function DashboardPage() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex flex-col items-center px-2 py-1 rounded-lg border shadow-sm ${style.bg} ${style.border}`}
+                                                className={`flex flex-col items-center px-2 py-0.5 rounded-lg border shadow-sm ${style.bg} ${style.border}`}
                                             >
                                                 <span className={`text-xs font-medium ${style.text}`}>
                                                     {assignment.user.name}
@@ -576,14 +576,14 @@ export default function DashboardPage() {
                     {/* OP Section - Displayed above special notes (only if OP workers are assigned) */}
                     {getOPWorkers().length > 0 && (
                         <GlassCard className="overflow-hidden p-0">
-                            <div className="bg-purple-50 p-3 border-b border-purple-200">
-                                <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                            <div className="bg-purple-50 p-2 border-b border-purple-200">
+                                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
                                     <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
                                     {OP_POSITION}
                                 </h3>
                             </div>
-                            <div className="p-4">
-                                <div className="flex flex-wrap gap-2 min-h-[40px]">
+                            <div className="p-2.5">
+                                <div className="flex flex-wrap gap-1.5 min-h-[30px]">
                                     {getOPWorkers().map((assignment, idx) => {
                                         // Use company name for color, even for managers
                                         const companyName = assignment.user.company?.name;
@@ -591,7 +591,7 @@ export default function DashboardPage() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex flex-col items-center px-2 py-1 rounded-lg border shadow-sm ${style.bg} ${style.border}`}
+                                                className={`flex flex-col items-center px-2 py-0.5 rounded-lg border shadow-sm ${style.bg} ${style.border}`}
                                             >
                                                 <span className={`text-xs font-medium ${style.text}`}>
                                                     {assignment.user.name}
@@ -637,7 +637,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Bottom Section: Calendar & Notes List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 <div className="lg:col-span-3">
                     <MonthlyCalendarWidget
                         onDateClick={handleDateClick}
