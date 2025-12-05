@@ -501,14 +501,14 @@ export default function ViewPage() {
                                     {paletteTeam && (
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                            <span className="text-sm font-medium text-slate-600">파레트 정리조:</span>
+                                            <span className="text-sm font-medium text-slate-600 w-28">파레트 정리조:</span>
                                             <span className="text-sm font-semibold text-slate-900">{paletteTeam.name}</span>
                                         </div>
                                     )}
                                     {cleaningTeam && (
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                            <span className="text-sm font-medium text-slate-600">청소조:</span>
+                                            <span className="text-sm font-medium text-slate-600 w-28">청소조:</span>
                                             <span className="text-sm font-semibold text-slate-900">{cleaningTeam.name}</span>
                                         </div>
                                     )}
