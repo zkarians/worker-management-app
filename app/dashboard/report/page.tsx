@@ -38,6 +38,7 @@ export default function ReportPage() {
     const [assignments, setAssignments] = useState<Assignment[]>([]);
     const [teams, setTeams] = useState<Team[]>([]);
     const [logs, setLogs] = useState<any[]>([]); // Added logs state
+    const [attendanceData, setAttendanceData] = useState<any[]>([]); // Attendance data
     const [stats, setStats] = useState({ total: 0, present: 0, absent: 0 });
     const [companyStats, setCompanyStats] = useState<{ [key: string]: { total: number; present: number; absent: number } }>({});
     const [loading, setLoading] = useState(true);
@@ -55,17 +56,19 @@ export default function ReportPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [rosterRes, teamsRes, usersRes, logsRes] = await Promise.all([
+            const [rosterRes, teamsRes, usersRes, logsRes, attRes] = await Promise.all([
                 fetch(`/api/roster?date=${date}`),
                 fetch('/api/teams'),
                 fetch('/api/users'),
-                fetch(`/api/logs?date=${date}`) // Fetch logs for specific date
+                fetch(`/api/logs?date=${date}`), // Fetch logs for specific date
+                fetch(`/api/attendance?date=${date}`) // Fetch attendance for specific date
             ]);
 
             const rosterData = await rosterRes.json();
             const teamsData = await teamsRes.json();
             const usersData = await usersRes.json();
             const logsData = await logsRes.json();
+            const attData = await attRes.json();
 
             if (rosterData.roster?.assignments) {
                 setAssignments(rosterData.roster.assignments);
@@ -77,6 +80,12 @@ export default function ReportPage() {
                 setLogs(logsData.logs);
             } else {
                 setLogs([]);
+            }
+
+            if (attData.attendance) {
+                setAttendanceData(attData.attendance);
+            } else {
+                setAttendanceData([]);
             }
 
             if (teamsData.teams) setTeams(teamsData.teams);
@@ -551,6 +560,145 @@ export default function ReportPage() {
                                             </div>
                                         </div>
                                     )}
+                                    {/* Attendance Status Sections */}
+                                    {(() => {
+                                        const offDayWorkers = attendanceData.filter((a: any) => a.status === 'OFF_DAY');
+                                        const absentWorkers = attendanceData.filter((a: any) => a.status === 'ABSENT');
+                                        const lateWorkers = attendanceData.filter((a: any) => a.status === 'LATE');
+                                        const earlyLeaveWorkers = attendanceData.filter((a: any) => a.status === 'EARLY_LEAVE');
+
+                                        return (
+                                            <>
+                                                {/* 휴무 */}
+                                                {offDayWorkers.length > 0 && (
+                                                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden print:rounded print:border-slate-300">
+                                                        <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-1.5 border-b border-purple-200 print:p-1">
+                                                            <h3 className="text-[10px] font-bold text-slate-800 flex items-center gap-1 print:text-[8px]">
+                                                                <div className="w-0.5 h-3 bg-purple-500 rounded-full print:h-2"></div>
+                                                                휴무 ({offDayWorkers.length}명)
+                                                            </h3>
+                                                        </div>
+                                                        <div className="p-1.5 print:p-1">
+                                                            <div className="flex flex-wrap gap-1 print:gap-0.5">
+                                                                {offDayWorkers.map((worker: any, idx: number) => {
+                                                                    const style = getCompanyStyle(worker.user?.company?.name);
+                                                                    return (
+                                                                        <div
+                                                                            key={idx}
+                                                                            className={`flex flex-col items-center px-1.5 py-0.5 rounded-md border shadow-sm ${style.bg} ${style.border} print:px-1 print:py-0 print:rounded-sm`}
+                                                                        >
+                                                                            <span className={`font-bold text-[10px] ${style.text} print:text-[8px]`}>
+                                                                                {worker.user?.name}
+                                                                            </span>
+                                                                            <span className="text-[8px] text-slate-600 leading-none mt-0.5 print:text-[6px]">
+                                                                                {worker.user?.company?.name || '-'}
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* 결근 */}
+                                                {absentWorkers.length > 0 && (
+                                                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden print:rounded print:border-slate-300">
+                                                        <div className="bg-gradient-to-r from-red-50 to-red-100 p-1.5 border-b border-red-200 print:p-1">
+                                                            <h3 className="text-[10px] font-bold text-slate-800 flex items-center gap-1 print:text-[8px]">
+                                                                <div className="w-0.5 h-3 bg-red-500 rounded-full print:h-2"></div>
+                                                                결근 ({absentWorkers.length}명)
+                                                            </h3>
+                                                        </div>
+                                                        <div className="p-1.5 print:p-1">
+                                                            <div className="flex flex-wrap gap-1 print:gap-0.5">
+                                                                {absentWorkers.map((worker: any, idx: number) => {
+                                                                    const style = getCompanyStyle(worker.user?.company?.name);
+                                                                    return (
+                                                                        <div
+                                                                            key={idx}
+                                                                            className={`flex flex-col items-center px-1.5 py-0.5 rounded-md border shadow-sm ${style.bg} ${style.border} print:px-1 print:py-0 print:rounded-sm`}
+                                                                        >
+                                                                            <span className={`font-bold text-[10px] ${style.text} print:text-[8px]`}>
+                                                                                {worker.user?.name}
+                                                                            </span>
+                                                                            <span className="text-[8px] text-slate-600 leading-none mt-0.5 print:text-[6px]">
+                                                                                {worker.user?.company?.name || '-'}
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* 지각 */}
+                                                {lateWorkers.length > 0 && (
+                                                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden print:rounded print:border-slate-300">
+                                                        <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-1.5 border-b border-orange-200 print:p-1">
+                                                            <h3 className="text-[10px] font-bold text-slate-800 flex items-center gap-1 print:text-[8px]">
+                                                                <div className="w-0.5 h-3 bg-orange-500 rounded-full print:h-2"></div>
+                                                                지각 ({lateWorkers.length}명)
+                                                            </h3>
+                                                        </div>
+                                                        <div className="p-1.5 print:p-1">
+                                                            <div className="flex flex-wrap gap-1 print:gap-0.5">
+                                                                {lateWorkers.map((worker: any, idx: number) => {
+                                                                    const style = getCompanyStyle(worker.user?.company?.name);
+                                                                    return (
+                                                                        <div
+                                                                            key={idx}
+                                                                            className={`flex flex-col items-center px-1.5 py-0.5 rounded-md border shadow-sm ${style.bg} ${style.border} print:px-1 print:py-0 print:rounded-sm`}
+                                                                        >
+                                                                            <span className={`font-bold text-[10px] ${style.text} print:text-[8px]`}>
+                                                                                {worker.user?.name}
+                                                                            </span>
+                                                                            <span className="text-[8px] text-slate-600 leading-none mt-0.5 print:text-[6px]">
+                                                                                {worker.user?.company?.name || '-'}
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* 조퇴 */}
+                                                {earlyLeaveWorkers.length > 0 && (
+                                                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden print:rounded print:border-slate-300">
+                                                        <div className="bg-gradient-to-r from-yellow-50 to-yellow-100 p-1.5 border-b border-yellow-400 print:p-1">
+                                                            <h3 className="text-[10px] font-bold text-slate-800 flex items-center gap-1 print:text-[8px]">
+                                                                <div className="w-0.5 h-3 bg-yellow-500 rounded-full print:h-2"></div>
+                                                                조퇴 ({earlyLeaveWorkers.length}명)
+                                                            </h3>
+                                                        </div>
+                                                        <div className="p-1.5 print:p-1">
+                                                            <div className="flex flex-wrap gap-1 print:gap-0.5">
+                                                                {earlyLeaveWorkers.map((worker: any, idx: number) => {
+                                                                    const style = getCompanyStyle(worker.user?.company?.name);
+                                                                    return (
+                                                                        <div
+                                                                            key={idx}
+                                                                            className={`flex flex-col items-center px-1.5 py-0.5 rounded-md border shadow-sm ${style.bg} ${style.border} print:px-1 print:py-0 print:rounded-sm`}
+                                                                        >
+                                                                            <span className={`font-bold text-[10px] ${style.text} print:text-[8px]`}>
+                                                                                {worker.user?.name}
+                                                                            </span>
+                                                                            <span className="text-[8px] text-slate-600 leading-none mt-0.5 print:text-[6px]">
+                                                                                {worker.user?.company?.name || '-'}
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </div>
