@@ -555,14 +555,14 @@ export default function DashboardPage() {
                     {/* Management Section - Displayed above OP (only if management workers are assigned) */}
                     {getManagementWorkers().length > 0 && (
                         <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-blue-500">
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 border-b-2 border-blue-200">
-                                <h3 className="text-lg font-bold text-blue-800 flex items-center gap-2">
-                                    <div className="w-1.5 h-5 bg-blue-600 rounded-full"></div>
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-2.5 border-b-2 border-blue-200">
+                                <h3 className="text-base font-bold text-blue-800 flex items-center gap-2">
+                                    <div className="w-1.5 h-4 bg-blue-600 rounded-full"></div>
                                     {MANAGEMENT_POSITION}
                                 </h3>
                             </div>
-                            <div className="p-3">
-                                <div className="flex flex-wrap gap-2 min-h-[35px]">
+                            <div className="p-2.5">
+                                <div className="flex flex-wrap gap-1.5">
                                     {getManagementWorkers().map((assignment, idx) => {
                                         // Use company name for color, even for managers
                                         const companyName = assignment.user.company?.name;
@@ -570,12 +570,12 @@ export default function DashboardPage() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex flex-col items-center px-3 py-1.5 rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
+                                                className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
                                             >
-                                                <span className={`text-sm font-medium text-slate-900`}>
+                                                <span className={`text-xs font-medium text-slate-900`}>
                                                     {assignment.user.name}
                                                 </span>
-                                                <span className={`text-xs font-medium ${style.subtext} leading-none mt-0.5`}>
+                                                <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
                                                     {companyName || '소속없음'}
                                                 </span>
                                             </div>
@@ -589,14 +589,14 @@ export default function DashboardPage() {
                     {/* OP Section - Displayed above special notes (only if OP workers are assigned) */}
                     {getOPWorkers().length > 0 && (
                         <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-purple-500">
-                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-3 border-b-2 border-purple-200">
-                                <h3 className="text-lg font-bold text-purple-800 flex items-center gap-2">
-                                    <div className="w-1.5 h-5 bg-purple-600 rounded-full"></div>
+                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-2.5 border-b-2 border-purple-200">
+                                <h3 className="text-base font-bold text-purple-800 flex items-center gap-2">
+                                    <div className="w-1.5 h-4 bg-purple-600 rounded-full"></div>
                                     {OP_POSITION}
                                 </h3>
                             </div>
-                            <div className="p-3">
-                                <div className="flex flex-wrap gap-2 min-h-[35px]">
+                            <div className="p-2.5">
+                                <div className="flex flex-wrap gap-1.5">
                                     {getOPWorkers().map((assignment, idx) => {
                                         // Use company name for color, even for managers
                                         const companyName = assignment.user.company?.name;
@@ -604,12 +604,12 @@ export default function DashboardPage() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex flex-col items-center px-3 py-1.5 rounded-xl border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
+                                                className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
                                             >
-                                                <span className={`text-sm font-medium text-slate-900`}>
+                                                <span className={`text-xs font-medium text-slate-900`}>
                                                     {assignment.user.name}
                                                 </span>
-                                                <span className={`text-xs font-medium ${style.subtext} leading-none mt-0.5`}>
+                                                <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
                                                     {companyName || '소속없음'}
                                                 </span>
                                             </div>
@@ -632,31 +632,33 @@ export default function DashboardPage() {
                         if (!hasAnyStatus) return null;
 
                         return (
-                            <GlassCard className="bg-white border-slate-200 shadow-md">
-                                <h3 className="text-slate-700 font-bold mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
-                                    근태 현황
-                                </h3>
-                                <div className="space-y-3">
+                            <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-teal-500">
+                                <div className="bg-gradient-to-r from-teal-50 to-cyan-50 p-2.5 border-b-2 border-teal-200">
+                                    <h3 className="text-base font-bold text-teal-800 flex items-center gap-2">
+                                        <div className="w-1.5 h-4 bg-teal-600 rounded-full"></div>
+                                        근태 현황
+                                    </h3>
+                                </div>
+                                <div className="p-2.5 space-y-2.5">
                                     {offDayWorkers.length > 0 && (
                                         <div>
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                                <span className="text-sm font-semibold text-purple-800">휴무</span>
-                                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700">{offDayWorkers.length}명</span>
+                                            <div className="flex items-center gap-1.5 mb-1.5">
+                                                <span className="text-xs font-semibold text-purple-800">휴무</span>
+                                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">{offDayWorkers.length}</span>
                                             </div>
-                                            <div className="flex flex-wrap gap-2 ml-3.5">
+                                            <div className="flex flex-wrap gap-1.5">
                                                 {offDayWorkers.map((worker, idx) => {
                                                     const companyName = worker.user?.company?.name;
                                                     const style = getCompanyStyle(companyName);
                                                     return (
                                                         <div
                                                             key={idx}
-                                                            className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-sm bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300`}
+                                                            className={`flex flex-col items-center px-2 py-1 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 ${style.bg} ${style.border}`}
                                                         >
-                                                            <span className="text-xs font-medium text-purple-900">
+                                                            <span className="text-xs font-medium text-slate-900">
                                                                 {worker.user?.name}
                                                             </span>
-                                                            <span className="text-[10px] font-medium text-purple-600 leading-none mt-0.5">
+                                                            <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
                                                                 {companyName || '소속없음'}
                                                             </span>
                                                         </div>
@@ -668,24 +670,23 @@ export default function DashboardPage() {
 
                                     {absentWorkers.length > 0 && (
                                         <div>
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-                                                <span className="text-sm font-semibold text-red-800">결근</span>
-                                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">{absentWorkers.length}명</span>
+                                            <div className="flex items-center gap-1.5 mb-1.5">
+                                                <span className="text-xs font-semibold text-red-800">결근</span>
+                                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700">{absentWorkers.length}</span>
                                             </div>
-                                            <div className="flex flex-wrap gap-2 ml-3.5">
+                                            <div className="flex flex-wrap gap-1.5">
                                                 {absentWorkers.map((worker, idx) => {
                                                     const companyName = worker.user?.company?.name;
                                                     const style = getCompanyStyle(companyName);
                                                     return (
                                                         <div
                                                             key={idx}
-                                                            className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-sm bg-gradient-to-r from-red-50 to-rose-50 border-red-300`}
+                                                            className={`flex flex-col items-center px-2 py-1 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 ${style.bg} ${style.border}`}
                                                         >
-                                                            <span className="text-xs font-medium text-red-900">
+                                                            <span className="text-xs font-medium text-slate-900">
                                                                 {worker.user?.name}
                                                             </span>
-                                                            <span className="text-[10px] font-medium text-red-600 leading-none mt-0.5">
+                                                            <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
                                                                 {companyName || '소속없음'}
                                                             </span>
                                                         </div>
@@ -697,24 +698,23 @@ export default function DashboardPage() {
 
                                     {lateWorkers.length > 0 && (
                                         <div>
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
-                                                <span className="text-sm font-semibold text-orange-800">지각</span>
-                                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700">{lateWorkers.length}명</span>
+                                            <div className="flex items-center gap-1.5 mb-1.5">
+                                                <span className="text-xs font-semibold text-orange-800">지각</span>
+                                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700">{lateWorkers.length}</span>
                                             </div>
-                                            <div className="flex flex-wrap gap-2 ml-3.5">
+                                            <div className="flex flex-wrap gap-1.5">
                                                 {lateWorkers.map((worker, idx) => {
                                                     const companyName = worker.user?.company?.name;
                                                     const style = getCompanyStyle(companyName);
                                                     return (
                                                         <div
                                                             key={idx}
-                                                            className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-sm bg-gradient-to-r from-orange-50 to-amber-50 border-orange-300`}
+                                                            className={`flex flex-col items-center px-2 py-1 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 ${style.bg} ${style.border}`}
                                                         >
-                                                            <span className="text-xs font-medium text-orange-900">
+                                                            <span className="text-xs font-medium text-slate-900">
                                                                 {worker.user?.name}
                                                             </span>
-                                                            <span className="text-[10px] font-medium text-orange-600 leading-none mt-0.5">
+                                                            <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
                                                                 {companyName || '소속없음'}
                                                             </span>
                                                         </div>
@@ -726,24 +726,23 @@ export default function DashboardPage() {
 
                                     {earlyLeaveWorkers.length > 0 && (
                                         <div>
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
-                                                <span className="text-sm font-semibold text-yellow-800">조퇴</span>
-                                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">{earlyLeaveWorkers.length}명</span>
+                                            <div className="flex items-center gap-1.5 mb-1.5">
+                                                <span className="text-xs font-semibold text-yellow-800">조퇴</span>
+                                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-yellow-100 text-yellow-700">{earlyLeaveWorkers.length}</span>
                                             </div>
-                                            <div className="flex flex-wrap gap-2 ml-3.5">
+                                            <div className="flex flex-wrap gap-1.5">
                                                 {earlyLeaveWorkers.map((worker, idx) => {
                                                     const companyName = worker.user?.company?.name;
                                                     const style = getCompanyStyle(companyName);
                                                     return (
                                                         <div
                                                             key={idx}
-                                                            className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-sm bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-400`}
+                                                            className={`flex flex-col items-center px-2 py-1 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 ${style.bg} ${style.border}`}
                                                         >
-                                                            <span className="text-xs font-medium text-yellow-900">
+                                                            <span className="text-xs font-medium text-slate-900">
                                                                 {worker.user?.name}
                                                             </span>
-                                                            <span className="text-[10px] font-medium text-yellow-700 leading-none mt-0.5">
+                                                            <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
                                                                 {companyName || '소속없음'}
                                                             </span>
                                                         </div>
@@ -759,23 +758,26 @@ export default function DashboardPage() {
 
                     {/* Special Teams (Palette & Cleaning) */}
                     {(paletteTeam || cleaningTeam) && (
-                        <GlassCard className="bg-slate-50 border-slate-200">
-                            <h3 className="text-slate-700 font-bold mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
-                                정리담당
-                            </h3>
-                            <div className="space-y-3">
+                        <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-amber-500">
+                            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-2.5 border-b-2 border-amber-200">
+                                <h3 className="text-base font-bold text-amber-800 flex items-center gap-2">
+                                    <div className="w-1.5 h-4 bg-amber-600 rounded-full"></div>
+                                    정리담당
+                                </h3>
+                            </div>
+                            <div className="p-2.5 space-y-2">
                                 {paletteTeam && (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-purple-50 border border-purple-200">
                                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                        <span className="text-sm font-medium text-slate-600">파레트 정리조:</span>
-                                        <span className="text-sm font-semibold text-slate-900">{paletteTeam.name}</span>
+                                        <span className="text-xs font-medium text-slate-600">파레트:</span>
+                                        <span className="text-xs font-bold text-slate-900">{paletteTeam.name}</span>
                                     </div>
                                 )}
                                 {cleaningTeam && (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-blue-50 border border-blue-200">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                        <span className="text-sm font-medium text-slate-600">청소조:</span>
-                                        <span className="text-sm font-semibold text-slate-900">{cleaningTeam.name}</span>
+                                        <span className="text-xs font-medium text-slate-600">청소:</span>
+                                        <span className="text-xs font-bold text-slate-900">{cleaningTeam.name}</span>
                                     </div>
                                 )}
                             </div>
