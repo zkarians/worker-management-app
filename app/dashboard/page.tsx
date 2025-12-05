@@ -86,6 +86,7 @@ export default function DashboardPage() {
     const [paletteTeam, setPaletteTeam] = useState<{ id: string; name: string } | null>(null);
     const [cleaningTeam, setCleaningTeam] = useState<{ id: string; name: string } | null>(null);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+    const [attendanceData, setAttendanceData] = useState<any[]>([]);
 
     useEffect(() => {
         fetchData();
@@ -110,12 +111,13 @@ export default function DashboardPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [rosterRes, teamsRes, usersRes, logsRes, leavesRes] = await Promise.all([
+            const [rosterRes, teamsRes, usersRes, logsRes, leavesRes, attendanceRes] = await Promise.all([
                 fetch(`/api/roster?date=${date}`),
                 fetch('/api/teams'),
                 fetch('/api/users'),
                 fetch(`/api/logs`), // Fetch recent history
-                fetch(`/api/leaves`)
+                fetch(`/api/leaves`),
+                fetch(`/api/attendance?date=${date}`)
             ]);
 
             const rosterData = await rosterRes.json();
@@ -123,11 +125,18 @@ export default function DashboardPage() {
             const usersData = usersRes.ok ? await usersRes.json() : { users: [] };
             const logsData = await logsRes.json();
             const leavesData = await leavesRes.json();
+            const attendanceDataRes = await attendanceRes.json();
 
             if (leavesData.leaves) {
                 setLeaves(leavesData.leaves);
             } else {
                 setLeaves([]);
+            }
+
+            if (attendanceDataRes.attendance) {
+                setAttendanceData(attendanceDataRes.attendance);
+            } else {
+                setAttendanceData([]);
             }
 
             if (rosterData.roster?.assignments) {
@@ -610,6 +619,143 @@ export default function DashboardPage() {
                             </div>
                         </GlassCard>
                     )}
+
+                    {/* Attendance Status Section */}
+                    {(() => {
+                        const offDayWorkers = attendanceData.filter(a => a.status === 'OFF_DAY');
+                        const absentWorkers = attendanceData.filter(a => a.status === 'ABSENT');
+                        const lateWorkers = attendanceData.filter(a => a.status === 'LATE');
+                        const earlyLeaveWorkers = attendanceData.filter(a => a.status === 'EARLY_LEAVE');
+
+                        const hasAnyStatus = offDayWorkers.length > 0 || absentWorkers.length > 0 || lateWorkers.length > 0 || earlyLeaveWorkers.length > 0;
+
+                        if (!hasAnyStatus) return null;
+
+                        return (
+                            <GlassCard className="bg-white border-slate-200 shadow-md">
+                                <h3 className="text-slate-700 font-bold mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
+                                    근태 현황
+                                </h3>
+                                <div className="space-y-3">
+                                    {offDayWorkers.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                                                <span className="text-sm font-semibold text-purple-800">휴무</span>
+                                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700">{offDayWorkers.length}명</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 ml-3.5">
+                                                {offDayWorkers.map((worker, idx) => {
+                                                    const companyName = worker.user?.company?.name;
+                                                    const style = getCompanyStyle(companyName);
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-sm bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300`}
+                                                        >
+                                                            <span className="text-xs font-medium text-purple-900">
+                                                                {worker.user?.name}
+                                                            </span>
+                                                            <span className="text-[10px] font-medium text-purple-600 leading-none mt-0.5">
+                                                                {companyName || '소속없음'}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {absentWorkers.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                                                <span className="text-sm font-semibold text-red-800">결근</span>
+                                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700">{absentWorkers.length}명</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 ml-3.5">
+                                                {absentWorkers.map((worker, idx) => {
+                                                    const companyName = worker.user?.company?.name;
+                                                    const style = getCompanyStyle(companyName);
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-sm bg-gradient-to-r from-red-50 to-rose-50 border-red-300`}
+                                                        >
+                                                            <span className="text-xs font-medium text-red-900">
+                                                                {worker.user?.name}
+                                                            </span>
+                                                            <span className="text-[10px] font-medium text-red-600 leading-none mt-0.5">
+                                                                {companyName || '소속없음'}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {lateWorkers.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-orange-500"></div>
+                                                <span className="text-sm font-semibold text-orange-800">지각</span>
+                                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700">{lateWorkers.length}명</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 ml-3.5">
+                                                {lateWorkers.map((worker, idx) => {
+                                                    const companyName = worker.user?.company?.name;
+                                                    const style = getCompanyStyle(companyName);
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-sm bg-gradient-to-r from-orange-50 to-amber-50 border-orange-300`}
+                                                        >
+                                                            <span className="text-xs font-medium text-orange-900">
+                                                                {worker.user?.name}
+                                                            </span>
+                                                            <span className="text-[10px] font-medium text-orange-600 leading-none mt-0.5">
+                                                                {companyName || '소속없음'}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {earlyLeaveWorkers.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-yellow-500"></div>
+                                                <span className="text-sm font-semibold text-yellow-800">조퇴</span>
+                                                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">{earlyLeaveWorkers.length}명</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 ml-3.5">
+                                                {earlyLeaveWorkers.map((worker, idx) => {
+                                                    const companyName = worker.user?.company?.name;
+                                                    const style = getCompanyStyle(companyName);
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-sm bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-400`}
+                                                        >
+                                                            <span className="text-xs font-medium text-yellow-900">
+                                                                {worker.user?.name}
+                                                            </span>
+                                                            <span className="text-[10px] font-medium text-yellow-700 leading-none mt-0.5">
+                                                                {companyName || '소속없음'}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </GlassCard>
+                        );
+                    })()}
 
                     {/* Special Teams (Palette & Cleaning) */}
                     {(paletteTeam || cleaningTeam) && (
