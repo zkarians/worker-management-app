@@ -776,7 +776,7 @@ export default function DashboardPage() {
                                 {cleaningTeam && (
                                     <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                        <span className="text-xs font-medium text-slate-600 w-16 inline-block text-right">청  소:</span>
+                                        <span className="text-xs font-medium text-slate-600 w-16 inline-block text-right">잔바리:</span>
                                         <span className="text-xs font-bold text-slate-900 ml-1">{cleaningTeam.name}</span>
                                     </div>
                                 )}
