@@ -209,8 +209,8 @@ export default function WorkersPage() {
                 </div>
             </GlassCard>
 
-            {/* Workers Table */}
-            <GlassCard className="overflow-hidden p-0 bg-white border-slate-200">
+            {/* Desktop Table View */}
+            <GlassCard className="hidden md:block overflow-hidden p-0 bg-white border-slate-200">
                 <table className="w-full text-left text-sm text-slate-500">
                     <thead className="bg-slate-50 text-slate-700 uppercase font-medium border-b border-slate-200">
                         <tr>
@@ -228,11 +228,10 @@ export default function WorkersPage() {
                             <tr key={worker.id} className="hover:bg-slate-50 transition-colors">
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
-                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
-                                            worker.role === 'MANAGER' 
-                                                ? 'bg-purple-100 text-purple-600' 
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${worker.role === 'MANAGER'
+                                                ? 'bg-purple-100 text-purple-600'
                                                 : 'bg-blue-100 text-blue-600'
-                                        }`}>
+                                            }`}>
                                             {worker.name[0]}
                                         </div>
                                         <div>
@@ -242,11 +241,10 @@ export default function WorkersPage() {
                                     </div>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                        worker.role === 'MANAGER' 
-                                            ? 'bg-purple-100 text-purple-700' 
+                                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${worker.role === 'MANAGER'
+                                            ? 'bg-purple-100 text-purple-700'
                                             : 'bg-blue-100 text-blue-700'
-                                    }`}>
+                                        }`}>
                                         {worker.role === 'MANAGER' ? '관리자' : '근무자'}
                                     </span>
                                 </td>
@@ -299,6 +297,109 @@ export default function WorkersPage() {
                     </tbody>
                 </table>
             </GlassCard>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
+                {filteredWorkers.length === 0 ? (
+                    <GlassCard className="bg-white border-slate-200">
+                        <p className="text-center text-gray-500 py-8">
+                            사용자가 없습니다.
+                        </p>
+                    </GlassCard>
+                ) : (
+                    filteredWorkers.map((worker) => (
+                        <GlassCard key={worker.id} className="bg-white border-slate-200 p-4">
+                            <div className="space-y-3">
+                                {/* Header with avatar, name, and role */}
+                                <div className="flex items-start gap-3">
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${worker.role === 'MANAGER'
+                                            ? 'bg-purple-100 text-purple-600'
+                                            : 'bg-blue-100 text-blue-600'
+                                        }`}>
+                                        {worker.name[0]}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-semibold text-slate-900 text-base">{worker.name}</h3>
+                                        <p className="text-sm text-slate-500">@{worker.username}</p>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${worker.role === 'MANAGER'
+                                                    ? 'bg-purple-100 text-purple-700'
+                                                    : 'bg-blue-100 text-blue-700'
+                                                }`}>
+                                                {worker.role === 'MANAGER' ? '관리자' : '근무자'}
+                                            </span>
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${worker.isApproved
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-yellow-100 text-yellow-700'
+                                                }`}>
+                                                {worker.isApproved ? '승인됨' : '대기중'}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Info Grid */}
+                                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200">
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-slate-500 font-medium">소속</p>
+                                        <p className="text-sm text-slate-700 font-medium">{worker.company?.name || '-'}</p>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-slate-500 font-medium">차량번호</p>
+                                        <p className="text-sm text-slate-700 font-medium">{worker.carNumber || '-'}</p>
+                                    </div>
+                                    <div className="space-y-1 col-span-2">
+                                        <p className="text-xs text-slate-500 font-medium">입사일</p>
+                                        <p className="text-sm text-slate-700 font-medium">
+                                            {worker.hireDate ? new Date(worker.hireDate).toLocaleDateString('ko-KR', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            }) : '-'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                                    {!worker.isApproved && (
+                                        <button
+                                            onClick={() => handleApprove(worker.id, true)}
+                                            className="flex-1 px-3 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                        >
+                                            <Check size={16} />
+                                            승인
+                                        </button>
+                                    )}
+                                    {worker.isApproved && (
+                                        <button
+                                            onClick={() => handleApprove(worker.id, false)}
+                                            className="flex-1 px-3 py-2 rounded-lg bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                        >
+                                            <X size={16} />
+                                            승인취소
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => handleEdit(worker)}
+                                        className="flex-1 px-3 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                    >
+                                        <Edit2 size={16} />
+                                        수정
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteUser(worker)}
+                                        className="flex-1 px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                    >
+                                        <Trash2 size={16} />
+                                        삭제
+                                    </button>
+                                </div>
+                            </div>
+                        </GlassCard>
+                    ))
+                )}
+            </div>
 
             {/* Edit Modal */}
             {editingUser && (
