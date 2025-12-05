@@ -307,7 +307,7 @@ export default function ViewPage() {
                                             })}
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y-2 divide-slate-300">
+                                    <tbody className="divide-y divide-slate-200">
                                         {teams.map(team => {
                                             const teamNumber = parseInt(team.name.replace(/[^0-9]/g, '')) || 0;
                                             const isTeam1 = teamNumber === 1;
@@ -499,16 +499,16 @@ export default function ViewPage() {
                                 </h3>
                                 <div className="space-y-3">
                                     {paletteTeam && (
-                                        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                        <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                            <span className="text-sm font-medium text-slate-600 w-28 inline-block">파레트 정리조:</span>
+                                            <span className="text-sm font-medium text-slate-600">파레트 정리조:</span>
                                             <span className="text-sm font-semibold text-slate-900">{paletteTeam.name}</span>
                                         </div>
                                     )}
                                     {cleaningTeam && (
-                                        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                        <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                            <span className="text-sm font-medium text-slate-600 w-28 inline-block">청소조:</span>
+                                            <span className="text-sm font-medium text-slate-600">청소조:</span>
                                             <span className="text-sm font-semibold text-slate-900">{cleaningTeam.name}</span>
                                         </div>
                                     )}

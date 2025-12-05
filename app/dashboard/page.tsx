@@ -491,7 +491,7 @@ export default function DashboardPage() {
                                         })}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y-2 divide-slate-100">
+                                <tbody className="divide-y-2 divide-slate-300">
                                     {teams.map(team => {
                                         // Extract team number from team name (e.g., "1조" -> 1)
                                         const teamNumber = parseInt(team.name.replace(/[^0-9]/g, '')) || 0;
@@ -767,16 +767,16 @@ export default function DashboardPage() {
                             </div>
                             <div className="p-2.5 space-y-2">
                                 {paletteTeam && (
-                                    <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-purple-50 border border-purple-200">
+                                    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                        <span className="text-xs font-medium text-slate-600">파레트:</span>
+                                        <span className="text-xs font-medium text-slate-600 w-28 inline-block">파레트:</span>
                                         <span className="text-xs font-bold text-slate-900">{paletteTeam.name}</span>
                                     </div>
                                 )}
                                 {cleaningTeam && (
-                                    <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-blue-50 border border-blue-200">
+                                    <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                        <span className="text-xs font-medium text-slate-600">청소:</span>
+                                        <span className="text-xs font-medium text-slate-600 w-28 inline-block">청소:</span>
                                         <span className="text-xs font-bold text-slate-900">{cleaningTeam.name}</span>
                                     </div>
                                 )}
