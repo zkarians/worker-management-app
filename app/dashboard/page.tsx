@@ -513,7 +513,7 @@ export default function DashboardPage() {
                                                 {POSITIONS.map(pos => {
                                                     const workers = getWorkersFor(team.name, pos);
                                                     return (
-                                                        <td key={pos} className="p-1.5 lg:p-2 border-r border-slate-100 last:border-r-0 align-top lg:h-auto bg-white">
+                                                        <td key={pos} className="p-1.5 lg:p-2 border-r-2 border-slate-300 last:border-r-0 align-top lg:h-auto bg-white">
                                                             <div className="flex flex-wrap gap-1.5 lg:gap-2 justify-center">
                                                                 {workers.length > 0 ? (
                                                                     workers.map((assignment, idx) => {
@@ -769,15 +769,15 @@ export default function DashboardPage() {
                                 {paletteTeam && (
                                     <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                        <span className="text-xs font-medium text-slate-600 w-28 inline-block">파레트:</span>
-                                        <span className="text-xs font-bold text-slate-900">{paletteTeam.name}</span>
+                                        <span className="text-xs font-medium text-slate-600 w-16 inline-block text-right">파레트:</span>
+                                        <span className="text-xs font-bold text-slate-900 ml-1">{paletteTeam.name}</span>
                                     </div>
                                 )}
                                 {cleaningTeam && (
                                     <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                        <span className="text-xs font-medium text-slate-600 w-28 inline-block">청소:</span>
-                                        <span className="text-xs font-bold text-slate-900">{cleaningTeam.name}</span>
+                                        <span className="text-xs font-medium text-slate-600 w-16 inline-block text-right">청소:</span>
+                                        <span className="text-xs font-bold text-slate-900 ml-1">{cleaningTeam.name}</span>
                                     </div>
                                 )}
                             </div>
