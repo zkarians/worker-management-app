@@ -572,9 +572,9 @@ export default function ReportPage() {
                                                 {/* 휴무 */}
                                                 {offDayWorkers.length > 0 && (
                                                     <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden print:rounded print:border-slate-300">
-                                                        <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-1.5 border-b border-purple-200 print:p-1">
+                                                        <div className="bg-gradient-to-r from-teal-50 to-cyan-100 p-1.5 border-b border-teal-200 print:p-1">
                                                             <h3 className="text-[10px] font-bold text-slate-800 flex items-center gap-1 print:text-[8px]">
-                                                                <div className="w-0.5 h-3 bg-purple-500 rounded-full print:h-2"></div>
+                                                                <div className="w-0.5 h-3 bg-teal-500 rounded-full print:h-2"></div>
                                                                 휴무 ({offDayWorkers.length}명)
                                                             </h3>
                                                         </div>
