@@ -165,6 +165,23 @@ export default function AttendancePage() {
 
                         if (actualRecord) {
                             // Has actual attendance record
+                            // If SCHEDULED and after 19:00 today, show as PRESENT (but don't save to DB)
+                            if (actualRecord.status === 'SCHEDULED') {
+                                const [year, month, day] = dateStr.split('-').map(Number);
+                                const targetDate = new Date(year, month - 1, day);
+                                targetDate.setHours(0, 0, 0, 0);
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                const now = new Date();
+
+                                if (targetDate.getTime() === today.getTime() && now.getHours() >= 19) {
+                                    return {
+                                        ...actualRecord,
+                                        status: 'PRESENT',
+                                        workHours: actualRecord.workHours || 8
+                                    };
+                                }
+                            }
                             return actualRecord;
                         } else if (isInRoster) {
                             // In roster but no attendance record yet
@@ -256,6 +273,23 @@ export default function AttendancePage() {
                     const isInRoster = rosterDates.has(dateStr);
 
                     if (actualRecord) {
+                        // If SCHEDULED and after 19:00 today, show as PRESENT (but don't save to DB)
+                        if (actualRecord.status === 'SCHEDULED') {
+                            const [year, month, day] = dateStr.split('-').map(Number);
+                            const targetDate = new Date(year, month - 1, day);
+                            targetDate.setHours(0, 0, 0, 0);
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const now = new Date();
+
+                            if (targetDate.getTime() === today.getTime() && now.getHours() >= 19) {
+                                return {
+                                    ...actualRecord,
+                                    status: 'PRESENT',
+                                    workHours: actualRecord.workHours || 8
+                                };
+                            }
+                        }
                         return actualRecord;
                     } else if (isInRoster) {
                         const status = getStatusFromRoster(dateStr, false, '');
@@ -608,11 +642,11 @@ export default function AttendancePage() {
                                     </div>
                                     {!isManager && (
                                         <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${record.status === 'PRESENT' ? 'bg-green-500/20 text-green-700' :
-                                                record.status === 'ABSENT' ? 'bg-red-500/20 text-red-700' :
-                                                    record.status === 'OFF_DAY' ? 'bg-slate-500/20 text-slate-700' :
-                                                        record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-700' :
-                                                            record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-700' :
-                                                                'bg-slate-500/20 text-slate-600'
+                                            record.status === 'ABSENT' ? 'bg-red-500/20 text-red-700' :
+                                                record.status === 'OFF_DAY' ? 'bg-slate-500/20 text-slate-700' :
+                                                    record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-700' :
+                                                        record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-700' :
+                                                            'bg-slate-500/20 text-slate-600'
                                             }`}>
                                             {record.status === 'PRESENT' ? '출근' :
                                                 record.status === 'ABSENT' ? '결근' :

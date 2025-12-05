@@ -309,10 +309,9 @@ export default function SettingsPage() {
                                 onChange={(e) => setFontFamily(e.target.value)}
                                 className="w-full glass-input bg-white border-slate-200"
                             >
-                                <option value="LG Smart">컬컨체 (LG Smart)</option>
-                                <option value="Pretendard">Pretendard (기본)</option>
+                                <option value="Nanum Gothic">나눔고딕 (기본)</option>
+                                <option value="Pretendard">Pretendard</option>
                                 <option value="Noto Sans KR">Noto Sans KR</option>
-                                <option value="Nanum Gothic">나눔고딕</option>
                             </select>
                         </div>
                     </div>
