@@ -49,7 +49,18 @@ export async function GET(request: Request) {
 
         const attendance = await prisma.attendance.findMany({
             where,
-            include: { user: { select: { name: true } } },
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        company: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                }
+            },
             orderBy: { date: 'desc' }
         });
 
