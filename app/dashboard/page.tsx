@@ -756,7 +756,7 @@ export default function DashboardPage() {
                         );
                     })()}
 
-                    {/* Special Teams (Palette & Cleaning) */}
+                    {/* 정리 팀 섹션 */}
                     {(paletteTeam || cleaningTeam) && (
                         <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-amber-500">
                             <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-2.5 border-b-2 border-amber-200">
@@ -767,17 +767,17 @@ export default function DashboardPage() {
                             </div>
                             <div className="p-2.5 space-y-2">
                                 {paletteTeam && (
-                                    <div className="flex items-center bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                        <span className="text-xs font-medium text-slate-600 w-16 inline-block text-right -ml-1">잔바리:</span>
-                                        <span className="text-xs font-bold text-slate-900 ml-1">{paletteTeam.name}</span>
+                                        <span className="text-xs font-medium text-slate-600">잔바리:</span>
+                                        <span className="text-xs font-bold text-slate-900">{paletteTeam.name}</span>
                                     </div>
                                 )}
                                 {cleaningTeam && (
-                                    <div className="flex items-center bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                        <span className="text-xs font-medium text-slate-600 w-16 inline-block text-right -ml-1">파레트:</span>
-                                        <span className="text-xs font-bold text-slate-900 ml-1">{cleaningTeam.name}</span>
+                                        <span className="text-xs font-medium text-slate-600">파레트:</span>
+                                        <span className="text-xs font-bold text-slate-900">{cleaningTeam.name}</span>
                                     </div>
                                 )}
                             </div>
