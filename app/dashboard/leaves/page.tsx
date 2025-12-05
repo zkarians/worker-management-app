@@ -210,7 +210,8 @@ export default function LeavesPage() {
                 </GlassCard>
             )}
 
-            <GlassCard className="overflow-hidden p-0 bg-white border-slate-200">
+            {/* Desktop Table View */}
+            <GlassCard className="hidden md:block overflow-hidden p-0 bg-white border-slate-200">
                 <table className="w-full text-left text-sm">
                     <thead className="bg-slate-50 text-slate-700 uppercase font-medium border-b border-slate-200">
                         <tr>
@@ -225,9 +226,7 @@ export default function LeavesPage() {
                     <tbody className="divide-y divide-slate-200">
                         {requests.map((req) => {
                             const isOwnRequest = !isManager && req.userId === user?.id;
-                            // Can delete if it's own request and not approved (PENDING or REJECTED)
                             const canDelete = isOwnRequest && req.status !== 'APPROVED' && req.status !== 'CANCELLATION_PENDING';
-                            // Can cancel if it's own request and APPROVED
                             const canCancel = isOwnRequest && req.status === 'APPROVED';
 
                             return (
@@ -256,7 +255,6 @@ export default function LeavesPage() {
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            {/* Worker: Cancel approved leave */}
                                             {canCancel && (
                                                 <button
                                                     onClick={() => handleCancelRequest(req.id)}
@@ -266,8 +264,6 @@ export default function LeavesPage() {
                                                     <RotateCcw size={16} />
                                                 </button>
                                             )}
-
-                                            {/* Worker: Delete own PENDING or REJECTED requests */}
                                             {canDelete && (
                                                 <button
                                                     onClick={() => handleDelete(req.id)}
@@ -277,11 +273,8 @@ export default function LeavesPage() {
                                                     <Trash2 size={16} />
                                                 </button>
                                             )}
-
-                                            {/* Manager actions */}
                                             {isManager && (
                                                 <>
-                                                    {/* Approve/Reject PENDING leave requests */}
                                                     {req.status === 'PENDING' && (
                                                         <>
                                                             <button
@@ -300,8 +293,6 @@ export default function LeavesPage() {
                                                             </button>
                                                         </>
                                                     )}
-
-                                                    {/* Approve/Reject CANCELLATION_PENDING (취소 대기중) */}
                                                     {req.status === 'CANCELLATION_PENDING' && (
                                                         <>
                                                             <button
@@ -320,8 +311,6 @@ export default function LeavesPage() {
                                                             </button>
                                                         </>
                                                     )}
-
-                                                    {/* Reject APPROVED leave */}
                                                     {req.status === 'APPROVED' && (
                                                         <button
                                                             onClick={() => handleStatusUpdate(req.id, 'REJECTED')}
@@ -331,8 +320,6 @@ export default function LeavesPage() {
                                                             <X size={16} />
                                                         </button>
                                                     )}
-
-                                                    {/* Re-approve REJECTED leave */}
                                                     {req.status === 'REJECTED' && (
                                                         <button
                                                             onClick={() => handleStatusUpdate(req.id, 'APPROVED')}
@@ -359,6 +346,156 @@ export default function LeavesPage() {
                     </tbody>
                 </table>
             </GlassCard>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
+                {requests.length === 0 ? (
+                    <GlassCard className="bg-white border-slate-200">
+                        <p className="text-center text-gray-500 py-8">
+                            휴무 신청 내역이 없습니다.
+                        </p>
+                    </GlassCard>
+                ) : (
+                    requests.map((req) => {
+                        const isOwnRequest = !isManager && req.userId === user?.id;
+                        const canDelete = isOwnRequest && req.status !== 'APPROVED' && req.status !== 'CANCELLATION_PENDING';
+                        const canCancel = isOwnRequest && req.status === 'APPROVED';
+
+                        return (
+                            <GlassCard key={req.id} className="bg-white border-slate-200 p-4">
+                                <div className="space-y-3">
+                                    {/* Header with name and status */}
+                                    <div className="flex items-start justify-between gap-2">
+                                        <h3 className="font-semibold text-slate-900 text-base">{req.user.name}</h3>
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${req.status === 'APPROVED' ? 'bg-green-500/20 text-green-700' :
+                                            req.status === 'REJECTED' ? 'bg-red-500/20 text-red-700' :
+                                                req.status === 'CANCELLED' ? 'bg-gray-500/20 text-gray-700' :
+                                                    req.status === 'CANCELLATION_PENDING' ? 'bg-orange-500/20 text-orange-700' :
+                                                        'bg-yellow-500/20 text-yellow-700'
+                                            }`}>
+                                            {req.status === 'APPROVED' ? '승인됨' :
+                                                req.status === 'REJECTED' ? '거절됨' :
+                                                    req.status === 'CANCELLED' ? '취소됨' :
+                                                        req.status === 'CANCELLATION_PENDING' ? '취소 대기중' :
+                                                            '대기중'}
+                                        </span>
+                                    </div>
+
+                                    {/* Period */}
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-slate-500 font-medium">기간</p>
+                                        <p className="text-sm text-slate-700">
+                                            {new Date(req.startDate).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                            {' ~ '}
+                                            {new Date(req.endDate).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                                        </p>
+                                    </div>
+
+                                    {/* Type */}
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-slate-500 font-medium">사유</p>
+                                        <p className="text-sm text-slate-700">
+                                            {req.type === 'FAMILY_EVENT' ? '경조사' :
+                                                req.type === 'SICK' ? '병가' :
+                                                    req.type === 'OTHER' ? '기타' :
+                                                        req.type === 'VACATION' ? '연차' :
+                                                            req.type === 'PERSONAL' ? '개인사유' : req.type}
+                                        </p>
+                                    </div>
+
+                                    {/* Reason */}
+                                    {req.reason && (
+                                        <div className="space-y-1">
+                                            <p className="text-xs text-slate-500 font-medium">내용</p>
+                                            <p className="text-sm text-slate-700">{req.reason}</p>
+                                        </div>
+                                    )}
+
+                                    {/* Actions */}
+                                    <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
+                                        {canCancel && (
+                                            <button
+                                                onClick={() => handleCancelRequest(req.id)}
+                                                className="flex-1 px-3 py-2 rounded-lg bg-orange-500/20 text-orange-700 hover:bg-orange-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                            >
+                                                <RotateCcw size={16} />
+                                                휴무 취소
+                                            </button>
+                                        )}
+                                        {canDelete && (
+                                            <button
+                                                onClick={() => handleDelete(req.id)}
+                                                className="flex-1 px-3 py-2 rounded-lg bg-red-500/20 text-red-700 hover:bg-red-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                            >
+                                                <Trash2 size={16} />
+                                                삭제
+                                            </button>
+                                        )}
+                                        {isManager && (
+                                            <>
+                                                {req.status === 'PENDING' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(req.id, 'APPROVED')}
+                                                            className="flex-1 px-3 py-2 rounded-lg bg-green-500/20 text-green-700 hover:bg-green-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                                        >
+                                                            <Check size={16} />
+                                                            승인
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(req.id, 'REJECTED')}
+                                                            className="flex-1 px-3 py-2 rounded-lg bg-red-500/20 text-red-700 hover:bg-red-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                                        >
+                                                            <X size={16} />
+                                                            거절
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {req.status === 'CANCELLATION_PENDING' && (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(req.id, 'CANCELLED')}
+                                                            className="flex-1 px-3 py-2 rounded-lg bg-green-500/20 text-green-700 hover:bg-green-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                                        >
+                                                            <Check size={16} />
+                                                            취소 승인
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleStatusUpdate(req.id, 'APPROVED')}
+                                                            className="flex-1 px-3 py-2 rounded-lg bg-red-500/20 text-red-700 hover:bg-red-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                                        >
+                                                            <X size={16} />
+                                                            거절
+                                                        </button>
+                                                    </>
+                                                )}
+                                                {req.status === 'APPROVED' && (
+                                                    <button
+                                                        onClick={() => handleStatusUpdate(req.id, 'REJECTED')}
+                                                        className="flex-1 px-3 py-2 rounded-lg bg-red-500/20 text-red-700 hover:bg-red-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                                    >
+                                                        <X size={16} />
+                                                        반려
+                                                    </button>
+                                                )}
+                                                {req.status === 'REJECTED' && (
+                                                    <button
+                                                        onClick={() => handleStatusUpdate(req.id, 'APPROVED')}
+                                                        className="flex-1 px-3 py-2 rounded-lg bg-green-500/20 text-green-700 hover:bg-green-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2"
+                                                    >
+                                                        <Check size={16} />
+                                                        승인
+                                                    </button>
+                                                )}
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        );
+                    })
+                )}
+            </div>
         </div>
     );
 }

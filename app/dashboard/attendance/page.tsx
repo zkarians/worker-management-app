@@ -491,27 +491,28 @@ export default function AttendancePage() {
                 </GlassCard>
             )}
 
-            <GlassCard className="overflow-hidden p-0 bg-white border-slate-200">
+            {/* Desktop Table View */}
+            <GlassCard className="hidden md:block overflow-hidden p-0 bg-white border-slate-200">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm text-slate-500">
                         <thead className="bg-slate-50 text-slate-700 uppercase font-medium border-b border-slate-200">
                             <tr>
-                                <th className="px-3 md:px-6 py-4">이름</th>
-                                <th className="px-3 md:px-6 py-4">날짜</th>
-                                <th className="px-3 md:px-6 py-4">상태</th>
-                                <th className="px-3 md:px-6 py-4">근무 시간</th>
-                                <th className="px-3 md:px-6 py-4">잔업 시간</th>
-                                {isManager && <th className="px-3 md:px-6 py-4">작업</th>}
+                                <th className="px-6 py-4">이름</th>
+                                <th className="px-6 py-4">날짜</th>
+                                <th className="px-6 py-4">상태</th>
+                                <th className="px-6 py-4">근무 시간</th>
+                                <th className="px-6 py-4">잔업 시간</th>
+                                {isManager && <th className="px-6 py-4">작업</th>}
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
                             {attendanceData.map((record, index) => (
                                 <tr key={`${record.userId}-${record.date}-${index}`} className="hover:bg-slate-50 transition-colors">
-                                    <td className="px-3 md:px-6 py-4 font-medium text-slate-900">{record.user.name}</td>
-                                    <td className="px-3 md:px-6 py-4 text-slate-700">
+                                    <td className="px-6 py-4 font-medium text-slate-900">{record.user.name}</td>
+                                    <td className="px-6 py-4 text-slate-700">
                                         {new Date(record.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
                                     </td>
-                                    <td className="px-3 md:px-6 py-4">
+                                    <td className="px-6 py-4">
                                         {isManager ? (
                                             <select
                                                 value={record.status}
@@ -569,7 +570,7 @@ export default function AttendancePage() {
                                         )}
                                     </td>
                                     {isManager && (
-                                        <td className="px-3 md:px-6 py-4">
+                                        <td className="px-6 py-4">
                                             <button
                                                 onClick={() => handleSave(record.userId, record.date)}
                                                 className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30"
@@ -584,6 +585,121 @@ export default function AttendancePage() {
                     </table>
                 </div>
             </GlassCard>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
+                {attendanceData.length === 0 ? (
+                    <GlassCard className="bg-white border-slate-200">
+                        <p className="text-center text-gray-500 py-8">
+                            근태 데이터가 없습니다.
+                        </p>
+                    </GlassCard>
+                ) : (
+                    attendanceData.map((record, index) => (
+                        <GlassCard key={`${record.userId}-${record.date}-${index}`} className="bg-white border-slate-200 p-4">
+                            <div className="space-y-3">
+                                {/* Header with name and date */}
+                                <div className="flex items-start justify-between gap-2">
+                                    <div>
+                                        <h3 className="font-semibold text-slate-900 text-base">{record.user.name}</h3>
+                                        <p className="text-sm text-slate-500 mt-0.5">
+                                            {new Date(record.date).toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                        </p>
+                                    </div>
+                                    {!isManager && (
+                                        <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${record.status === 'PRESENT' ? 'bg-green-500/20 text-green-700' :
+                                                record.status === 'ABSENT' ? 'bg-red-500/20 text-red-700' :
+                                                    record.status === 'OFF_DAY' ? 'bg-slate-500/20 text-slate-700' :
+                                                        record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-700' :
+                                                            record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-700' :
+                                                                'bg-slate-500/20 text-slate-600'
+                                            }`}>
+                                            {record.status === 'PRESENT' ? '출근' :
+                                                record.status === 'ABSENT' ? '결근' :
+                                                    record.status === 'OFF_DAY' ? '휴무' :
+                                                        record.status === 'SCHEDULED' ? '예정' :
+                                                            record.status === 'LATE' ? '지각' :
+                                                                record.status === 'EARLY_LEAVE' ? '조퇴' :
+                                                                    record.status || '-'}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Status, Work Hours, Overtime */}
+                                <div className="grid grid-cols-3 gap-3 pt-2 border-t border-slate-200">
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-slate-500 font-medium">상태</p>
+                                        {isManager ? (
+                                            <select
+                                                value={record.status}
+                                                onChange={(e) => handleChange(record.userId, record.date, 'status', e.target.value)}
+                                                className="glass-input py-1.5 px-2 bg-white border-slate-200 text-xs w-full"
+                                            >
+                                                <option value="">-</option>
+                                                <option value="PRESENT">출근</option>
+                                                <option value="ABSENT">결근</option>
+                                                <option value="OFF_DAY">휴무</option>
+                                                <option value="LATE">지각</option>
+                                                <option value="EARLY_LEAVE">조퇴</option>
+                                                <option value="SCHEDULED">예정</option>
+                                            </select>
+                                        ) : (
+                                            <p className="text-sm text-slate-700 font-medium">
+                                                {record.status === 'PRESENT' ? '출근' :
+                                                    record.status === 'ABSENT' ? '결근' :
+                                                        record.status === 'OFF_DAY' ? '휴무' :
+                                                            record.status === 'SCHEDULED' ? '예정' :
+                                                                record.status === 'LATE' ? '지각' :
+                                                                    record.status === 'EARLY_LEAVE' ? '조퇴' :
+                                                                        record.status || '-'}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-slate-500 font-medium">근무</p>
+                                        {isManager ? (
+                                            <input
+                                                type="number"
+                                                value={record.workHours}
+                                                onChange={(e) => handleChange(record.userId, record.date, 'workHours', e.target.value)}
+                                                className="glass-input py-1.5 px-2 bg-white border-slate-200 text-xs w-full"
+                                            />
+                                        ) : (
+                                            <p className="text-sm text-slate-700 font-medium">{record.workHours}h</p>
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <p className="text-xs text-slate-500 font-medium">잔업</p>
+                                        {isManager ? (
+                                            <input
+                                                type="number"
+                                                value={record.overtimeHours}
+                                                onChange={(e) => handleChange(record.userId, record.date, 'overtimeHours', e.target.value)}
+                                                className="glass-input py-1.5 px-2 bg-white border-slate-200 text-xs w-full"
+                                            />
+                                        ) : (
+                                            <p className="text-sm text-slate-700 font-medium">{record.overtimeHours}h</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Save Button for Manager */}
+                                {isManager && (
+                                    <button
+                                        onClick={() => handleSave(record.userId, record.date)}
+                                        className="w-full px-3 py-2 rounded-lg bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 transition-colors text-sm font-medium flex items-center justify-center gap-2 mt-2"
+                                    >
+                                        <Save size={16} />
+                                        저장
+                                    </button>
+                                )}
+                            </div>
+                        </GlassCard>
+                    ))
+                )}
+            </div>
         </div>
     );
 }
