@@ -61,7 +61,7 @@ export function SchedulerList({ year, month, logs, leaves, onDateClick }: Schedu
 
     return (
         <GlassCard className="w-full bg-white border-slate-200 shadow-sm h-full overflow-hidden flex flex-col">
-            <div className="overflow-y-auto flex-1 p-3 space-y-2 custom-scrollbar">
+            <div className="overflow-y-auto flex-1 p-2 sm:p-3 space-y-2 sm:space-y-3 custom-scrollbar">
                 {days.map(day => {
                     const date = new Date(year, month - 1, day);
                     const dayOfWeek = date.getDay();
@@ -89,7 +89,7 @@ export function SchedulerList({ year, month, logs, leaves, onDateClick }: Schedu
                         <div
                             key={day}
                             onClick={() => onDateClick(dateStr)}
-                            className="group relative p-3 rounded-xl bg-gradient-to-br from-white to-slate-50 border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
+                            className="group relative p-2.5 sm:p-3 rounded-xl bg-gradient-to-br from-white to-slate-50 border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
                         >
                             {/* Hover effect overlay */}
                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/0 to-indigo-100/0 group-hover:from-indigo-50/50 group-hover:to-indigo-100/20 transition-all duration-200 pointer-events-none"></div>
@@ -97,15 +97,15 @@ export function SchedulerList({ year, month, logs, leaves, onDateClick }: Schedu
                             <div className="relative z-10">
                                 {/* Date header */}
                                 <div className="flex items-center justify-between mb-2">
-                                    <div className={`flex items-center gap-1.5 px-2.5 py-1 ${bgColorClass} rounded-full`}>
-                                        <Calendar size={11} className={dateColorClass} />
-                                        <span className={`text-xs font-bold ${dateColorClass}`}>
+                                    <div className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 ${bgColorClass} rounded-full`}>
+                                        <Calendar size={11} className={`${dateColorClass} flex-shrink-0`} />
+                                        <span className={`text-[10px] sm:text-xs font-bold ${dateColorClass} whitespace-nowrap`}>
                                             {String(month).padStart(2, '0')}-{String(day).padStart(2, '0')} {getDayLabel(date)}
                                         </span>
                                     </div>
 
                                     {!hasContent && (
-                                        <span className="text-[9px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <span className="text-[9px] sm:text-[10px] text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity">
                                             + 추가
                                         </span>
                                     )}
@@ -116,21 +116,21 @@ export function SchedulerList({ year, month, logs, leaves, onDateClick }: Schedu
                                     <div className="space-y-1.5">
                                         {/* Leaves */}
                                         {dayLeaves.map(leave => (
-                                            <div key={leave.id} className="text-xs px-2 py-1 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-medium">
+                                            <div key={leave.id} className="text-[10px] sm:text-xs px-2 py-1 bg-blue-50 border border-blue-200 rounded-lg text-blue-800 font-medium break-words">
                                                 {leave.user.name} 휴무
                                             </div>
                                         ))}
 
                                         {/* Logs */}
                                         {dayLogs.map(log => (
-                                            <div key={log.id} className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-medium px-2 py-1 bg-slate-50 rounded-lg">
+                                            <div key={log.id} className="text-[10px] sm:text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-medium px-2 py-1 bg-slate-50 rounded-lg break-words">
                                                 {log.content}
                                             </div>
                                         ))}
                                     </div>
                                 ) : (
                                     <div className="flex items-center justify-center py-2">
-                                        <AlertCircle size={16} className="text-slate-300 opacity-0 group-hover:opacity-50 transition-opacity" />
+                                        <AlertCircle size={14} className="text-slate-300 opacity-0 group-hover:opacity-50 transition-opacity sm:w-4 sm:h-4" />
                                     </div>
                                 )}
                             </div>
