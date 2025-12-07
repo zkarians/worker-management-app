@@ -232,7 +232,7 @@ export function SpecialNotesCalendar({
                                     </div>
 
                                     {/* Events list */}
-                                    <div className="space-y-0.5 overflow-y-auto max-h-[45px] sm:max-h-[60px] scrollbar-hide flex-1">
+                                    <div className="space-y-0.5 overflow-y-auto h-full scrollbar-hide flex-1">
                                         {/* Approved leaves - Hidden to prevent duplication with DailyLog */}
                                         {/* {approvedLeaves.map(leave => (
                                             <div
@@ -310,10 +310,10 @@ export function SpecialNotesCalendar({
                                                         return (
                                                             <div
                                                                 key={`group-${group.status}-${group.ids[0]}`}
-                                                                className={`group/note relative text-[7px] sm:text-[8px] p-0.5 px-1 rounded border font-semibold truncate flex items-center gap-0.5 sm:gap-1 ${statusColor}`}
+                                                                className={`group/note relative text-[7px] sm:text-[8px] p-0.5 px-1 rounded border font-semibold flex items-start gap-0.5 sm:gap-1 ${statusColor}`}
                                                                 title={content}
                                                             >
-                                                                <span className="flex-1 truncate">{content}</span>
+                                                                <span className="flex-1 whitespace-normal break-words leading-tight">{content}</span>
                                                             </div>
                                                         );
                                                     })}
@@ -341,10 +341,10 @@ export function SpecialNotesCalendar({
                                                         return (
                                                             <div
                                                                 key={log.id}
-                                                                className={`group/note relative text-[7px] sm:text-[8px] p-0.5 px-1 rounded border font-semibold truncate flex items-center gap-0.5 sm:gap-1 ${logColor}`}
+                                                                className={`group/note relative text-[7px] sm:text-[8px] p-0.5 px-1 rounded border font-semibold flex items-start gap-0.5 sm:gap-1 ${logColor}`}
                                                                 title={log.content}
                                                             >
-                                                                <span className="flex-1 truncate">{log.content}</span>
+                                                                <span className="flex-1 whitespace-normal break-words leading-tight">{log.content}</span>
                                                                 {isManager && onDeleteNote && (
                                                                     <button
                                                                         onClick={(e) => {
