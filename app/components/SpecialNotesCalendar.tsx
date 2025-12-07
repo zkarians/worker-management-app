@@ -282,6 +282,14 @@ export function SpecialNotesCalendar({
                                                 }
                                             });
 
+                                            // Check if '웅동 휴무' exists in otherLogs
+                                            const hasFullHoliday = otherLogs.some(log => log.content.includes('웅동 휴무'));
+
+                                            // If '웅동 휴무' exists, remove '휴무' group
+                                            if (hasFullHoliday && groupedLogs['휴무']) {
+                                                delete groupedLogs['휴무'];
+                                            }
+
                                             return (
                                                 <>
                                                     {/* Render Grouped Logs - Single badge with comma-separated names */}
