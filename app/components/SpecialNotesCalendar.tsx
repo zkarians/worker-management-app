@@ -294,7 +294,8 @@ export function SpecialNotesCalendar({
                                                 <>
                                                     {/* Render Grouped Logs - Single badge with comma-separated names */}
                                                     {Object.values(groupedLogs).map((group) => {
-                                                        const content = `[${group.status}] ${group.names.join(', ')}`;
+                                                        const uniqueNames = Array.from(new Set(group.names.map(n => n.trim()))).filter(Boolean).sort();
+                                                        const content = `[${group.status}] ${uniqueNames.join(', ')}`;
 
                                                         // 상태별 색상 설정
                                                         let statusColor = '';
