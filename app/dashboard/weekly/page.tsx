@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { DashboardDayView } from '@/app/components/DashboardDayView';
 import { useUser } from '@/app/components/UserContext';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, Camera, Loader2 } from 'lucide-react';
@@ -74,6 +74,33 @@ export default function WeeklyDashboardPage() {
 
     const dates = getDates();
 
+    // Enable horizontal scrolling with mouse wheel
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const handleWheel = (e: WheelEvent) => {
+            if (e.deltaY !== 0) {
+                // If scrolling vertically (standard mouse wheel), scroll horizontally instead
+                e.preventDefault();
+                container.parentElement!.scrollLeft += e.deltaY;
+            }
+        };
+
+        // Add event listener to the container's parent (the overflow wrapper)
+        // We need to target the parent div that has overflow-x-auto
+        const scrollWrapper = container.parentElement;
+        if (scrollWrapper) {
+            scrollWrapper.addEventListener('wheel', handleWheel, { passive: false });
+        }
+
+        return () => {
+            if (scrollWrapper) {
+                scrollWrapper.removeEventListener('wheel', handleWheel);
+            }
+        };
+    }, []);
+
     return (
         <div className="min-h-screen bg-slate-50 p-4">
             {/* Header */}
@@ -126,7 +153,7 @@ export default function WeeklyDashboardPage() {
             </div>
 
             {/* Horizontal Scroll Container */}
-            <div className="overflow-x-auto pb-6">
+            <div className="overflow-x-auto pb-6 scrollbar-thin scrollbar-thumb-indigo-200 scrollbar-track-transparent">
                 <div ref={scrollContainerRef} className="flex gap-4 min-w-max p-1">
                     {dates.map((date) => (
                         <div key={date} className="w-[400px] flex-shrink-0">
