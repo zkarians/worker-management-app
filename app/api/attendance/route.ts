@@ -111,66 +111,24 @@ export async function POST(request: Request) {
         });
 
         // Auto-generate Special Note for specific statuses
-        const worker = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { name: true }
-        });
+        // First, remove user from ANY status logs for this date to ensure consistency
+        const statusTypes = ['결근', '지각', '조퇴', '휴무'];
+        const { removeStatusLog, addStatusLog } = await import('@/app/lib/log-utils');
 
-        if (worker) {
-            if (finalStatus && ['ABSENT', 'LATE', 'EARLY_LEAVE', 'OFF_DAY'].includes(finalStatus)) {
-                let statusText = '';
-                switch (finalStatus) {
-                    case 'ABSENT': statusText = '결근'; break;
-                    case 'LATE': statusText = '지각'; break;
-                    case 'EARLY_LEAVE': statusText = '조퇴'; break;
-                    case 'OFF_DAY': statusText = '휴무'; break;
-                }
+        for (const type of statusTypes) {
+            await removeStatusLog(userId, date, type);
+        }
 
-                // Check if log already exists to avoid duplicates
-                const startOfDay = new Date(dateStr);
-                startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(dateStr);
-                endOfDay.setHours(23, 59, 59, 999);
-
-                const existingLog = await prisma.dailyLog.findFirst({
-                    where: {
-                        date: { gte: startOfDay, lte: endOfDay },
-                        content: `[${statusText}] ${worker.name}`
-                    }
-                });
-
-                if (!existingLog) {
-                    await prisma.dailyLog.create({
-                        data: {
-                            date: new Date(dateStr), // Use attendance date
-                            content: `[${statusText}] ${worker.name}`,
-                            authorId: session.userId as string,
-                        }
-                    });
-                }
-            } else {
-                // If status is changed back to normal (or others), remove the auto-generated log
-                const startOfDay = new Date(dateStr);
-                startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(dateStr);
-                endOfDay.setHours(23, 59, 59, 999);
-
-                const logsToDelete = await prisma.dailyLog.findMany({
-                    where: {
-                        date: { gte: startOfDay, lte: endOfDay },
-                        OR: [
-                            { content: `[결근] ${worker.name}` },
-                            { content: `[지각] ${worker.name}` },
-                            { content: `[조퇴] ${worker.name}` },
-                            { content: `[휴무] ${worker.name}` }
-                        ]
-                    }
-                });
-
-                for (const log of logsToDelete) {
-                    await prisma.dailyLog.delete({ where: { id: log.id } });
-                }
+        if (finalStatus && ['ABSENT', 'LATE', 'EARLY_LEAVE', 'OFF_DAY'].includes(finalStatus)) {
+            let statusText = '';
+            switch (finalStatus) {
+                case 'ABSENT': statusText = '결근'; break;
+                case 'LATE': statusText = '지각'; break;
+                case 'EARLY_LEAVE': statusText = '조퇴'; break;
+                case 'OFF_DAY': statusText = '휴무'; break;
             }
+
+            await addStatusLog(userId, date, statusText, session.userId as string);
         }
 
         // If status is ABSENT or OFF_DAY, remove from Roster

@@ -78,8 +78,7 @@ export async function POST(request: Request) {
 
         // If Approved (Auto-approved), update Attendance and remove from Roster
         if (status === 'APPROVED') {
-            const user = await prisma.user.findUnique({ where: { id: session.userId as string } });
-            const userName = user?.name || 'Unknown';
+            // User fetch removed as it's handled in addStatusLog
 
             const current = new Date(start);
             while (current <= end) {
@@ -87,7 +86,6 @@ export async function POST(request: Request) {
                 const day = current.getDay();
                 const isWeekend = day === 0 || day === 6;
                 const statusType = isWeekend ? 'OFF_DAY' : 'ABSENT';
-                const logContent = isWeekend ? `[휴무] ${userName}` : `[결근] ${userName}`;
 
                 // Update Attendance
                 await prisma.attendance.upsert({
@@ -108,27 +106,9 @@ export async function POST(request: Request) {
                 });
 
                 // Create DailyLog
-                const startOfDay = new Date(current);
-                startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(current);
-                endOfDay.setHours(23, 59, 59, 999);
-
-                const existingLog = await prisma.dailyLog.findFirst({
-                    where: {
-                        date: { gte: startOfDay, lte: endOfDay },
-                        content: logContent
-                    }
-                });
-
-                if (!existingLog) {
-                    await prisma.dailyLog.create({
-                        data: {
-                            date: current,
-                            content: logContent,
-                            authorId: session.userId as string,
-                        }
-                    });
-                }
+                const { addStatusLog } = await import('@/app/lib/log-utils');
+                const statusText = isWeekend ? '휴무' : '결근';
+                await addStatusLog(session.userId as string, current, statusText, session.userId as string);
 
                 // Remove from Roster
                 const roster = await prisma.roster.findUnique({ where: { date: current } });
@@ -172,9 +152,6 @@ export async function PUT(request: Request) {
 
         // If Approved by Manager, update Attendance and remove from Roster
         if (status === 'APPROVED') {
-            const user = await prisma.user.findUnique({ where: { id: leave.userId } });
-            const userName = user?.name || 'Unknown';
-
             const start = new Date(leave.startDate);
             const end = new Date(leave.endDate);
             const current = new Date(start);
@@ -184,7 +161,6 @@ export async function PUT(request: Request) {
                 const day = current.getDay();
                 const isWeekend = day === 0 || day === 6;
                 const statusType = isWeekend ? 'OFF_DAY' : 'ABSENT';
-                const logContent = isWeekend ? `[휴무] ${userName}` : `[결근] ${userName}`;
 
                 // Update Attendance
                 await prisma.attendance.upsert({
@@ -205,27 +181,9 @@ export async function PUT(request: Request) {
                 });
 
                 // Create DailyLog
-                const startOfDay = new Date(current);
-                startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(current);
-                endOfDay.setHours(23, 59, 59, 999);
-
-                const existingLog = await prisma.dailyLog.findFirst({
-                    where: {
-                        date: { gte: startOfDay, lte: endOfDay },
-                        content: logContent
-                    }
-                });
-
-                if (!existingLog) {
-                    await prisma.dailyLog.create({
-                        data: {
-                            date: current,
-                            content: logContent,
-                            authorId: session.userId as string,
-                        }
-                    });
-                }
+                const { addStatusLog } = await import('@/app/lib/log-utils');
+                const statusText = isWeekend ? '휴무' : '결근';
+                await addStatusLog(leave.userId, current, statusText, session.userId as string);
 
                 // Remove from Roster
                 const roster = await prisma.roster.findUnique({ where: { date: current } });
@@ -241,8 +199,6 @@ export async function PUT(request: Request) {
 
         // If Cancelled by Manager (from CANCELLATION_PENDING), restore attendance
         if (status === 'CANCELLED' && previousLeave?.status === 'CANCELLATION_PENDING') {
-            const user = await prisma.user.findUnique({ where: { id: leave.userId } });
-            const userName = user?.name || 'Unknown';
 
             const start = new Date(leave.startDate);
             const end = new Date(leave.endDate);
@@ -259,24 +215,9 @@ export async function PUT(request: Request) {
                 });
 
                 // Delete DailyLog (both types)
-                const startOfDay = new Date(current);
-                startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(current);
-                endOfDay.setHours(23, 59, 59, 999);
-
-                const logsToDelete = await prisma.dailyLog.findMany({
-                    where: {
-                        date: { gte: startOfDay, lte: endOfDay },
-                        OR: [
-                            { content: `[휴무] ${userName}` },
-                            { content: `[결근] ${userName}` }
-                        ]
-                    }
-                });
-
-                for (const log of logsToDelete) {
-                    await prisma.dailyLog.delete({ where: { id: log.id } });
-                }
+                const { removeStatusLog } = await import('@/app/lib/log-utils');
+                await removeStatusLog(leave.userId, current, '휴무');
+                await removeStatusLog(leave.userId, current, '결근');
 
                 current.setDate(current.getDate() + 1);
             }
@@ -285,8 +226,6 @@ export async function PUT(request: Request) {
         // If Rejected (and was previously approved), allow user to be added back to roster
         // Note: We don't automatically add them back, but remove the OFF_DAY attendance restriction
         if (status === 'REJECTED' && previousLeave?.status === 'APPROVED') {
-            const user = await prisma.user.findUnique({ where: { id: leave.userId } });
-            const userName = user?.name || 'Unknown';
 
             const start = new Date(leave.startDate);
             const end = new Date(leave.endDate);
@@ -303,24 +242,9 @@ export async function PUT(request: Request) {
                 });
 
                 // Delete DailyLog (both types)
-                const startOfDay = new Date(current);
-                startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(current);
-                endOfDay.setHours(23, 59, 59, 999);
-
-                const logsToDelete = await prisma.dailyLog.findMany({
-                    where: {
-                        date: { gte: startOfDay, lte: endOfDay },
-                        OR: [
-                            { content: `[휴무] ${userName}` },
-                            { content: `[결근] ${userName}` }
-                        ]
-                    }
-                });
-
-                for (const log of logsToDelete) {
-                    await prisma.dailyLog.delete({ where: { id: log.id } });
-                }
+                const { removeStatusLog } = await import('@/app/lib/log-utils');
+                await removeStatusLog(leave.userId, current, '휴무');
+                await removeStatusLog(leave.userId, current, '결근');
 
                 current.setDate(current.getDate() + 1);
             }
@@ -373,8 +297,6 @@ export async function DELETE(request: Request) {
 
         // If deleting an APPROVED leave request, clean up attendance and logs
         if (leave.status === 'APPROVED') {
-            const user = await prisma.user.findUnique({ where: { id: leave.userId } });
-            const userName = user?.name || 'Unknown';
 
             const start = new Date(leave.startDate);
             const end = new Date(leave.endDate);
@@ -391,24 +313,9 @@ export async function DELETE(request: Request) {
                 });
 
                 // Delete DailyLog (both types)
-                const startOfDay = new Date(current);
-                startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(current);
-                endOfDay.setHours(23, 59, 59, 999);
-
-                const logsToDelete = await prisma.dailyLog.findMany({
-                    where: {
-                        date: { gte: startOfDay, lte: endOfDay },
-                        OR: [
-                            { content: `[휴무] ${userName}` },
-                            { content: `[결근] ${userName}` }
-                        ]
-                    }
-                });
-
-                for (const log of logsToDelete) {
-                    await prisma.dailyLog.delete({ where: { id: log.id } });
-                }
+                const { removeStatusLog } = await import('@/app/lib/log-utils');
+                await removeStatusLog(leave.userId, current, '휴무');
+                await removeStatusLog(leave.userId, current, '결근');
 
                 current.setDate(current.getDate() + 1);
             }
