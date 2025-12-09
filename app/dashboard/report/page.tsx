@@ -205,20 +205,8 @@ export default function ReportPage() {
             document.body.style.cursor = originalCursor;
             document.body.classList.remove('screenshot-mode');
 
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            const dateStr = new Date(date).toLocaleDateString('ko-KR').replace(/\. /g, '-').replace('.', '');
-            link.download = `일일근무보고서_${dateStr}.png`;
-            link.href = url;
-
-            // 링크를 문서에 추가해야 다운로드가 작동하는 브라우저가 있음
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
             // 성공 알림
-            alert('스크린샷이 저장되고 클립보드에 복사되었습니다!');
+            alert('스크린샷이 클립보드에 복사되었습니다!');
         } catch (error: any) {
             console.error('Screenshot failed:', error);
             document.body.style.cursor = 'default';

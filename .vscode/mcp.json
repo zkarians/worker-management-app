@@ -1,0 +1,12 @@
+{
+    "servers": {
+        "cloudtype-postgres": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-postgres",
+                "postgresql://root:z456qwe12!%40@svc.sel3.cloudtype.app:30255/postgres"
+            ]
+        }
+    }
+}

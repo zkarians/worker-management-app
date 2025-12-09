@@ -81,7 +81,7 @@ export function ProductModal({ isOpen, onClose, onSave, categories, initialData 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-20 bg-black/50 backdrop-blur-sm animate-fade-in">
             <GlassCard className="w-full max-w-md p-6 space-y-4 bg-white shadow-xl border-slate-200 max-h-[90vh] overflow-y-auto">
                 <div className="flex justify-between items-center border-b border-slate-100 pb-4">
                     <h2 className="text-xl font-bold text-slate-900">
