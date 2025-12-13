@@ -278,6 +278,104 @@ export default function AttendanceReportPage() {
         );
     }
 
+    // Detail View State
+    const [detailDate, setDetailDate] = useState(new Date().toISOString().split('T')[0]);
+    const [detailData, setDetailData] = useState<AttendanceRecord[]>([]);
+    const [isDetailSearched, setIsDetailSearched] = useState(false);
+    const [detailLoading, setDetailLoading] = useState(false);
+
+    const fetchDetailData = async () => {
+        setDetailLoading(true);
+        try {
+            const [usersRes, attRes, rosterRes] = await Promise.all([
+                fetch('/api/users'),
+                fetch(`/api/attendance?startDate=${detailDate}&endDate=${detailDate}`),
+                fetch(`/api/roster?date=${detailDate}`)
+            ]);
+
+            const usersData = await usersRes.json();
+            const attData = await attRes.json();
+            const rosterData = await rosterRes.json();
+
+            const workerUsers = usersData.users ? usersData.users.filter((u: any) => u.role === 'WORKER' && u.isApproved) : [];
+            const attendanceRecords = attData.attendance || [];
+
+            // Process attendance data
+            const processedData: AttendanceRecord[] = attendanceRecords.map((record: any) => ({
+                userId: record.userId,
+                date: record.date.split('T')[0],
+                status: record.status,
+                overtimeHours: record.overtimeHours || 0,
+                workHours: record.workHours || 0,
+                user: record.user
+            }));
+
+            // Merge with roster data
+            if (rosterData.roster?.assignments) {
+                const now = new Date();
+                const currentHour = now.getHours();
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const [year, month, day] = detailDate.split('-').map(Number);
+                const targetDate = new Date(year, month - 1, day);
+                targetDate.setHours(0, 0, 0, 0);
+
+                rosterData.roster.assignments.forEach((assignment: any) => {
+                    const hasRecord = processedData.some(r => r.userId === assignment.userId);
+                    if (!hasRecord) {
+                        // Logic to determine status based on roster
+                        if (targetDate < today) {
+                            processedData.push({
+                                userId: assignment.userId,
+                                date: detailDate,
+                                status: 'PRESENT',
+                                workHours: 8,
+                                overtimeHours: 0,
+                                user: assignment.user
+                            });
+                        } else if (targetDate.getTime() === today.getTime()) {
+                            if (currentHour >= 19) {
+                                processedData.push({
+                                    userId: assignment.userId,
+                                    date: detailDate,
+                                    status: 'PRESENT',
+                                    workHours: 8,
+                                    overtimeHours: 0,
+                                    user: assignment.user
+                                });
+                            } else {
+                                processedData.push({
+                                    userId: assignment.userId,
+                                    date: detailDate,
+                                    status: 'SCHEDULED',
+                                    workHours: 0,
+                                    overtimeHours: 0,
+                                    user: assignment.user
+                                });
+                            }
+                        } else {
+                            processedData.push({
+                                userId: assignment.userId,
+                                date: detailDate,
+                                status: 'SCHEDULED',
+                                workHours: 0,
+                                overtimeHours: 0,
+                                user: assignment.user
+                            });
+                        }
+                    }
+                });
+            }
+
+            setDetailData(processedData);
+            setIsDetailSearched(true);
+        } catch (error) {
+            console.error('Failed to fetch detail data', error);
+        } finally {
+            setDetailLoading(false);
+        }
+    };
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -487,10 +585,25 @@ export default function AttendanceReportPage() {
 
             {/* Detailed Attendance Records */}
             <GlassCard className="overflow-hidden p-0 bg-white border-slate-200 shadow-md">
-                <div className="p-4 border-b-2 border-slate-200 bg-gradient-to-r from-slate-50 to-white">
+                <div className="p-4 border-b-2 border-slate-200 bg-gradient-to-r from-slate-50 to-white flex items-center justify-between">
                     <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
                         <Clock size={20} className="text-indigo-600" /> 상세 근태 내역
                     </h2>
+                    <div className="flex items-center gap-2">
+                        <input
+                            type="date"
+                            value={detailDate}
+                            onChange={(e) => setDetailDate(e.target.value)}
+                            className="glass-input bg-white border-slate-200 text-slate-900 px-2 py-1 text-sm"
+                        />
+                        <button
+                            onClick={fetchDetailData}
+                            className="p-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md transition-colors"
+                            title="조회"
+                        >
+                            <Search size={16} />
+                        </button>
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
@@ -504,20 +617,26 @@ export default function AttendanceReportPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y-2 divide-slate-100">
-                            {loading ? (
+                            {!isDetailSearched ? (
+                                <tr>
+                                    <td colSpan={5} className="px-4 py-12 text-center text-slate-400 text-sm">
+                                        날짜를 선택하고 조회 버튼을 눌러주세요.
+                                    </td>
+                                </tr>
+                            ) : detailLoading ? (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-6 text-center text-slate-500 text-sm">
                                         조회 중...
                                     </td>
                                 </tr>
-                            ) : attendanceData.length === 0 ? (
+                            ) : detailData.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="px-4 py-6 text-center text-slate-500 text-sm">
                                         데이터가 없습니다.
                                     </td>
                                 </tr>
                             ) : (
-                                attendanceData.map((record, index) => {
+                                detailData.map((record, index) => {
                                     const statusDisplay = getStatusDisplay(record.status);
                                     return (
                                         <tr key={`${record.userId}-${record.date}-${index}`} className="hover:bg-slate-50/80 transition-all duration-200">
