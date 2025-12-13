@@ -396,8 +396,22 @@ export default function AttendancePage() {
     const handleSaveAll = async () => {
         if (!confirm('모든 변경사항을 저장하시겠습니까?')) return;
         try {
-            await Promise.all(attendanceData.map(record => saveRecord(record)));
-            alert('모든 데이터가 저장되었습니다.');
+            // Use batch API for better performance and consistency
+            const response = await fetch('/api/attendance/batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ records: attendanceData }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Batch save failed');
+            }
+
+            const result = await response.json();
+            alert(`총 ${result.count}건의 데이터가 저장되었습니다.`);
+
+            // Refresh data to ensure consistency
+            fetchData();
         } catch (error) {
             console.error('Failed to save all', error);
             alert('저장 중 오류가 발생했습니다.');
