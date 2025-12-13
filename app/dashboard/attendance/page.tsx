@@ -421,6 +421,16 @@ export default function AttendancePage() {
 
     const isManager = user?.role === 'MANAGER';
 
+    // Search Filters
+    const [searchName, setSearchName] = useState('');
+    const [searchStatus, setSearchStatus] = useState('');
+
+    const filteredData = attendanceData.filter(record => {
+        const matchesName = record.user.name.toLowerCase().includes(searchName.toLowerCase());
+        const matchesStatus = searchStatus === '' || record.status === searchStatus;
+        return matchesName && matchesStatus;
+    });
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -429,16 +439,28 @@ export default function AttendancePage() {
                 </h1>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full sm:w-auto">
                     {isManager && (
-                        <select
-                            value={selectedUserId}
-                            onChange={(e) => setSelectedUserId(e.target.value)}
-                            className="bg-white border border-slate-200 rounded-lg text-slate-900 text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full sm:w-auto"
-                        >
-                            <option value="">전체</option>
-                            {workers.map(worker => (
-                                <option key={worker.id} value={worker.id}>{worker.name}</option>
-                            ))}
-                        </select>
+                        <>
+                            <input
+                                type="text"
+                                placeholder="이름 검색"
+                                value={searchName}
+                                onChange={(e) => setSearchName(e.target.value)}
+                                className="bg-white border border-slate-200 rounded-lg text-slate-900 text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full sm:w-auto"
+                            />
+                            <select
+                                value={searchStatus}
+                                onChange={(e) => setSearchStatus(e.target.value)}
+                                className="bg-white border border-slate-200 rounded-lg text-slate-900 text-sm px-3 py-2 focus:outline-none focus:ring-1 focus:ring-indigo-500 w-full sm:w-auto"
+                            >
+                                <option value="">전체 상태</option>
+                                <option value="PRESENT">출근</option>
+                                <option value="ABSENT">결근</option>
+                                <option value="OFF_DAY">휴무</option>
+                                <option value="LATE">지각</option>
+                                <option value="EARLY_LEAVE">조퇴</option>
+                                <option value="SCHEDULED">예정</option>
+                            </select>
+                        </>
                     )}
                     <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-slate-200 shadow-sm w-full sm:w-auto">
                         <input
@@ -545,7 +567,7 @@ export default function AttendancePage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200">
-                            {attendanceData.map((record, index) => (
+                            {filteredData.map((record, index) => (
                                 <tr key={`${record.userId}-${record.date}-${index}`} className="hover:bg-slate-50 transition-colors">
                                     <td className="px-6 py-4 font-medium text-slate-900">{record.user.name}</td>
                                     <td className="px-6 py-4 text-slate-700">
@@ -627,14 +649,14 @@ export default function AttendancePage() {
 
             {/* Mobile Card View */}
             <div className="md:hidden space-y-3">
-                {attendanceData.length === 0 ? (
+                {filteredData.length === 0 ? (
                     <GlassCard className="bg-white border-slate-200">
                         <p className="text-center text-gray-500 py-8">
                             근태 데이터가 없습니다.
                         </p>
                     </GlassCard>
                 ) : (
-                    attendanceData.map((record, index) => (
+                    filteredData.map((record, index) => (
                         <GlassCard key={`${record.userId}-${record.date}-${index}`} className="bg-white border-slate-200 p-4">
                             <div className="space-y-3">
                                 {/* Header with name and date */}
