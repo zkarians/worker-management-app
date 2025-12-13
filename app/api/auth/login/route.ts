@@ -18,32 +18,32 @@ export async function POST(request: Request) {
         // Test database connection first with a simple query and timeout
         try {
             if (!prisma) throw new Error('Prisma client not initialized');
-            
+
             const queryPromise = prisma.$queryRaw`SELECT 1`;
-            const timeoutPromise = new Promise((_, reject) => 
+            const timeoutPromise = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Connection timeout after 10 seconds')), 10000)
             );
-            
+
             await Promise.race([queryPromise, timeoutPromise]);
         } catch (dbError: any) {
             console.error('Database connection error:', dbError);
             console.error('Error code:', dbError.code);
             console.error('Error message:', dbError.message);
-            
+
             if (dbError.code === 'P1001') {
-                return jsonResponse({ 
-                    error: '데이터베이스 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.' 
+                return jsonResponse({
+                    error: '데이터베이스 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인해주세요.'
                 }, 503);
             }
-            
+
             if (dbError.message?.includes('timeout')) {
-                return jsonResponse({ 
-                    error: '데이터베이스 연결 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.' 
+                return jsonResponse({
+                    error: '데이터베이스 연결 시간이 초과되었습니다. 잠시 후 다시 시도해주세요.'
                 }, 503);
             }
-            
-            return jsonResponse({ 
-                error: '데이터베이스 연결 오류가 발생했습니다. 관리자에게 문의하세요.' 
+
+            return jsonResponse({
+                error: '데이터베이스 연결 오류가 발생했습니다. 관리자에게 문의하세요.'
             }, 503);
         }
 
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
         }
 
         try {
-            await login({ userId: user.id, role: user.role, name: user.name });
+            await login({ userId: user.id, role: user.role, name: user.name }, body.rememberMe);
         } catch (loginError) {
             console.error('Login function error:', loginError);
             return jsonResponse({

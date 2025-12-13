@@ -43,7 +43,7 @@ export default function LoginPage() {
             const res = await fetch('/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, password: pass }),
+                body: JSON.stringify({ username: user, password: pass, rememberMe: isAutoLogin || rememberMe }),
             });
 
             const contentType = res.headers.get('content-type');

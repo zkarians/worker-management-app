@@ -17,11 +17,11 @@ const getSecretKey = () => {
 
 const getKey = () => new TextEncoder().encode(getSecretKey());
 
-export async function signToken(payload: any) {
+export async function signToken(payload: any, expiresIn: string = '24h') {
     return await new SignJWT(payload)
         .setProtectedHeader({ alg: 'HS256' })
         .setIssuedAt()
-        .setExpirationTime('24h')
+        .setExpirationTime(expiresIn)
         .sign(getKey());
 }
 
@@ -41,14 +41,18 @@ export async function getSession() {
     return await verifyToken(token);
 }
 
-export async function login(payload: any) {
-    const token = await signToken(payload);
+export async function login(payload: any, rememberMe: boolean = false) {
+    // If rememberMe is true, set expiration to 30 days, otherwise 24 hours
+    const expiresIn = rememberMe ? '30d' : '24h';
+    const maxAge = rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 24; // 30 days or 1 day
+
+    const token = await signToken(payload, expiresIn);
     const cookieStore = await cookies();
     cookieStore.set('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict', // CSRF protection
-        maxAge: 60 * 60 * 24, // 1 day
+        maxAge: maxAge,
         path: '/',
     });
 }
