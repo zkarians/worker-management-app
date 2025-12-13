@@ -41,6 +41,29 @@ export async function POST(request: Request) {
     }
 }
 
+export async function PUT(request: Request) {
+    const session = await getSession();
+    if (!session || session.role !== 'MANAGER') {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    try {
+        const { id, name } = await request.json();
+        if (!id || !name) {
+            return NextResponse.json({ error: 'ID and Name are required' }, { status: 400 });
+        }
+
+        const team = await prisma.team.update({
+            where: { id },
+            data: { name },
+        });
+
+        return NextResponse.json({ team });
+    } catch (error) {
+        return NextResponse.json({ error: 'Failed to update team' }, { status: 500 });
+    }
+}
+
 export async function DELETE(request: Request) {
     const session = await getSession();
     if (!session || session.role !== 'MANAGER') {

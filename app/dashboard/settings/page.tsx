@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GlassCard } from '@/app/components/GlassCard';
 import { useUser } from '@/app/components/UserContext';
-import { Settings, Lock, Building, Trash2, Plus, Users as UsersIcon, Monitor, User } from 'lucide-react';
+import { Settings, Lock, Building, Trash2, Plus, Users as UsersIcon, Monitor, User, Edit2, Check, X } from 'lucide-react';
 import { useSettings } from '@/app/components/SettingsContext';
 
 interface UserProfile {
@@ -339,17 +339,7 @@ export default function SettingsPage() {
                             </div>
 
                             <div className="space-y-2 max-h-60 overflow-y-auto">
-                                {companies.map(company => (
-                                    <div key={company.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                                        <span className="text-gray-200">{company.name}</span>
-                                        <button
-                                            onClick={() => handleDeleteCompany(company.id)}
-                                            className="text-red-400 hover:text-red-300"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                ))}
+                                <CompanyList companies={companies} onDelete={handleDeleteCompany} onUpdate={fetchCompanies} />
                             </div>
                         </GlassCard>
 
@@ -422,18 +412,156 @@ function TeamManagement() {
             </div>
 
             <div className="space-y-2 max-h-60 overflow-y-auto">
-                {teams.map(team => (
-                    <div key={team.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                        <span className="text-gray-200">{team.name}</span>
-                        <button
-                            onClick={() => handleDeleteTeam(team.id)}
-                            className="text-red-400 hover:text-red-300"
-                        >
-                            <Trash2 size={16} />
-                        </button>
-                    </div>
-                ))}
+                <TeamList teams={teams} onDelete={handleDeleteTeam} onUpdate={fetchTeams} />
             </div>
         </GlassCard>
+    );
+}
+
+function CompanyList({ companies, onDelete, onUpdate }: { companies: { id: string; name: string }[], onDelete: (id: string) => void, onUpdate: () => void }) {
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editName, setEditName] = useState('');
+
+    const startEdit = (company: { id: string; name: string }) => {
+        setEditingId(company.id);
+        setEditName(company.name);
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+        setEditName('');
+    };
+
+    const saveEdit = async (id: string) => {
+        if (!editName.trim()) return;
+        try {
+            await fetch('/api/companies', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, name: editName }),
+            });
+            onUpdate();
+            setEditingId(null);
+        } catch (error) {
+            console.error('Failed to update company', error);
+        }
+    };
+
+    return (
+        <>
+            {companies.map(company => (
+                <div key={company.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg group">
+                    {editingId === company.id ? (
+                        <div className="flex items-center gap-2 flex-1">
+                            <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="flex-1 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm focus:outline-none focus:border-indigo-500"
+                                autoFocus
+                            />
+                            <button onClick={() => saveEdit(company.id)} className="text-green-400 hover:text-green-300 p-1">
+                                <Check size={16} />
+                            </button>
+                            <button onClick={cancelEdit} className="text-red-400 hover:text-red-300 p-1">
+                                <X size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            <span className="text-gray-200">{company.name}</span>
+                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={() => startEdit(company)}
+                                    className="text-blue-400 hover:text-blue-300 p-1"
+                                >
+                                    <Edit2 size={16} />
+                                </button>
+                                <button
+                                    onClick={() => onDelete(company.id)}
+                                    className="text-red-400 hover:text-red-300 p-1"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            ))}
+        </>
+    );
+}
+
+function TeamList({ teams, onDelete, onUpdate }: { teams: { id: string; name: string }[], onDelete: (id: string) => void, onUpdate: () => void }) {
+    const [editingId, setEditingId] = useState<string | null>(null);
+    const [editName, setEditName] = useState('');
+
+    const startEdit = (team: { id: string; name: string }) => {
+        setEditingId(team.id);
+        setEditName(team.name);
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+        setEditName('');
+    };
+
+    const saveEdit = async (id: string) => {
+        if (!editName.trim()) return;
+        try {
+            await fetch('/api/teams', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, name: editName }),
+            });
+            onUpdate();
+            setEditingId(null);
+        } catch (error) {
+            console.error('Failed to update team', error);
+        }
+    };
+
+    return (
+        <>
+            {teams.map(team => (
+                <div key={team.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg group">
+                    {editingId === team.id ? (
+                        <div className="flex items-center gap-2 flex-1">
+                            <input
+                                type="text"
+                                value={editName}
+                                onChange={(e) => setEditName(e.target.value)}
+                                className="flex-1 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm focus:outline-none focus:border-indigo-500"
+                                autoFocus
+                            />
+                            <button onClick={() => saveEdit(team.id)} className="text-green-400 hover:text-green-300 p-1">
+                                <Check size={16} />
+                            </button>
+                            <button onClick={cancelEdit} className="text-red-400 hover:text-red-300 p-1">
+                                <X size={16} />
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            <span className="text-gray-200">{team.name}</span>
+                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    onClick={() => startEdit(team)}
+                                    className="text-blue-400 hover:text-blue-300 p-1"
+                                >
+                                    <Edit2 size={16} />
+                                </button>
+                                <button
+                                    onClick={() => onDelete(team.id)}
+                                    className="text-red-400 hover:text-red-300 p-1"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            ))}
+        </>
     );
 }
