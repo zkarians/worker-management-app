@@ -254,7 +254,7 @@ export default function RosterManagementPage() {
             return;
         }
 
-        if (!confirm(`${specialTeamStartDate}부터 ${specialTeamEndDate}까지의 모든 날짜에 파레트 정리조와 청소조를 지정하시겠습니까?`)) {
+        if (!confirm(`${specialTeamStartDate}부터 ${specialTeamEndDate}까지의 모든 날짜에 잔바리 정리조와 파레트 정리조를 지정하시겠습니까?`)) {
             return;
         }
 
@@ -294,7 +294,7 @@ export default function RosterManagementPage() {
             });
 
             await Promise.all(promises);
-            alert(`${dates.length}일의 파레트 정리조와 청소조가 저장되었습니다.`);
+            alert(`${dates.length}일의 잔바리 정리조와 파레트 정리조가 저장되었습니다.`);
 
             // Refresh current date's data
             fetchData();
@@ -687,7 +687,7 @@ export default function RosterManagementPage() {
                                             onChange={(e) => setPaletteTeamId(e.target.value)}
                                             className="bg-white border border-purple-200 rounded-lg text-xs text-slate-600 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500"
                                         >
-                                            <option value="">파레트 선택</option>
+                                            <option value="">잔바리 정리</option>
                                             {teams.map(team => (
                                                 <option key={team.id} value={team.id}>{team.name}</option>
                                             ))}
@@ -698,7 +698,7 @@ export default function RosterManagementPage() {
                                             onChange={(e) => setCleaningTeamId(e.target.value)}
                                             className="bg-white border border-purple-200 rounded-lg text-xs text-slate-600 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500"
                                         >
-                                            <option value="">청소 선택</option>
+                                            <option value="">파레트 정리</option>
                                             {teams.map(team => (
                                                 <option key={team.id} value={team.id}>{team.name}</option>
                                             ))}

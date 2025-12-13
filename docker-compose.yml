@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: worker_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: always
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://user:password@postgres:5432/worker_db
+      NEXT_TELEMETRY_DISABLED: 1
+      HOSTNAME: "0.0.0.0"
+      JWT_SECRET: "local-dev-secret-key-change-me"
+      NEXTAUTH_SECRET: "local-dev-secret-key-change-me"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    restart: always
+
+volumes:
+  postgres_data:
