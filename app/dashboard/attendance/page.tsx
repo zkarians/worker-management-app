@@ -334,9 +334,20 @@ export default function AttendancePage() {
     };
 
     const handleChange = (userId: string, date: string, field: string, value: any) => {
-        setAttendanceData(prev => prev.map(item =>
-            item.userId === userId && item.date === date ? { ...item, [field]: value } : item
-        ));
+        setAttendanceData(prev => prev.map(item => {
+            if (item.userId === userId && item.date === date) {
+                const updates: any = { [field]: value };
+
+                // If status changes to OFF_DAY or ABSENT, set hours to 0
+                if (field === 'status' && (value === 'OFF_DAY' || value === 'ABSENT')) {
+                    updates.workHours = 0;
+                    updates.overtimeHours = 0;
+                }
+
+                return { ...item, ...updates };
+            }
+            return item;
+        }));
     };
 
     const handleSave = async (userId: string, date: string) => {
@@ -365,12 +376,21 @@ export default function AttendancePage() {
     };
 
     const handleBulkApply = () => {
-        const statusText = bulkStatus === 'PRESENT' ? '출근' :
-            bulkStatus === 'ABSENT' ? '결근' :
-                bulkStatus === 'OFF_DAY' ? '휴무' :
-                    bulkStatus === 'LATE' ? '지각' :
-                        bulkStatus === 'EARLY_LEAVE' ? '조퇴' :
-                            bulkStatus === 'SCHEDULED' ? '예정' : '-';
+        if (!bulkStatus) {
+            alert('상태를 선택해주세요.');
+            return;
+        }
+
+        const isOffOrAbsent = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT';
+        const workHoursToApply = isOffOrAbsent ? 0 : bulkWorkHours;
+        const overtimeToApply = isOffOrAbsent ? 0 : bulkOvertime;
+
+        setAttendanceData(prev => prev.map(item => ({
+            ...item,
+            status: bulkStatus,
+            workHours: workHoursToApply,
+            overtimeHours: overtimeToApply
+        })));
     };
 
     const handleSaveAll = async () => {
