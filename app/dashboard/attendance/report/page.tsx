@@ -33,12 +33,20 @@ export default function AttendanceReportPage() {
     const user = useUser();
     const isManager = user?.role === 'MANAGER';
 
+    // Helper to get local date string YYYY-MM-DD
+    const getLocalDateString = (date: Date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
     // Set default to today only
     const getDefaultDateRange = () => {
         const today = new Date();
         return {
-            startDate: today.toISOString().split('T')[0],
-            endDate: today.toISOString().split('T')[0],
+            startDate: getLocalDateString(today),
+            endDate: getLocalDateString(today),
             month: today.getMonth() + 1,
             year: today.getFullYear()
         };
@@ -53,6 +61,12 @@ export default function AttendanceReportPage() {
     const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
     const [userStats, setUserStats] = useState<UserStats[]>([]);
     const [loading, setLoading] = useState(false);
+
+    // Detail View State
+    const [detailDate, setDetailDate] = useState(getLocalDateString(new Date()));
+    const [detailData, setDetailData] = useState<AttendanceRecord[]>([]);
+    const [isDetailSearched, setIsDetailSearched] = useState(false);
+    const [detailLoading, setDetailLoading] = useState(false);
 
     useEffect(() => {
         if (isManager) {
@@ -122,7 +136,7 @@ export default function AttendanceReportPage() {
                 const end = new Date(selectedYear, selectedMonth, 0);
                 const current = new Date(start);
                 while (current <= end) {
-                    dateRange.push(current.toISOString().split('T')[0]);
+                    dateRange.push(getLocalDateString(current));
                     current.setDate(current.getDate() + 1);
                 }
             } else {
@@ -130,7 +144,7 @@ export default function AttendanceReportPage() {
                 const end = new Date(endDate);
                 const current = new Date(start);
                 while (current <= end) {
-                    dateRange.push(current.toISOString().split('T')[0]);
+                    dateRange.push(getLocalDateString(current));
                     current.setDate(current.getDate() + 1);
                 }
             }
@@ -193,14 +207,12 @@ export default function AttendanceReportPage() {
                                 targetDate.setHours(0, 0, 0, 0);
 
                                 // Compare dates
-                                // Compare dates
                                 if (targetDate < today) {
                                     // Past date: Mark as PRESENT with 8 work hours
                                     stats.presentDays++;
                                     stats.totalDays++;
                                     stats.totalWorkHours += 8;
 
-                                    // Add to processedData for detailed records
                                     processedData.push({
                                         userId: assignment.userId,
                                         date: dateRange[index],
@@ -241,41 +253,6 @@ export default function AttendanceReportPage() {
             setLoading(false);
         }
     };
-
-    const handleMonthChange = (month: number, year: number) => {
-        setSelectedMonth(month);
-        setSelectedYear(year);
-        const firstDay = new Date(year, month - 1, 1);
-        const lastDay = new Date(year, month, 0);
-        setStartDate(firstDay.toISOString().split('T')[0]);
-        setEndDate(lastDay.toISOString().split('T')[0]);
-    };
-
-    const getStatusDisplay = (status: string) => {
-        switch (status) {
-            case 'PRESENT': return { text: '출근', color: 'bg-emerald-100 border-emerald-300 text-emerald-700' };
-            case 'ABSENT': return { text: '결근', color: 'bg-red-100 border-red-300 text-red-700' };
-            case 'LATE': return { text: '지각', color: 'bg-orange-100 border-orange-300 text-orange-700' };
-            case 'EARLY_LEAVE': return { text: '조퇴', color: 'bg-yellow-100 border-yellow-400 text-yellow-700' };
-            case 'SCHEDULED': return { text: '예정', color: 'bg-blue-100 border-blue-300 text-blue-700' };
-            case 'OFF_DAY': return { text: '휴무', color: 'bg-slate-100 border-slate-300 text-slate-700' };
-            default: return { text: status || '-', color: 'bg-slate-100 border-slate-300 text-slate-600' };
-        }
-    };
-
-    if (!isManager) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <p className="text-slate-500">관리자만 접근할 수 있습니다.</p>
-            </div>
-        );
-    }
-
-    // Detail View State
-    const [detailDate, setDetailDate] = useState(new Date().toISOString().split('T')[0]);
-    const [detailData, setDetailData] = useState<AttendanceRecord[]>([]);
-    const [isDetailSearched, setIsDetailSearched] = useState(false);
-    const [detailLoading, setDetailLoading] = useState(false);
 
     const fetchDetailData = async () => {
         setDetailLoading(true);
@@ -357,6 +334,35 @@ export default function AttendanceReportPage() {
             setDetailLoading(false);
         }
     };
+
+    const handleMonthChange = (month: number, year: number) => {
+        setSelectedMonth(month);
+        setSelectedYear(year);
+        const firstDay = new Date(year, month - 1, 1);
+        const lastDay = new Date(year, month, 0);
+        setStartDate(getLocalDateString(firstDay));
+        setEndDate(getLocalDateString(lastDay));
+    };
+
+    const getStatusDisplay = (status: string) => {
+        switch (status) {
+            case 'PRESENT': return { text: '출근', color: 'bg-emerald-100 border-emerald-300 text-emerald-700' };
+            case 'ABSENT': return { text: '결근', color: 'bg-red-100 border-red-300 text-red-700' };
+            case 'LATE': return { text: '지각', color: 'bg-orange-100 border-orange-300 text-orange-700' };
+            case 'EARLY_LEAVE': return { text: '조퇴', color: 'bg-yellow-100 border-yellow-400 text-yellow-700' };
+            case 'SCHEDULED': return { text: '예정', color: 'bg-blue-100 border-blue-300 text-blue-700' };
+            case 'OFF_DAY': return { text: '휴무', color: 'bg-slate-100 border-slate-300 text-slate-700' };
+            default: return { text: status || '-', color: 'bg-slate-100 border-slate-300 text-slate-600' };
+        }
+    };
+
+    if (!isManager) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <p className="text-slate-500">관리자만 접근할 수 있습니다.</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-6">
@@ -644,6 +650,3 @@ export default function AttendanceReportPage() {
         </div>
     );
 }
-
-
-
