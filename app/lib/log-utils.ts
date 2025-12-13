@@ -38,12 +38,7 @@ export async function addStatusLog(userId: string, date: Date, statusText: strin
                 });
             }
         } else {
-            // Fallback if format is weird, just append? No, safer to create new or fix. 
-            // If it starts with [휴무] but not [휴무] (space), maybe it is [휴무]Name.
-            // Let's just create a new one if format doesn't match exactly to avoid breaking things, 
-            // OR try to be smart. Let's stick to exact prefix match for safety.
-            // If we can't parse it easily, we might just create a new one, which leads to the original issue but safer.
-            // Actually, let's just assume the prefix is standard.
+            // Fallback if format is weird
         }
     } else {
         // Create new log
@@ -95,6 +90,84 @@ export async function removeStatusLog(userId: string, date: Date, statusText: st
                     data: { content: newContent }
                 });
             }
+        }
+    }
+}
+
+export async function checkAndConsolidateOffDayLogs(date: Date, authorId: string) {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    // 1. Get all active workers
+    const users = await prisma.user.findMany({
+        where: { role: { in: ['WORKER', 'MANAGER'] }, isApproved: true }
+    });
+    const totalUsers = users.length;
+
+    if (totalUsers === 0) return;
+
+    // 2. Count how many are OFF_DAY
+    const offDayCount = await prisma.attendance.count({
+        where: {
+            date: { gte: startOfDay, lte: endOfDay },
+            status: 'OFF_DAY'
+        }
+    });
+
+    // 3. Check if ALL are OFF_DAY
+    const isCompanyWideOffDay = offDayCount === totalUsers;
+
+    if (isCompanyWideOffDay) {
+        // Delete all individual [휴무] logs
+        await prisma.dailyLog.deleteMany({
+            where: {
+                date: { gte: startOfDay, lte: endOfDay },
+                content: { contains: '[휴무]' }
+            }
+        });
+
+        // Create single "웅동 휴무" log if not exists
+        const existingCompanyLog = await prisma.dailyLog.findFirst({
+            where: {
+                date: { gte: startOfDay, lte: endOfDay },
+                content: '웅동 휴무'
+            }
+        });
+
+        if (!existingCompanyLog) {
+            await prisma.dailyLog.create({
+                data: {
+                    date: date,
+                    content: '웅동 휴무',
+                    authorId: authorId,
+                }
+            });
+        }
+    } else {
+        // Not company-wide: Delete "웅동 휴무" log if exists
+        await prisma.dailyLog.deleteMany({
+            where: {
+                date: { gte: startOfDay, lte: endOfDay },
+                content: '웅동 휴무'
+            }
+        });
+
+        // Ensure individual logs exist for OFF_DAY users
+        // This is a bit expensive but ensures consistency. 
+        // Since this runs after batch update, we can optimize by only checking if we just deleted "웅동 휴무".
+        // But to be safe, let's iterate OFF_DAY users.
+        const offDayUsers = await prisma.attendance.findMany({
+            where: {
+                date: { gte: startOfDay, lte: endOfDay },
+                status: 'OFF_DAY'
+            },
+            include: { user: true }
+        });
+
+        for (const record of offDayUsers) {
+            await addStatusLog(record.userId, date, '휴무', authorId);
         }
     }
 }

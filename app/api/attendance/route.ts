@@ -141,6 +141,10 @@ export async function POST(request: Request) {
             }
         }
 
+        // Check for consolidation
+        const { checkAndConsolidateOffDayLogs } = await import('@/app/lib/log-utils');
+        await checkAndConsolidateOffDayLogs(date, session.userId as string);
+
         return NextResponse.json({ attendance });
     } catch (error) {
         console.error(error);

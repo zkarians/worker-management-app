@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { getSession } from '@/app/lib/auth';
-import { removeStatusLog, addStatusLog } from '@/app/lib/log-utils';
+import { removeStatusLog, addStatusLog, checkAndConsolidateOffDayLogs } from '@/app/lib/log-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,8 +20,7 @@ export async function POST(request: Request) {
         }
 
         const updatedRecords = [];
-
-
+        const affectedDates = new Set<string>();
 
         // Process records in chunks to improve performance while avoiding DB overwhelm
         const CHUNK_SIZE = 10;
@@ -35,6 +34,7 @@ export async function POST(request: Request) {
 
                 const finalStatus = status || '';
                 const date = new Date(dateStr);
+                affectedDates.add(dateStr);
 
                 const attendance = await prisma.attendance.upsert({
                     where: {
@@ -87,6 +87,11 @@ export async function POST(request: Request) {
                     }
                 }
             }));
+        }
+
+        // After processing all records, check for consolidation on affected dates
+        for (const dateStr of Array.from(affectedDates)) {
+            await checkAndConsolidateOffDayLogs(new Date(dateStr), session.userId as string);
         }
 
         return NextResponse.json({ message: 'Batch update successful', count: updatedRecords.length });
