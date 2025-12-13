@@ -364,42 +364,13 @@ export default function AttendancePage() {
         }
     };
 
-    const handleBulkApply = async () => {
+    const handleBulkApply = () => {
         const statusText = bulkStatus === 'PRESENT' ? '출근' :
             bulkStatus === 'ABSENT' ? '결근' :
                 bulkStatus === 'OFF_DAY' ? '휴무' :
                     bulkStatus === 'LATE' ? '지각' :
                         bulkStatus === 'EARLY_LEAVE' ? '조퇴' :
                             bulkStatus === 'SCHEDULED' ? '예정' : '-';
-
-        if (!confirm(`${startDate}부터 ${endDate}까지 모든 근무자에게 다음 값을 적용하시겠습니까?\n\n상태: ${statusText}\n근무시간: ${bulkWorkHours}시간\n잔업시간: ${bulkOvertime}시간\n\n※ 이 작업은 즉시 데이터베이스에 저장됩니다.`)) return;
-
-        try {
-            const response = await fetch('/api/attendance/bulk', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    startDate,
-                    endDate,
-                    status: bulkStatus,
-                    overtimeHours: bulkOvertime,
-                    workHours: bulkWorkHours
-                }),
-            });
-
-            if (!response.ok) {
-                throw new Error('일괄 적용에 실패했습니다.');
-            }
-
-            const result = await response.json();
-            alert(`✓ ${result.count}개의 근태 데이터가 성공적으로 업데이트되었습니다.`);
-
-            // 데이터 다시 조회
-            await fetchData();
-        } catch (error) {
-            console.error('Failed to apply bulk update', error);
-            alert('일괄 적용 중 오류가 발생했습니다.');
-        }
     };
 
     const handleSaveAll = async () => {
