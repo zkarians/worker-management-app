@@ -210,26 +210,19 @@ export default function AttendanceReportPage() {
                                         user: assignment.user
                                     });
                                 } else if (targetDate.getTime() === today.getTime()) {
-                                    // Today: Check if after 19:00
-                                    if (currentHour >= 19) {
-                                        // After 19:00: Mark as PRESENT with 8 work hours
-                                        stats.presentDays++;
-                                        stats.totalDays++;
-                                        stats.totalWorkHours += 8;
+                                    // Today: Mark as PRESENT with 8 work hours
+                                    stats.presentDays++;
+                                    stats.totalDays++;
+                                    stats.totalWorkHours += 8;
 
-                                        processedData.push({
-                                            userId: assignment.userId,
-                                            date: dateRange[index],
-                                            status: 'PRESENT',
-                                            workHours: 8,
-                                            overtimeHours: 0,
-                                            user: assignment.user
-                                        });
-                                    } else {
-                                        // Before 19:00: Mark as SCHEDULED
-                                        stats.scheduledDays++;
-                                        stats.totalDays++;
-                                    }
+                                    processedData.push({
+                                        userId: assignment.userId,
+                                        date: dateRange[index],
+                                        status: 'PRESENT',
+                                        workHours: 8,
+                                        overtimeHours: 0,
+                                        user: assignment.user
+                                    });
                                 } else {
                                     // Future date: Mark as SCHEDULED
                                     stats.scheduledDays++;
@@ -334,25 +327,14 @@ export default function AttendanceReportPage() {
                                 user: assignment.user
                             });
                         } else if (targetDate.getTime() === today.getTime()) {
-                            if (currentHour >= 19) {
-                                processedData.push({
-                                    userId: assignment.userId,
-                                    date: detailDate,
-                                    status: 'PRESENT',
-                                    workHours: 8,
-                                    overtimeHours: 0,
-                                    user: assignment.user
-                                });
-                            } else {
-                                processedData.push({
-                                    userId: assignment.userId,
-                                    date: detailDate,
-                                    status: 'SCHEDULED',
-                                    workHours: 0,
-                                    overtimeHours: 0,
-                                    user: assignment.user
-                                });
-                            }
+                            processedData.push({
+                                userId: assignment.userId,
+                                date: detailDate,
+                                status: 'PRESENT',
+                                workHours: 8,
+                                overtimeHours: 0,
+                                user: assignment.user
+                            });
                         } else {
                             processedData.push({
                                 userId: assignment.userId,
