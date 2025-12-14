@@ -226,9 +226,8 @@ export function DashboardDayView({ date, isManager, compact = false, className =
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y-2 divide-slate-300">
-                                    {teams.map(team => {
-                                        const teamNumber = parseInt(team.name.replace(/[^0-9]/g, '')) || 0;
-                                        const isTeam1 = teamNumber === 1;
+                                    {teams.map((team, index) => {
+                                        const isTeam1 = index === 0;
                                         const teamNameBg = isTeam1 ? 'bg-gradient-to-r from-blue-50 to-sky-50' : 'bg-gradient-to-r from-rose-50 to-pink-50';
                                         const teamNameText = isTeam1 ? 'text-blue-700' : 'text-rose-700';
                                         const teamNameBorder = isTeam1 ? 'border-l-4 border-blue-500' : 'border-l-4 border-rose-500';
