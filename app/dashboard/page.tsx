@@ -492,10 +492,8 @@ export default function DashboardPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y-2 divide-slate-300">
-                                    {teams.map(team => {
-                                        // Extract team number from team name (e.g., "1조" -> 1)
-                                        const teamNumber = parseInt(team.name.replace(/[^0-9]/g, '')) || 0;
-                                        const isTeam1 = teamNumber === 1;
+                                    {teams.map((team, index) => {
+                                        const isTeam1 = index === 0;
 
                                         // 모던하고 세련된 색상 팔레트
                                         // 1조: 파란색 계열, 2-5조: 붉은색 계열
