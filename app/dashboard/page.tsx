@@ -493,15 +493,15 @@ export default function DashboardPage() {
                                 </thead>
                                 <tbody className="divide-y-2 divide-slate-300">
                                     {teams.map((team, index) => {
-                                        const isTeam1 = index === 0;
+                                        const isBNI = team.name.includes('BNI');
 
                                         // 모던하고 세련된 색상 팔레트
-                                        // 1조: 파란색 계열, 2-5조: 붉은색 계열
-                                        const teamNameBg = isTeam1
+                                        // BNI: 파란색 계열, 그 외(천마 등): 붉은색 계열
+                                        const teamNameBg = isBNI
                                             ? 'bg-gradient-to-r from-blue-50 to-sky-50'
                                             : 'bg-gradient-to-r from-rose-50 to-pink-50';
-                                        const teamNameText = isTeam1 ? 'text-blue-700' : 'text-rose-700';
-                                        const teamNameBorder = isTeam1 ? 'border-l-4 border-blue-500' : 'border-l-4 border-rose-500';
+                                        const teamNameText = isBNI ? 'text-blue-700' : 'text-rose-700';
+                                        const teamNameBorder = isBNI ? 'border-l-4 border-blue-500' : 'border-l-4 border-rose-500';
 
                                         return (
                                             <tr key={team.id} className="hover:bg-slate-50/80 transition-all duration-200">

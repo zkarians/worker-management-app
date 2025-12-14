@@ -227,10 +227,10 @@ export function DashboardDayView({ date, isManager, compact = false, className =
                                 </thead>
                                 <tbody className="divide-y-2 divide-slate-300">
                                     {teams.map((team, index) => {
-                                        const isTeam1 = index === 0;
-                                        const teamNameBg = isTeam1 ? 'bg-gradient-to-r from-blue-50 to-sky-50' : 'bg-gradient-to-r from-rose-50 to-pink-50';
-                                        const teamNameText = isTeam1 ? 'text-blue-700' : 'text-rose-700';
-                                        const teamNameBorder = isTeam1 ? 'border-l-4 border-blue-500' : 'border-l-4 border-rose-500';
+                                        const isBNI = team.name.includes('BNI');
+                                        const teamNameBg = isBNI ? 'bg-gradient-to-r from-blue-50 to-sky-50' : 'bg-gradient-to-r from-rose-50 to-pink-50';
+                                        const teamNameText = isBNI ? 'text-blue-700' : 'text-rose-700';
+                                        const teamNameBorder = isBNI ? 'border-l-4 border-blue-500' : 'border-l-4 border-rose-500';
 
                                         return (
                                             <tr key={team.id} className="hover:bg-slate-50/80 transition-all duration-200">
