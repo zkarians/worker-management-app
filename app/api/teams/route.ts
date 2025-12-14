@@ -53,13 +53,30 @@ export async function PUT(request: Request) {
             return NextResponse.json({ error: 'ID and Name are required' }, { status: 400 });
         }
 
-        const team = await prisma.team.update({
+        // 1. Get the old team name
+        const oldTeam = await prisma.team.findUnique({
             where: { id },
-            data: { name },
         });
 
-        return NextResponse.json({ team });
+        if (!oldTeam) {
+            return NextResponse.json({ error: 'Team not found' }, { status: 404 });
+        }
+
+        // 2. Transaction: Update Team name AND update all RosterAssignments with the old team name
+        const [updatedTeam] = await prisma.$transaction([
+            prisma.team.update({
+                where: { id },
+                data: { name },
+            }),
+            prisma.rosterAssignment.updateMany({
+                where: { team: oldTeam.name },
+                data: { team: name },
+            }),
+        ]);
+
+        return NextResponse.json({ team: updatedTeam });
     } catch (error) {
+        console.error('Failed to update team:', error);
         return NextResponse.json({ error: 'Failed to update team' }, { status: 500 });
     }
 }
