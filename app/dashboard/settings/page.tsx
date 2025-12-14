@@ -222,12 +222,12 @@ export default function SettingsPage() {
 
                 {/* Password Change */}
                 <GlassCard>
-                    <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                    <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                         <Lock size={18} /> 비밀번호 변경
                     </h2>
                     <form onSubmit={handlePasswordChange} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1">현재 비밀번호</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">현재 비밀번호</label>
                             <input
                                 type="password"
                                 value={passwordData.current}
@@ -236,7 +236,7 @@ export default function SettingsPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1">새 비밀번호</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">새 비밀번호</label>
                             <input
                                 type="password"
                                 value={passwordData.new}
@@ -245,7 +245,7 @@ export default function SettingsPage() {
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-300 mb-1">새 비밀번호 확인</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">새 비밀번호 확인</label>
                             <input
                                 type="password"
                                 value={passwordData.confirm}
@@ -253,7 +253,7 @@ export default function SettingsPage() {
                                 className="w-full glass-input"
                             />
                         </div>
-                        {message && <p className="text-red-400 text-sm">{message}</p>}
+                        {message && <p className="text-red-500 text-sm">{message}</p>}
                         <button type="submit" className="btn-primary glass-button w-full">
                             비밀번호 변경
                         </button>
@@ -321,7 +321,7 @@ export default function SettingsPage() {
                 {user?.role === 'MANAGER' && (
                     <div className="space-y-6">
                         <GlassCard>
-                            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                                 <Building size={18} /> 회사 관리
                             </h2>
 
@@ -394,7 +394,7 @@ function TeamManagement() {
 
     return (
         <GlassCard>
-            <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
                 <UsersIcon size={18} /> 팀 관리
             </h2>
 
@@ -450,36 +450,36 @@ function CompanyList({ companies, onDelete, onUpdate }: { companies: { id: strin
     return (
         <>
             {companies.map(company => (
-                <div key={company.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg group">
+                <div key={company.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg group border border-transparent hover:border-slate-200 transition-colors">
                     {editingId === company.id ? (
                         <div className="flex items-center gap-2 flex-1">
                             <input
                                 type="text"
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
-                                className="flex-1 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm focus:outline-none focus:border-indigo-500"
+                                className="flex-1 bg-white border border-slate-300 rounded px-2 py-1 text-slate-900 text-sm focus:outline-none focus:border-indigo-500"
                                 autoFocus
                             />
-                            <button onClick={() => saveEdit(company.id)} className="text-green-400 hover:text-green-300 p-1">
+                            <button onClick={() => saveEdit(company.id)} className="text-green-600 hover:text-green-500 p-1">
                                 <Check size={16} />
                             </button>
-                            <button onClick={cancelEdit} className="text-red-400 hover:text-red-300 p-1">
+                            <button onClick={cancelEdit} className="text-red-500 hover:text-red-400 p-1">
                                 <X size={16} />
                             </button>
                         </div>
                     ) : (
                         <>
-                            <span className="text-gray-200">{company.name}</span>
+                            <span className="text-slate-700 font-medium">{company.name}</span>
                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
                                     onClick={() => startEdit(company)}
-                                    className="text-blue-400 hover:text-blue-300 p-1"
+                                    className="text-indigo-500 hover:text-indigo-600 p-1"
                                 >
                                     <Edit2 size={16} />
                                 </button>
                                 <button
                                     onClick={() => onDelete(company.id)}
-                                    className="text-red-400 hover:text-red-300 p-1"
+                                    className="text-red-500 hover:text-red-600 p-1"
                                 >
                                     <Trash2 size={16} />
                                 </button>
@@ -524,36 +524,36 @@ function TeamList({ teams, onDelete, onUpdate }: { teams: { id: string; name: st
     return (
         <>
             {teams.map(team => (
-                <div key={team.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg group">
+                <div key={team.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg group border border-transparent hover:border-slate-200 transition-colors">
                     {editingId === team.id ? (
                         <div className="flex items-center gap-2 flex-1">
                             <input
                                 type="text"
                                 value={editName}
                                 onChange={(e) => setEditName(e.target.value)}
-                                className="flex-1 bg-white/10 border border-white/20 rounded px-2 py-1 text-white text-sm focus:outline-none focus:border-indigo-500"
+                                className="flex-1 bg-white border border-slate-300 rounded px-2 py-1 text-slate-900 text-sm focus:outline-none focus:border-indigo-500"
                                 autoFocus
                             />
-                            <button onClick={() => saveEdit(team.id)} className="text-green-400 hover:text-green-300 p-1">
+                            <button onClick={() => saveEdit(team.id)} className="text-green-600 hover:text-green-500 p-1">
                                 <Check size={16} />
                             </button>
-                            <button onClick={cancelEdit} className="text-red-400 hover:text-red-300 p-1">
+                            <button onClick={cancelEdit} className="text-red-500 hover:text-red-400 p-1">
                                 <X size={16} />
                             </button>
                         </div>
                     ) : (
                         <>
-                            <span className="text-gray-200">{team.name}</span>
+                            <span className="text-slate-700 font-medium">{team.name}</span>
                             <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <button
                                     onClick={() => startEdit(team)}
-                                    className="text-blue-400 hover:text-blue-300 p-1"
+                                    className="text-indigo-500 hover:text-indigo-600 p-1"
                                 >
                                     <Edit2 size={16} />
                                 </button>
                                 <button
                                     onClick={() => onDelete(team.id)}
-                                    className="text-red-400 hover:text-red-300 p-1"
+                                    className="text-red-500 hover:text-red-600 p-1"
                                 >
                                     <Trash2 size={16} />
                                 </button>
