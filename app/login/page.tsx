@@ -18,6 +18,8 @@ export default function LoginPage() {
     // 자동 로그인 체크 (Force Update)
     useEffect(() => {
         const savedCredentials = localStorage.getItem('savedCredentials');
+        const savedLastUsername = localStorage.getItem('savedUsername');
+
         if (savedCredentials) {
             try {
                 const { username: savedUsername, password: savedPassword } = JSON.parse(savedCredentials);
@@ -32,6 +34,9 @@ export default function LoginPage() {
                 console.error('저장된 자격 증명 불러오기 실패:', err);
                 localStorage.removeItem('savedCredentials');
             }
+        } else if (savedLastUsername) {
+            // 자동 로그인이 아닐 경우 마지막 아이디만 불러오기
+            setUsername(savedLastUsername);
         }
     }, []);
 
@@ -56,11 +61,21 @@ export default function LoginPage() {
             const data = await res.json();
 
             if (!res.ok) {
+                // 401 Unauthorized일 경우에만 에러를 던져서 catch 블록에서 자격 증명 삭제 처리
+                if (res.status === 401) {
+                    const error = new Error(data.error || '아이디 또는 비밀번호가 올바르지 않습니다.');
+                    (error as any).status = 401;
+                    throw error;
+                }
                 throw new Error(data.error || '로그인에 실패했습니다.');
             }
 
-            // 로그인 성공 시 자격 증명 저장 또는 삭제
-            if (rememberMe) {
+            // 로그인 성공 시 처리
+            // 1. 마지막 아이디 저장 (항상)
+            localStorage.setItem('savedUsername', user);
+
+            // 2. 자동 로그인 설정에 따른 자격 증명 저장/삭제
+            if (rememberMe || isAutoLogin) {
                 localStorage.setItem('savedCredentials', JSON.stringify({
                     username: user,
                     password: pass
@@ -73,15 +88,23 @@ export default function LoginPage() {
         } catch (err: any) {
             console.error('Login error:', err);
 
-            // 자동 로그인 실패 시 저장된 자격 증명 삭제
+            // 자동 로그인 실패 시 처리
             if (isAutoLogin) {
-                localStorage.removeItem('savedCredentials');
-            }
-
-            if (err.message.includes('JSON') || err.message.includes('Unexpected token')) {
-                setError('서버 연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                // 401 에러(비밀번호 틀림 등)일 때만 저장된 자격 증명 삭제
+                // 서버 오류(500, 503)나 네트워크 오류일 때는 삭제하지 않음 (재시도 가능하게)
+                if (err.status === 401) {
+                    localStorage.removeItem('savedCredentials');
+                    setError('저장된 로그인 정보가 만료되었습니다. 다시 로그인해주세요.');
+                } else {
+                    // 서버 오류 등의 경우
+                    setError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+                }
             } else {
-                setError(err.message || '로그인에 실패했습니다.');
+                if (err.message.includes('JSON') || err.message.includes('Unexpected token')) {
+                    setError('서버 연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                } else {
+                    setError(err.message || '로그인에 실패했습니다.');
+                }
             }
         } finally {
             setLoading(false);
