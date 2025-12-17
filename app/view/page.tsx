@@ -309,13 +309,16 @@ export default function ViewPage() {
                                     </thead>
                                     <tbody className="divide-y divide-slate-200">
                                         {teams.map(team => {
-                                            const teamNumber = parseInt(team.name.replace(/[^0-9]/g, '')) || 0;
-                                            const isTeam1 = teamNumber === 1;
-                                            const teamNameColor = isTeam1 ? 'text-sky-600' : 'text-orange-600';
+                                            const isBNI = team.name.includes('BNI');
+                                            const teamNameBg = isBNI
+                                                ? 'bg-gradient-to-r from-blue-50 to-sky-50'
+                                                : 'bg-gradient-to-r from-rose-50 to-pink-50';
+                                            const teamNameText = isBNI ? 'text-blue-700' : 'text-rose-700';
+                                            const teamNameBorder = isBNI ? 'border-l-4 border-blue-500' : 'border-l-4 border-rose-500';
 
                                             return (
                                                 <tr key={team.id} className="hover:bg-slate-50 transition-colors">
-                                                    <td className={`p-3 font-bold ${teamNameColor} bg-slate-50/50 border-r border-slate-200 text-sm`}>
+                                                    <td className={`p-3 font-bold ${teamNameBg} ${teamNameText} ${teamNameBorder} border-r border-slate-200 text-sm`}>
                                                         {team.name}
                                                     </td>
                                                     {POSITIONS.map(pos => {
