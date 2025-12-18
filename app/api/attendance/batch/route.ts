@@ -45,15 +45,15 @@ export async function POST(request: Request) {
                     },
                     update: {
                         status: finalStatus,
-                        overtimeHours: overtimeHours || 0,
-                        workHours: workHours || 8,
+                        overtimeHours: isNaN(Number(overtimeHours)) ? 0 : Number(overtimeHours),
+                        workHours: (workHours === undefined || workHours === null || workHours === '' || isNaN(Number(workHours))) ? 8 : Number(workHours),
                     },
                     create: {
                         userId,
                         date,
                         status: finalStatus,
-                        overtimeHours: overtimeHours || 0,
-                        workHours: workHours || 8,
+                        overtimeHours: isNaN(Number(overtimeHours)) ? 0 : Number(overtimeHours),
+                        workHours: (workHours === undefined || workHours === null || workHours === '' || isNaN(Number(workHours))) ? 8 : Number(workHours),
                     },
                 });
 
