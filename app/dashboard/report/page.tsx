@@ -437,7 +437,7 @@ export default function ReportPage() {
                                             </thead>
                                             <tbody>
                                                 {teams.map((team, teamIndex) => {
-                                                    const teamNumber = parseInt(team.name.replace(/[^0-9]/g, '')) || 0;
+                                                    const teamNumber = parseInt(team.name) || 0;
                                                     const isTeam1 = teamNumber === 1;
                                                     const teamNameColor = isTeam1 ? 'text-blue-700' : 'text-red-700';
 
