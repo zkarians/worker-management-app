@@ -26,7 +26,8 @@ export default function WorkersPage() {
         companyId: '',
         hireDate: '',
         carNumber: '',
-        role: 'WORKER'
+        role: 'WORKER',
+        password: ''
     });
 
     const [isAddingUser, setIsAddingUser] = useState(false);
@@ -90,7 +91,8 @@ export default function WorkersPage() {
             companyId: user.company ? (companies.find(c => c.name === user.company?.name)?.id || '') : '',
             hireDate: user.hireDate ? new Date(user.hireDate).toISOString().split('T')[0] : '',
             carNumber: user.carNumber || '',
-            role: user.role || 'WORKER'
+            role: user.role || 'WORKER',
+            password: ''
         });
     };
 
@@ -139,7 +141,8 @@ export default function WorkersPage() {
                     role: editForm.role,
                     companyId: editForm.companyId,
                     carNumber: editForm.carNumber,
-                    hireDate: editForm.hireDate
+                    hireDate: editForm.hireDate,
+                    password: editForm.password
                 }),
             });
 
@@ -229,8 +232,8 @@ export default function WorkersPage() {
                                 <td className="px-6 py-4">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${worker.role === 'MANAGER'
-                                                ? 'bg-purple-100 text-purple-600'
-                                                : 'bg-blue-100 text-blue-600'
+                                            ? 'bg-purple-100 text-purple-600'
+                                            : 'bg-blue-100 text-blue-600'
                                             }`}>
                                             {worker.name[0]}
                                         </div>
@@ -242,8 +245,8 @@ export default function WorkersPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${worker.role === 'MANAGER'
-                                            ? 'bg-purple-100 text-purple-700'
-                                            : 'bg-blue-100 text-blue-700'
+                                        ? 'bg-purple-100 text-purple-700'
+                                        : 'bg-blue-100 text-blue-700'
                                         }`}>
                                         {worker.role === 'MANAGER' ? '관리자' : '근무자'}
                                     </span>
@@ -313,8 +316,8 @@ export default function WorkersPage() {
                                 {/* Header with avatar, name, and role */}
                                 <div className="flex items-start gap-3">
                                     <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg ${worker.role === 'MANAGER'
-                                            ? 'bg-purple-100 text-purple-600'
-                                            : 'bg-blue-100 text-blue-600'
+                                        ? 'bg-purple-100 text-purple-600'
+                                        : 'bg-blue-100 text-blue-600'
                                         }`}>
                                         {worker.name[0]}
                                     </div>
@@ -323,14 +326,14 @@ export default function WorkersPage() {
                                         <p className="text-sm text-slate-500">@{worker.username}</p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${worker.role === 'MANAGER'
-                                                    ? 'bg-purple-100 text-purple-700'
-                                                    : 'bg-blue-100 text-blue-700'
+                                                ? 'bg-purple-100 text-purple-700'
+                                                : 'bg-blue-100 text-blue-700'
                                                 }`}>
                                                 {worker.role === 'MANAGER' ? '관리자' : '근무자'}
                                             </span>
                                             <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${worker.isApproved
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-yellow-100 text-yellow-700'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-yellow-100 text-yellow-700'
                                                 }`}>
                                                 {worker.isApproved ? '승인됨' : '대기중'}
                                             </span>
@@ -418,6 +421,17 @@ export default function WorkersPage() {
                                         onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                                         className="glass-input w-full bg-white border-slate-200 text-slate-900"
                                         required
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-slate-700">비밀번호 변경 <span className="text-xs text-slate-400 font-normal">(비워두면 변경하지 않음)</span></label>
+                                    <input
+                                        type="password"
+                                        value={editForm.password}
+                                        onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+                                        className="glass-input w-full bg-white border-slate-200 text-slate-900"
+                                        placeholder="새 비밀번호 입력"
                                     />
                                 </div>
 

@@ -126,6 +126,7 @@ export async function PUT(request: Request) {
                     name,
                     carNumber,
                     hireDate: hireDate ? new Date(hireDate) : undefined,
+                    ...(body.password ? { password: await bcrypt.hash(body.password, 10) } : {}),
                 },
             });
 
