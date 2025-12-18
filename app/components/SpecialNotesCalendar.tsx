@@ -162,169 +162,9 @@ export function SpecialNotesCalendar({
                 </div>
             </div>
 
-            {/* Content Container */}
-            <div className="flex-1 overflow-y-auto scrollbar-hide">
-
-                {/* Mobile View: Agenda List */}
-                <div className="block sm:hidden space-y-3 pb-4">
-                    {days.map((day) => {
-                        const { dayLogs, displayOvertime, dayLeaves } = getDataForDate(day);
-                        const today = new Date();
-                        const isToday = today.getDate() === day && today.getMonth() + 1 === month && today.getFullYear() === year;
-                        const date = new Date(year, month - 1, day);
-                        const dayOfWeek = date.getDay();
-                        const holiday = isHoliday(date);
-                        const dayColor = getDayColor(day);
-
-                        // Format date string for mobile header (e.g., "12-01 월")
-                        const dateString = `${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${['일', '월', '화', '수', '목', '금', '토'][dayOfWeek]}`;
-
-                        const hasContent = dayLogs.length > 0 || dayLeaves.length > 0 || displayOvertime > 0;
-
-                        // Skip empty days in mobile view if you want to save space, 
-                        // BUT for a calendar it's often better to show all or at least have an option.
-                        // For now, let's show all days to allow adding notes if isManager, 
-                        // or maybe just show days with content? 
-                        // User request: "Make it look better". A full list of 30 empty cards is boring.
-                        // Let's show all days but compact empty ones, or just standard cards.
-                        // Given the "Special Notes" context, showing only active days might be cleaner,
-                        // but then how do they add a note?
-                        // Let's render ALL days but style them nicely.
-
-                        return (
-                            <div
-                                key={day}
-                                onClick={() => onDateClick?.(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`)}
-                                className={`p-3 rounded-xl border transition-all ${isToday
-                                        ? 'bg-indigo-50 border-indigo-200 shadow-sm'
-                                        : 'bg-white border-slate-100 shadow-sm'
-                                    }`}
-                            >
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-2">
-                                        <CalendarIcon size={14} className="text-slate-400" />
-                                        <span className={`text-sm font-bold ${dayColor}`}>
-                                            {dateString}
-                                        </span>
-                                        {isToday && (
-                                            <span className="text-[10px] text-indigo-600 font-bold bg-indigo-100 px-1.5 py-0.5 rounded-full">
-                                                Today
-                                            </span>
-                                        )}
-                                        {holiday && (
-                                            <span className="text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded-full">
-                                                휴일
-                                            </span>
-                                        )}
-                                    </div>
-                                    {displayOvertime > 0 && (
-                                        <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1 bg-emerald-100 px-2 py-0.5 rounded-full">
-                                            <Clock size={10} /> {displayOvertime}h
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Mobile Content List */}
-                                <div className="space-y-1.5">
-                                    {/* Pending Leaves */}
-                                    {dayLeaves.filter(l => l.status === 'PENDING').map(leave => (
-                                        <div key={leave.id} className="text-xs p-2 rounded-lg bg-yellow-50 border border-yellow-100 text-yellow-800 font-medium">
-                                            {leave.user.name} 휴무 신청
-                                        </div>
-                                    ))}
-
-                                    {/* Logs */}
-                                    {(() => {
-                                        // Reuse grouping logic
-                                        const groupedLogs: { [key: string]: { ids: string[], names: string[], status: string } } = {};
-                                        const otherLogs: DailyLog[] = [];
-
-                                        dayLogs.forEach(log => {
-                                            const match = log.content.match(/^\[(.*?)\]\s*(.*)$/);
-                                            if (match) {
-                                                const status = match[1];
-                                                const name = match[2];
-                                                if (['결근', '지각', '조퇴', '휴무'].includes(status)) {
-                                                    if (!groupedLogs[status]) groupedLogs[status] = { ids: [], names: [], status };
-                                                    groupedLogs[status].ids.push(log.id);
-                                                    groupedLogs[status].names.push(name);
-                                                } else {
-                                                    otherLogs.push(log);
-                                                }
-                                            } else {
-                                                otherLogs.push(log);
-                                            }
-                                        });
-
-                                        const hasFullHoliday = otherLogs.some(log => log.content.includes('웅동 휴무'));
-                                        if (hasFullHoliday && groupedLogs['휴무']) delete groupedLogs['휴무'];
-
-                                        return (
-                                            <>
-                                                {Object.values(groupedLogs).map((group) => {
-                                                    const uniqueNames = Array.from(new Set(group.names.map(n => n.trim()))).filter(Boolean).sort();
-                                                    const content = `[${group.status}] ${uniqueNames.join(', ')}`;
-
-                                                    let statusColor = '';
-                                                    switch (group.status) {
-                                                        case '휴무': statusColor = 'bg-blue-50 border-blue-100 text-blue-700'; break;
-                                                        case '결근': statusColor = 'bg-red-50 border-red-100 text-red-700'; break;
-                                                        case '지각': statusColor = 'bg-orange-50 border-orange-100 text-orange-700'; break;
-                                                        case '조퇴': statusColor = 'bg-yellow-50 border-yellow-100 text-yellow-700'; break;
-                                                        default: statusColor = 'bg-slate-50 border-slate-100 text-slate-700';
-                                                    }
-
-                                                    return (
-                                                        <div key={`m-group-${group.status}-${group.ids[0]}`} className={`text-xs p-2 rounded-lg border font-medium ${statusColor}`}>
-                                                            {content}
-                                                        </div>
-                                                    );
-                                                })}
-
-                                                {otherLogs.map(log => {
-                                                    const isMissingPositionNote = log.content.includes('근무성립불가');
-                                                    let logColor = '';
-                                                    if (isMissingPositionNote) logColor = 'bg-red-50 border-red-100 text-red-700';
-                                                    else if (log.content.includes('[휴무]')) logColor = 'bg-blue-50 border-blue-100 text-blue-700';
-                                                    else if (log.content.includes('[결근]')) logColor = 'bg-red-50 border-red-100 text-red-700';
-                                                    else if (log.content.includes('[지각]')) logColor = 'bg-orange-50 border-orange-100 text-orange-700';
-                                                    else if (log.content.includes('[조퇴]')) logColor = 'bg-yellow-50 border-yellow-100 text-yellow-700';
-                                                    else logColor = 'bg-slate-50 border-slate-100 text-slate-700';
-
-                                                    return (
-                                                        <div key={log.id} className={`relative text-xs p-2 rounded-lg border font-medium ${logColor}`}>
-                                                            <div className="flex justify-between items-start gap-2">
-                                                                <span className="flex-1 whitespace-pre-wrap">{log.content}</span>
-                                                                {isManager && onDeleteNote && (
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            if (confirm('이 특이사항을 삭제하시겠습니까?')) onDeleteNote(log.id);
-                                                                        }}
-                                                                        className="text-slate-400 hover:text-red-600 p-1 -mr-1 -mt-1"
-                                                                    >
-                                                                        <X size={14} />
-                                                                    </button>
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </>
-                                        );
-                                    })()}
-
-                                    {!hasContent && (
-                                        <div className="text-xs text-slate-300 italic p-1">특이사항 없음</div>
-                                    )}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-
-                {/* Desktop View: Grid Calendar */}
-                <div className="hidden sm:block h-full">
+            {/* Calendar - with horizontal scroll on mobile */}
+            <div className="flex-1 overflow-auto">
+                <div className="min-w-[600px] sm:min-w-0 h-full">
                     <div className="grid grid-cols-7 gap-0.5 sm:gap-1 h-full auto-rows-fr">
                         {/* Weekday headers */}
                         {['일', '월', '화', '수', '목', '금', '토'].map((day, idx) => (
@@ -393,6 +233,17 @@ export function SpecialNotesCalendar({
 
                                     {/* Events list */}
                                     <div className="space-y-0.5 overflow-y-auto h-full scrollbar-hide flex-1">
+                                        {/* Approved leaves - Hidden to prevent duplication with DailyLog */}
+                                        {/* {approvedLeaves.map(leave => (
+                                            <div
+                                                key={leave.id}
+                                                className="text-[7px] sm:text-[8px] p-0.5 px-1 rounded bg-blue-100 border border-blue-200 text-blue-800 font-medium truncate"
+                                                title={`${leave.user.name} 휴무`}
+                                            >
+                                                {leave.user.name} 휴무
+                                            </div>
+                                        ))} */}
+
                                         {/* Pending leaves */}
                                         {pendingLeaves.map(leave => (
                                             <div
