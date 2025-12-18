@@ -71,25 +71,10 @@ export async function PATCH(request: Request) {
                     }
                 });
 
-                // Delete DailyLog (both types)
-                const startOfDay = new Date(current);
-                startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(current);
-                endOfDay.setHours(23, 59, 59, 999);
-
-                const logsToDelete = await prisma.dailyLog.findMany({
-                    where: {
-                        date: { gte: startOfDay, lte: endOfDay },
-                        OR: [
-                            { content: `[휴무] ${userName}` },
-                            { content: `[결근] ${userName}` }
-                        ]
-                    }
-                });
-
-                for (const log of logsToDelete) {
-                    await prisma.dailyLog.delete({ where: { id: log.id } });
-                }
+                // Delete DailyLog (both types) using helper to handle grouped logs
+                const { removeStatusLog } = await import('@/app/lib/log-utils');
+                await removeStatusLog(leave.userId, current, '휴무');
+                await removeStatusLog(leave.userId, current, '결근');
 
                 current.setDate(current.getDate() + 1);
             }
