@@ -60,12 +60,12 @@ export async function POST(request: Request) {
             // Find or create roster
             let r = await tx.roster.findUnique({ where: { date } });
             if (!r) {
-                r = await tx.roster.create({ 
-                    data: { 
+                r = await tx.roster.create({
+                    data: {
                         date,
                         paletteTeamId: paletteTeamId || null,
                         cleaningTeamId: cleaningTeamId || null
-                    } 
+                    }
                 });
             } else {
                 // Update palette and cleaning team
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
             await tx.rosterAssignment.deleteMany({ where: { rosterId: r.id } });
 
             // Filter out users on approved leave and create new assignments
-            const validAssignments = assignments && assignments.length > 0 
+            const validAssignments = assignments && assignments.length > 0
                 ? assignments.filter((a: any) => !onLeaveUserIds.has(a.userId))
                 : [];
             const newUserIds = new Set<string>(validAssignments.map((a: any) => a.userId as string));
@@ -145,11 +145,17 @@ export async function POST(request: Request) {
 
                     // Only create if attendance doesn't exist
                     if (!existingAttendance) {
+                        // Check if date is in the future
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const isFuture = date > today;
+                        const initialStatus = isFuture ? 'SCHEDULED' : 'PRESENT';
+
                         await tx.attendance.create({
                             data: {
                                 userId: assignment.userId,
                                 date: date,
-                                status: 'PRESENT',
+                                status: initialStatus,
                                 workHours: 8,
                                 overtimeHours: 0,
                             }
