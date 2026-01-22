@@ -6,6 +6,7 @@ import { UserProvider } from '@/app/components/UserContext';
 import { SidebarProvider } from '@/app/components/SidebarContext';
 import { SettingsProvider } from '@/app/components/SettingsContext';
 import { MainContent } from '@/app/components/MainContent';
+import GlobalPopup from '@/app/components/GlobalPopup';
 
 
 
@@ -33,6 +34,7 @@ export default async function DashboardLayout({
             <UserProvider initialUser={user}>
                 <SettingsProvider>
                     <SidebarProvider>
+                        <GlobalPopup />
                         <Sidebar userRole={session.role as string} />
                         <Header userName={session.name as string} />
                         <MainContent>{children}</MainContent>

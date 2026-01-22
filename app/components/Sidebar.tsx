@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Users, Calendar, Clock, FileText, Settings, LogOut, Truck, ClipboardList, Package, TrendingUp } from 'lucide-react';
+import { LayoutDashboard, Users, Calendar, Clock, FileText, Settings, LogOut, Truck, ClipboardList, Package, TrendingUp, CalendarCheck } from 'lucide-react';
 import { useSidebar } from './SidebarContext';
 import { useSettings } from './SettingsContext';
 
 const MENU_ITEMS = [
     { name: '대시보드', icon: LayoutDashboard, href: '/dashboard', roles: ['MANAGER', 'WORKER'] },
     { name: '근무표 관리', icon: Calendar, href: '/dashboard/roster', roles: ['MANAGER'] },
+    { name: '스케줄 관리', icon: CalendarCheck, href: '/dashboard/scheduler', roles: ['MANAGER'] },
     { name: '근무자 관리', icon: Users, href: '/dashboard/workers', roles: ['MANAGER'] },
     { name: '근태 관리', icon: Clock, href: '/dashboard/attendance', roles: ['MANAGER', 'WORKER'] },
     { name: '근태 내역 조회', icon: TrendingUp, href: '/dashboard/attendance/report', roles: ['MANAGER'] },

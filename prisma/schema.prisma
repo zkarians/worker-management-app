@@ -140,3 +140,24 @@ model Product {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
+
+model Schedule {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  type        String   // "ONCE", "DAILY", "WEEKLY", "MONTHLY_DATE", "MONTHLY_DAY"
+  startDate   DateTime
+  endDate     DateTime?
+  time        String?  // "HH:mm" format
+  
+  // Recurrence details
+  dayOfWeek   Int[]    // 0=Sunday, 1=Monday, etc. (for WEEKLY)
+  dayOfMonth  Int?     // 1-31 (for MONTHLY_DATE)
+  weekOfMonth Int?     // 1-5 (for MONTHLY_DAY, e.g., 2nd week)
+  
+  isPopup     Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
