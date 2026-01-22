@@ -114,7 +114,7 @@ export default function DashboardPage() {
             const [rosterRes, teamsRes, usersRes, logsRes, leavesRes, attendanceRes] = await Promise.all([
                 fetch(`/api/roster?date=${date}`),
                 fetch('/api/teams'),
-                fetch('/api/users'),
+                fetch('/api/users?includeResigned=true'),
                 fetch(`/api/logs`), // Fetch recent history
                 fetch(`/api/leaves`),
                 fetch(`/api/attendance?date=${date}`)
@@ -161,8 +161,28 @@ export default function DashboardPage() {
 
             // Calculate stats - handle both manager and worker access
             if (usersData.users && Array.isArray(usersData.users)) {
-                const allWorkers = usersData.users.filter((u: any) => u.role === 'WORKER' && u.isApproved);
-                const allManagers = usersData.users.filter((u: any) => u.role === 'MANAGER' && u.isApproved);
+                const allWorkers = usersData.users.filter((u: any) => {
+                    if (u.role !== 'WORKER' || !u.isApproved) return false;
+                    if (u.resignationDate) {
+                        const resignDate = new Date(u.resignationDate);
+                        const currentDate = new Date(date);
+                        resignDate.setHours(0, 0, 0, 0);
+                        currentDate.setHours(0, 0, 0, 0);
+                        return currentDate < resignDate;
+                    }
+                    return true;
+                });
+                const allManagers = usersData.users.filter((u: any) => {
+                    if (u.role !== 'MANAGER' || !u.isApproved) return false;
+                    if (u.resignationDate) {
+                        const resignDate = new Date(u.resignationDate);
+                        const currentDate = new Date(date);
+                        resignDate.setHours(0, 0, 0, 0);
+                        currentDate.setHours(0, 0, 0, 0);
+                        return currentDate < resignDate;
+                    }
+                    return true;
+                });
 
                 const assignedWorkerIds = rosterData.roster?.assignments
                     ? new Set(rosterData.roster.assignments.map((a: any) => a.userId))
