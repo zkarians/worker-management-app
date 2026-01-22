@@ -46,7 +46,7 @@ export default function SchedulerPage() {
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [currentMonth, setCurrentMonth] = useState(new Date());
 
-    const { user } = useUser();
+    const user = useUser();
     const router = useRouter();
 
     useEffect(() => {
