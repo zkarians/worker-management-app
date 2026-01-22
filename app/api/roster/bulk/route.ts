@@ -33,6 +33,14 @@ export async function POST(request: Request) {
 
         const assignmentsToCopy = sourceRoster.assignments;
 
+        // Fetch users to check resignation dates
+        const userIds = assignmentsToCopy.map((a: any) => a.userId);
+        const users = await prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: { id: true, resignationDate: true }
+        });
+        const userMap = new Map(users.map((u: any) => [u.id, u]));
+
         // Iterate through dates
         const results = [];
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
@@ -42,6 +50,27 @@ export async function POST(request: Request) {
             if (excludeHolidays && isWeekendOrHoliday(currentDate)) {
                 continue;
             }
+
+            // Filter assignments for this specific date
+            const validAssignments = assignmentsToCopy.filter((a: any) => {
+                const user = userMap.get(a.userId);
+                if (!user) return false;
+
+                // Check resignation date
+                if (user.resignationDate) {
+                    // Compare dates: if currentDate is on or after resignationDate, exclude
+                    // Ensure we compare just the date parts
+                    const resignDate = new Date(user.resignationDate);
+                    const current = new Date(currentDate);
+
+                    // Reset times to 00:00:00 for accurate date comparison
+                    resignDate.setHours(0, 0, 0, 0);
+                    current.setHours(0, 0, 0, 0);
+
+                    if (current >= resignDate) return false;
+                }
+                return true;
+            });
 
             // Transaction for each date
             const result = await prisma.$transaction(async (tx: any) => {
@@ -55,14 +84,16 @@ export async function POST(request: Request) {
                 await tx.rosterAssignment.deleteMany({ where: { rosterId: r.id } });
 
                 // Create new assignments
-                await tx.rosterAssignment.createMany({
-                    data: assignmentsToCopy.map((a: any) => ({
-                        rosterId: r.id,
-                        userId: a.userId,
-                        position: a.position,
-                        team: a.team,
-                    })),
-                });
+                if (validAssignments.length > 0) {
+                    await tx.rosterAssignment.createMany({
+                        data: validAssignments.map((a: any) => ({
+                            rosterId: r.id,
+                            userId: a.userId,
+                            position: a.position,
+                            team: a.team,
+                        })),
+                    });
+                }
 
                 return r;
             });

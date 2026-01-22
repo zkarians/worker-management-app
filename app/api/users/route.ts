@@ -3,6 +3,8 @@ import { prisma } from '@/app/lib/prisma';
 import { getSession } from '@/app/lib/auth';
 import bcrypt from 'bcryptjs';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
     try {
         const session = await getSession();
@@ -12,7 +14,16 @@ export async function GET(request: Request) {
 
         // Managers can see all users, workers can only see basic info for stats
         if (session.role === 'MANAGER') {
+            const { searchParams } = new URL(request.url);
+            const includeResigned = searchParams.get('includeResigned') === 'true';
+
+            const whereClause: any = {};
+            if (!includeResigned) {
+                whereClause.resignationDate = null;
+            }
+
             const users = await prisma.user.findMany({
+                where: whereClause,
                 include: { company: true },
                 orderBy: { createdAt: 'desc' },
             });
@@ -26,10 +37,19 @@ export async function GET(request: Request) {
             return NextResponse.json({ users: usersSafe });
         } else {
             // Workers can only see approved workers for dashboard stats
+            const { searchParams } = new URL(request.url);
+            const includeResigned = searchParams.get('includeResigned') === 'true';
+
+            const whereClause: any = {
+                isApproved: true
+            };
+
+            if (!includeResigned) {
+                whereClause.resignationDate = null;
+            }
+
             const users = await prisma.user.findMany({
-                where: {
-                    isApproved: true
-                },
+                where: whereClause,
                 select: {
                     id: true,
                     name: true,
@@ -39,6 +59,7 @@ export async function GET(request: Request) {
                     company: true,
                     companyId: true,
                     hireDate: true,
+                    resignationDate: true,
                     carNumber: true,
                     createdAt: true,
                     updatedAt: true
@@ -126,6 +147,7 @@ export async function PUT(request: Request) {
                     name,
                     carNumber,
                     hireDate: hireDate ? new Date(hireDate) : undefined,
+                    resignationDate: body.resignationDate ? new Date(body.resignationDate) : (body.resignationDate === null ? null : undefined),
                     ...(body.password ? { password: await bcrypt.hash(body.password, 10) } : {}),
                 },
             });

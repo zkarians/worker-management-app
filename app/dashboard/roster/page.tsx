@@ -21,7 +21,9 @@ interface Worker {
     id: string;
     name: string;
     role: string;
+    role: string;
     company?: { name: string };
+    resignationDate?: string | null;
 }
 
 interface Team {
@@ -86,7 +88,7 @@ export default function RosterManagementPage() {
             const [rosterRes, teamsRes, usersRes, leavesRes] = await Promise.all([
                 fetch(`/api/roster?date=${date}`),
                 fetch('/api/teams'),
-                fetch('/api/users'),
+                fetch('/api/users?includeResigned=true'),
                 fetch(`/api/leaves?status=APPROVED`)
             ]);
 
@@ -416,12 +418,34 @@ export default function RosterManagementPage() {
     const getUnassignedWorkers = () => {
         const assignedIds = new Set(assignments.map(a => a.userId));
         // Filter out only assigned workers (keep on-leave workers for display but they'll be disabled)
-        return workers.filter(w => !assignedIds.has(w.id) && w.role === 'WORKER');
+        return workers.filter(w => {
+            if (assignedIds.has(w.id)) return false;
+            if (w.role !== 'WORKER') return false;
+
+            // Filter out resigned workers if current date is on or after resignation date
+            if (w.resignationDate) {
+                const resignDateStr = new Date(w.resignationDate).toISOString().split('T')[0];
+                if (new Date(date) >= new Date(resignDateStr)) return false;
+            }
+
+            return true;
+        });
     };
 
     const getUnassignedManagers = () => {
         const assignedIds = new Set(assignments.map(a => a.userId));
-        return workers.filter(w => !assignedIds.has(w.id) && w.role === 'MANAGER');
+        return workers.filter(w => {
+            if (assignedIds.has(w.id)) return false;
+            if (w.role !== 'MANAGER') return false;
+
+            // Filter out resigned managers if current date is on or after resignation date
+            if (w.resignationDate) {
+                const resignDateStr = new Date(w.resignationDate).toISOString().split('T')[0];
+                if (new Date(date) >= new Date(resignDateStr)) return false;
+            }
+
+            return true;
+        });
     };
 
     const isWorkerOnLeave = (userId: string) => {

@@ -96,6 +96,24 @@ export async function POST(request: Request) {
             return jsonResponse({ error: '승인 대기 중인 계정입니다.' }, 403);
         }
 
+        if (user.resignationDate) {
+            // Get current time in KST
+            const now = new Date();
+            const kstOffset = 9 * 60 * 60 * 1000; // UTC+9
+            const nowKst = new Date(now.getTime() + kstOffset);
+            const todayKstStr = nowKst.toISOString().split('T')[0];
+
+            // Get resignation date in KST (assuming it was stored as UTC 00:00 which is KST 09:00, or just YYYY-MM-DD)
+            // Ideally we compare the YYYY-MM-DD part.
+            const resignDate = new Date(user.resignationDate);
+            const resignDateStr = resignDate.toISOString().split('T')[0];
+
+            // If today (KST) is on or after resignation date, block
+            if (todayKstStr >= resignDateStr) {
+                return jsonResponse({ error: '퇴사 처리된 계정입니다. 접속이 불가능합니다.' }, 403);
+            }
+        }
+
         try {
             await login({ userId: user.id, role: user.role, name: user.name }, body.rememberMe);
         } catch (loginError) {

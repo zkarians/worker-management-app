@@ -54,7 +54,7 @@ export function BulkCopyModal({ isOpen, onClose, onSuccess }: BulkCopyModalProps
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-20 bg-black/60 backdrop-blur-sm">
             <GlassCard className="w-full max-w-md relative animate-fade-in bg-white border-slate-200">
                 <button
                     onClick={onClose}

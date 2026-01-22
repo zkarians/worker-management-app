@@ -127,6 +127,8 @@ export default function SchedulerPage() {
                     return schedule.dayOfMonth === dayOfMonth;
                 case 'MONTHLY_DAY':
                     return schedule.weekOfMonth === weekOfMonth && schedule.dayOfWeek.includes(dayOfWeek);
+                case 'MONTHLY_LAST':
+                    return isSameDay(day, lastDayOfMonth(day));
                 default:
                     return false;
             }

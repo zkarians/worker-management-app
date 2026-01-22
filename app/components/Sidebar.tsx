@@ -81,7 +81,7 @@ export function Sidebar({ userRole }: { userRole: string }) {
             )}
 
             {/* Sidebar */}
-            <aside className={`
+            <aside suppressHydrationWarning className={`
                 fixed left-0 top-0 h-screen w-64 bg-white border-r border-slate-200 flex flex-col z-50 transition-transform duration-300 md:translate-x-0 shadow-sm print:hidden
                 ${isOpen ? 'translate-x-0' : '-translate-x-full'}
             `}>

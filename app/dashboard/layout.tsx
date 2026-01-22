@@ -30,7 +30,7 @@ export default async function DashboardLayout({
     };
 
     return (
-        <div className="min-h-screen bg-[url('/bg-grid.svg')]">
+        <div className="min-h-screen bg-[url('/bg-grid.svg')]" suppressHydrationWarning>
             <UserProvider initialUser={user}>
                 <SettingsProvider>
                     <SidebarProvider>

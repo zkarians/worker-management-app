@@ -119,6 +119,7 @@ export default function ScheduleForm({ onClose, onSuccess, initialData, initialD
                             <option value="WEEKLY">매주</option>
                             <option value="MONTHLY_DATE">매월 (날짜 기준)</option>
                             <option value="MONTHLY_DAY">매월 (요일 기준)</option>
+                            <option value="MONTHLY_LAST">매월 (마지막 날)</option>
                         </select>
                     </div>
 

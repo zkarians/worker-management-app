@@ -21,6 +21,7 @@ model User {
   hireDate  DateTime?
   carNumber String?
   isApproved Boolean @default(false)
+  resignationDate DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
