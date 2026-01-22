@@ -21,7 +21,6 @@ interface Worker {
     id: string;
     name: string;
     role: string;
-    role: string;
     company?: { name: string };
     resignationDate?: string | null;
 }
