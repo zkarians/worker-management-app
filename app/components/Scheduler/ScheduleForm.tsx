@@ -177,14 +177,28 @@ export default function ScheduleForm({ onClose, onSuccess, initialData, initialD
 
                     {formData.type === 'MONTHLY_DATE' && (
                         <div>
-                            <label className="block text-sm font-medium mb-1">날짜 (1-31)</label>
+                            <div className="flex justify-between items-center mb-1">
+                                <label className="block text-sm font-medium">날짜 (1-31)</label>
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="isLastDay"
+                                        checked={formData.dayOfMonth === -1}
+                                        onChange={e => setFormData({ ...formData, dayOfMonth: e.target.checked ? -1 : 1 })}
+                                        className="w-4 h-4"
+                                    />
+                                    <label htmlFor="isLastDay" className="text-sm text-gray-600">매월 말일</label>
+                                </div>
+                            </div>
                             <input
                                 type="number"
                                 min="1"
                                 max="31"
-                                className="w-full border rounded p-2"
-                                value={formData.dayOfMonth || ''}
+                                className="w-full border rounded p-2 disabled:bg-gray-100 disabled:text-gray-400"
+                                value={formData.dayOfMonth === -1 ? '' : formData.dayOfMonth || ''}
                                 onChange={e => setFormData({ ...formData, dayOfMonth: parseInt(e.target.value) })}
+                                disabled={formData.dayOfMonth === -1}
+                                placeholder={formData.dayOfMonth === -1 ? "매월 말일로 설정됨" : ""}
                             />
                         </div>
                     )}

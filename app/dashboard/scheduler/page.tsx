@@ -20,7 +20,8 @@ import {
     parseISO,
     getDay,
     getDate,
-    getWeekOfMonth
+    getWeekOfMonth,
+    lastDayOfMonth
 } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
@@ -120,6 +121,9 @@ export default function SchedulerPage() {
                 case 'WEEKLY':
                     return schedule.dayOfWeek.includes(dayOfWeek);
                 case 'MONTHLY_DATE':
+                    if (schedule.dayOfMonth === -1) {
+                        return isSameDay(day, lastDayOfMonth(day));
+                    }
                     return schedule.dayOfMonth === dayOfMonth;
                 case 'MONTHLY_DAY':
                     return schedule.weekOfMonth === weekOfMonth && schedule.dayOfWeek.includes(dayOfWeek);

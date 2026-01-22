@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
-import { startOfDay, endOfDay, getDay, getDate, getWeekOfMonth } from 'date-fns';
+import { startOfDay, endOfDay, getDay, getDate, getWeekOfMonth, lastDayOfMonth, isSameDay } from 'date-fns';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +45,9 @@ export async function GET() {
                     return schedule.dayOfWeek.includes(currentDayOfWeek);
 
                 case 'MONTHLY_DATE':
+                    if (schedule.dayOfMonth === -1) {
+                        return isSameDay(now, lastDayOfMonth(now));
+                    }
                     return schedule.dayOfMonth === currentDayOfMonth;
 
                 case 'MONTHLY_DAY':
