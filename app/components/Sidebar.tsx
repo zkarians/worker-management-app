@@ -16,7 +16,6 @@ const MENU_ITEMS = [
     { name: '근태 내역 조회', icon: TrendingUp, href: '/dashboard/attendance/report', roles: ['MANAGER'] },
     { name: '제품 정보', icon: Package, href: '/dashboard/products', roles: ['MANAGER', 'WORKER'] },
     { name: '휴무 관리', icon: FileText, href: '/dashboard/leaves', roles: ['MANAGER', 'WORKER'] },
-    { name: '특이사항', href: '/dashboard/logs', icon: ClipboardList, roles: ['MANAGER'] },
     { name: '보고서', icon: FileText, href: '/dashboard/report', roles: ['MANAGER'] },
     { name: '설정', icon: Settings, href: '/dashboard/settings', roles: ['MANAGER', 'WORKER'] },
 ];

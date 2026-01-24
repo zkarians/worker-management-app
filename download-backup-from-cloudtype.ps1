@@ -69,13 +69,12 @@ try {
         -Uri "$AppUrl/api/admin/backup" `
         -Headers $headers `
         -Method GET `
-        -TimeoutSec 300
+        -TimeoutSec 300 `
+        -OutFile $outputFile
     
-    # 파일로 저장
-    $response.Content | Out-File -FilePath $outputFile -Encoding UTF8
-    
-    # 백업 정보 파싱
-    $backup = $response.Content | ConvertFrom-Json
+    # 백업 정보 파싱 (파일에서 읽기)
+    $fileContent = Get-Content -Path $outputFile -Raw -Encoding UTF8
+    $backup = $fileContent | ConvertFrom-Json
     
     Write-Host "✅ Backup downloaded successfully!" -ForegroundColor Green
     Write-Host ""

@@ -42,15 +42,32 @@ export default function AttendancePage() {
     const [loading, setLoading] = useState(true);
     const [selectedUserId, setSelectedUserId] = useState<string>(''); // '' means '전체'
     const [workers, setWorkers] = useState<{ id: string; name: string }[]>([]);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     // Bulk Edit State
     const [bulkWorkHours, setBulkWorkHours] = useState(8);
     const [bulkOvertime, setBulkOvertime] = useState(0);
     const [bulkStatus, setBulkStatus] = useState('PRESENT'); // 상태 일괄 적용 추가
 
+    // Initialize dates based on role
     useEffect(() => {
-        fetchData();
-    }, [startDate, endDate, selectedUserId]);
+        if (user && !isInitialized) {
+            if (user.role === 'MANAGER') {
+                const now = new Date();
+                const offset = now.getTimezoneOffset() * 60000;
+                const today = new Date(now.getTime() - offset).toISOString().split('T')[0];
+                setStartDate(today);
+                setEndDate(today);
+            }
+            setIsInitialized(true);
+        }
+    }, [user, isInitialized]);
+
+    useEffect(() => {
+        if (user && isInitialized) {
+            fetchData();
+        }
+    }, [startDate, endDate, selectedUserId, user, isInitialized]);
 
     const getStatusFromRoster = (dateStr: string, hasActualAttendance: boolean, actualStatus: string): string => {
         // If there's actual attendance data, use it

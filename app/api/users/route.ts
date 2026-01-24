@@ -19,7 +19,10 @@ export async function GET(request: Request) {
 
             const whereClause: any = {};
             if (!includeResigned) {
-                whereClause.resignationDate = null;
+                whereClause.OR = [
+                    { resignationDate: null },
+                    { resignationDate: { gt: new Date() } }
+                ];
             }
 
             const users = await prisma.user.findMany({
@@ -45,7 +48,10 @@ export async function GET(request: Request) {
             };
 
             if (!includeResigned) {
-                whereClause.resignationDate = null;
+                whereClause.OR = [
+                    { resignationDate: null },
+                    { resignationDate: { gt: new Date() } }
+                ];
             }
 
             const users = await prisma.user.findMany({

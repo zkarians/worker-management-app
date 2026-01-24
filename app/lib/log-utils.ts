@@ -102,7 +102,14 @@ export async function checkAndConsolidateOffDayLogs(date: Date, authorId: string
 
     // 1. Get all active workers
     const users = await prisma.user.findMany({
-        where: { role: { in: ['WORKER', 'MANAGER'] }, isApproved: true }
+        where: {
+            role: { in: ['WORKER', 'MANAGER'] },
+            isApproved: true,
+            OR: [
+                { resignationDate: null },
+                { resignationDate: { gt: date } }
+            ]
+        }
     });
     const totalUsers = users.length;
 
