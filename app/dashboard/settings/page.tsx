@@ -978,6 +978,11 @@ export function SafetyEducationManagement() {
                 TBM 일지에 출력될 안전교육 내용을 관리합니다. 날짜에 따라 로테이션으로 3개가 표시됩니다.
             </div>
 
+            <div className="flex items-center justify-between bg-slate-50 rounded-xl p-4 mb-4">
+                <div className="text-center">
+                    <p className="text-2xl font-bold text-slate-900">{totalCount ?? '-'}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">전체 항목</p>
+                </div>
                 <div className="w-px h-10 bg-slate-200" />
                 <div className="text-center">
                     <p className="text-2xl font-bold text-indigo-600">{activeCount ?? '-'}</p>
