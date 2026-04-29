@@ -1,0 +1,12 @@
+﻿d:\Gemini\pg_bin\pgsql\bin\psql.exe : psql: error: d:/Gem
+ini/worker-management-app/worker_db_dump_work_2026-04-14.
+sql: No such file or directory
+위치 줄:1 문자:35
++ ... 6qwe12`!@"; d:\Gemini\pg_bin\pgsql\bin\psql.exe -h 
+ungdong.iptime.org ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (psql: error 
+   : d:...le or directory:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
