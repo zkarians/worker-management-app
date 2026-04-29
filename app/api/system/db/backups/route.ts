@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/app/lib/auth';
 import { Client } from 'ssh2';
+import fs from 'fs';
+import path from 'path';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,15 +26,36 @@ export async function GET(request: Request) {
         const sshPort = parseInt(searchParams.get('sshPort') || '9022');
         const decodedPassword = password.includes('%') ? decodeURIComponent(password) : password;
 
+        const localMode = searchParams.get('localMode') === 'true' || 
+                         host === 'localhost' || 
+                         host === '127.0.0.1' || 
+                         host === 'idlezero.iptime.org';
+
         if (!host || !user || !decodedPassword) {
             throw new Error('Connection settings are incomplete');
+        }
+
+        if (localMode) {
+            const backupDir = path.join(process.cwd(), 'backup');
+            if (!fs.existsSync(backupDir)) {
+                fs.mkdirSync(backupDir, { recursive: true });
+            }
+
+            const files = fs.readdirSync(backupDir)
+                .filter(f => f.endsWith('.sql'))
+                .map(f => ({
+                    name: f,
+                    mtime: fs.statSync(path.join(backupDir, f)).mtime.getTime()
+                }))
+                .sort((a, b) => b.mtime - a.mtime)
+                .map(f => f.name);
+
+            return NextResponse.json({ files });
         }
 
         return new Promise<NextResponse>((resolve) => {
             const conn = new Client();
             conn.on('ready', () => {
-                // List files in backup folder, sorted by modification time (newest first)
-                // -1: one file per line, -t: sort by time, -r: reverse (if needed, but we want newest first, so -t is enough)
                 const cmd = `mkdir -p backup && ls -1t backup/`;
                 conn.exec(cmd, (err, stream) => {
                     if (err) {
@@ -95,20 +118,33 @@ export async function DELETE(request: Request) {
         const sshPort = parseInt(searchParams.get('sshPort') || '9022');
         const decodedPassword = password.includes('%') ? decodeURIComponent(password) : password;
 
+        const localMode = searchParams.get('localMode') === 'true' || 
+                         host === 'localhost' || 
+                         host === '127.0.0.1' || 
+                         host === 'idlezero.iptime.org';
+
         if (!host || !user || !decodedPassword) {
             throw new Error('Connection settings are incomplete');
+        }
+
+        // Sanitize filename
+        if (filename.includes('/') || filename.includes('\\') || !filename.endsWith('.sql')) {
+            return NextResponse.json({ error: 'Invalid filename' }, { status: 400 });
+        }
+
+        if (localMode) {
+            const filePath = path.join(process.cwd(), 'backup', filename);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+                return NextResponse.json({ success: true, message: '파일이 삭제되었습니다.' });
+            } else {
+                return NextResponse.json({ error: '파일을 찾을 수 없습니다.' }, { status: 404 });
+            }
         }
 
         return new Promise<NextResponse>((resolve) => {
             const conn = new Client();
             conn.on('ready', () => {
-                // Sanitize filename: only allow .sql files from backup/ folder
-                if (filename.includes('/') || filename.includes('\\') || !filename.endsWith('.sql')) {
-                    conn.end();
-                    resolve(NextResponse.json({ error: 'Invalid filename' }, { status: 400 }));
-                    return;
-                }
-
                 const cmd = `rm "backup/${filename}"`;
                 conn.exec(cmd, (err, stream) => {
                     if (err) {
