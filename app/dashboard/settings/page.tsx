@@ -1505,49 +1505,6 @@ function DatabaseManagement() {
                         {status.message}
                     </div>
                 )}
-{isLoadingBackups ? '목록 불러오는 중...' : '폰에서 백업 목록 불러오기'}
-                    </button>
-
-                    {remoteBackups.length > 0 && (
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-200">
-                            {remoteBackups.map(file => (
-                                <div key={file} className="flex items-center justify-between p-3 hover:bg-white transition-colors group">
-                                    <div className="flex items-center gap-3">
-                                        <Database size={16} className="text-slate-400" />
-                                        <span className="text-sm font-medium text-slate-700 truncate max-w-[200px] md:max-w-xs">{file}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => handleRemoteRestore(file)}
-                                            disabled={isImporting}
-                                            className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
-                                        >
-                                            복원하기
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteRemoteBackup(file)}
-                                            disabled={isImporting}
-                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
-                                            title="삭제"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {status && (
-                    <div className={`p-3 rounded-lg text-sm break-all ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' :
-                        status.type === 'error' ? 'bg-red-50 text-red-700 border border-red-100' :
-                            'bg-blue-50 text-blue-700 border border-blue-100'
-                        }`}>
-                        {status.type === 'info' && <span className="animate-spin text-blue-500 mr-2">⏳</span>}
-                        {status.message}
-                    </div>
-                )}
 
                 {/* Real-time Log Viewer */}
                 {(isPolling || logs.length > 0) && (
