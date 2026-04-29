@@ -77,7 +77,7 @@ export function Header({ userName, userLoginId }: { userName: string; userLoginI
                 </div>
                 <div className="h-8 w-[1px] bg-slate-200 mx-2 hidden md:block"></div>
                 <div className="text-xs text-slate-500 font-medium hidden md:block">
-                    {new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
+                    {mounted ? new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' }) : ''}
                 </div>
                 <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-all relative">
                     <Bell size={20} />

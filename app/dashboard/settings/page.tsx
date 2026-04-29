@@ -34,19 +34,24 @@ export default function SettingsPage() {
         carNumber: '',
         hireDate: ''
     });
-    const {
-        sidebarFontSize, setSidebarFontSize,
-        mainFontSize, setMainFontSize,
-        fontFamily, setFontFamily
-    } = useSettings();
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         if (user?.role === 'MANAGER') {
             fetchCompanies();
             fetchSystemConfig();
         }
         fetchUserProfile();
     }, [user]);
+
+    const {
+        sidebarFontSize, setSidebarFontSize,
+        mainFontSize, setMainFontSize,
+        fontFamily, setFontFamily
+    } = useSettings();
+
+    if (!mounted) return null;
 
     const fetchSystemConfig = async () => {
         try {

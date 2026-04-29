@@ -18,6 +18,7 @@ export function GlassCard({ children, className, hoverEffect = false, ...props }
 
     return (
         <div
+            suppressHydrationWarning
             className={cn(
                 "glass-card p-6 transition-all duration-300",
                 hoverEffect && "hover:bg-white hover:border-indigo-500/30 hover:shadow-lg hover:shadow-indigo-500/5 hover:-translate-y-1",

@@ -18,7 +18,10 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
     const [mainFontSize, setMainFontSize] = useState('medium');
     const [fontFamily, setFontFamily] = useState('Nanum Gothic');
 
+    const [mounted, setMounted] = useState(false);
+    
     useEffect(() => {
+        setMounted(true);
         // Load settings from localStorage
         const savedSidebarSize = localStorage.getItem('sidebarFontSize');
         const savedMainSize = localStorage.getItem('mainFontSize');
