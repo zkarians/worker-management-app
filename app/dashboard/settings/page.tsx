@@ -36,22 +36,6 @@ export default function SettingsPage() {
     });
     const [mounted, setMounted] = useState(false);
 
-    useEffect(() => {
-        setMounted(true);
-        if (user?.role === 'MANAGER') {
-            fetchCompanies();
-            fetchSystemConfig();
-        }
-        fetchUserProfile();
-    }, [user]);
-
-    const {
-        sidebarFontSize, setSidebarFontSize,
-        mainFontSize, setMainFontSize,
-        fontFamily, setFontFamily
-    } = useSettings();
-
-    if (!mounted) return null;
 
     const fetchSystemConfig = async () => {
         try {
@@ -192,6 +176,23 @@ export default function SettingsPage() {
             setProfileMessage(error.message || '프로필 업데이트에 실패했습니다.');
         }
     };
+
+    useEffect(() => {
+        setMounted(true);
+        if (user?.role === 'MANAGER') {
+            fetchCompanies();
+            fetchSystemConfig();
+        }
+        fetchUserProfile();
+    }, [user]);
+
+    const {
+        sidebarFontSize, setSidebarFontSize,
+        mainFontSize, setMainFontSize,
+        fontFamily, setFontFamily
+    } = useSettings();
+
+    if (!mounted) return null;
 
     return (
         <div className="space-y-6">
@@ -1392,6 +1393,7 @@ function DatabaseManagement() {
                     <ul className="list-disc list-inside space-y-1">
                         <li><strong>정식 SQL 백업</strong>: DB 전체 구조와 데이터를 가장 완벽하게 복구합니다. (권장)</li>
                         <li><strong>JSON 백업</strong>: 데이터 위주로 백업하며 호환성이 좋습니다.</li>
+                        <li className="text-amber-600 font-bold">⚠️ 413 오류 발생 시: 파일이 너무 커서 업로드할 수 없습니다. 하단의 [서버에서 복구] 기능을 이용하세요.</li>
                     </ul>
                     {backupMode === 'local' ? (
                         <p className="mt-2 text-[11px] text-blue-600 font-medium">✨ 로컬 모드: SSH 없이 서버 엔진에서 직접 고속 백업을 수행합니다.</p>
