@@ -38,7 +38,8 @@ export function MonthlyCalendarWidget({
     isManager?: boolean,
     selectedDate?: string
 }) {
-    const [currentDate, setCurrentDate] = useState(new Date('2026-01-01')); // Stable initial date for hydration
+    const [currentDate, setCurrentDate] = useState(new Date('2026-05-01')); 
+    const [mounted, setMounted] = useState(false);
     const [logs, setLogs] = useState<DailyLog[]>([]);
     const [attendance, setAttendance] = useState<Attendance[]>([]);
     const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
@@ -46,6 +47,13 @@ export function MonthlyCalendarWidget({
 
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth() + 1;
+
+    useEffect(() => {
+        setMounted(true);
+        if (!selectedDate) {
+            setCurrentDate(new Date());
+        }
+    }, []);
 
     useEffect(() => {
         if (selectedDate) {
