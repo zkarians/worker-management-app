@@ -58,7 +58,7 @@ export async function GET(request: Request) {
                 fs.mkdirSync(path.join(process.cwd(), 'backup'), { recursive: true });
             }
             console.log(`📡 [Local] DB Dump starting (${saveTo}): ${dbname}...`);
-            addLog(`[로컬] DB 백업 시작 (대상: ${saveTo})...`);
+            addLog(`[로컬] DB 백업 시작 (대상: ${saveTo === 'phone' ? '로컬 서버' : saveTo === 'pc' ? 'PC' : '둘 다'})...`);
 
             // Use portable path if exists, otherwise assume pg_dump is in PATH
             const pgDumpPath = fs.existsSync(path.join(LOCAL_PG_BIN, 'pg_dump.exe'))
@@ -139,7 +139,7 @@ export async function GET(request: Request) {
         }
 
         console.log(`📡 [ssh2] DB Dump starting (${saveTo}): ${host}:${sshPort} for ${dbname}...`);
-        addLog(`DB 백업 시작 (대상: ${saveTo})...`);
+        addLog(`DB 백업 시작 (대상: ${saveTo === 'phone' ? '원격 서버' : saveTo === 'pc' ? 'PC' : '둘 다'})...`);
 
         return new Promise<Response>((resolve) => {
             const conn = new Client();

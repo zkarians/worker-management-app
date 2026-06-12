@@ -1123,7 +1123,7 @@ function DatabaseManagement() {
         setIsExporting(true);
         setIsPolling(true);
         setLogs([]);
-        setStatus({ type: 'info', message: `정식 SQL 백업을 생성 중입니다 (${saveTo})...` });
+        setStatus({ type: 'info', message: `정식 SQL 백업을 생성 중입니다 (${saveTo === 'phone' ? (backupMode === 'local' ? '로컬 서버' : '원격 서버') : saveTo === 'pc' ? 'PC 다운로드' : '둘 다'})...` });
         try {
             const res = await fetch(`/api/system/db/dump?${getQueryString()}&saveTo=${saveTo}`);
             if (!res.ok) {
