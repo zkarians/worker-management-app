@@ -1474,27 +1474,6 @@ function DatabaseManagement() {
                     </div>
                 </div>
 
-                {/* JSON Backup/Restore (Cross-platform) */}
-                <div className="space-y-3">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">데이터 위주 백업 (JSON)</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <button
-                            onClick={handleJsonBackup}
-                            disabled={isExporting || isImporting}
-                            className="flex items-center justify-center gap-2 p-3 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition-all font-medium disabled:opacity-50"
-                        >
-                            <Download size={18} /> JSON 백업
-                        </button>
-                        <button
-                            onClick={() => jsonFileInputRef.current?.click()}
-                            disabled={isExporting || isImporting}
-                            className="flex items-center justify-center gap-2 p-3 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-all font-medium disabled:opacity-50"
-                        >
-                            <Upload size={18} /> JSON 복구
-                        </button>
-                        <input type="file" ref={jsonFileInputRef} onChange={handleJsonRestore} accept=".json" className="hidden" />
-                    </div>
-                </div>
 
                 {/* Remote Backup Selection */}
                 <div className="space-y-3">
