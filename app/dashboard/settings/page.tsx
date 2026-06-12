@@ -1044,7 +1044,7 @@ function DatabaseManagement() {
     const [isPolling, setIsPolling] = useState(false);
     const [remoteBackups, setRemoteBackups] = useState<string[]>([]);
     const [isLoadingBackups, setIsLoadingBackups] = useState(false);
-    const [saveTo, setSaveTo] = useState<'pc' | 'phone' | 'both'>('both');
+    const [saveTo, setSaveTo] = useState<'pc' | 'phone' | 'both'>('pc');
     const jsonFileInputRef = useRef<HTMLInputElement>(null);
     const sqlFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -1406,19 +1406,6 @@ function DatabaseManagement() {
                 <div className="space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">정식 PostgreSQL 백업 (Native)</p>
-
-                        {/* Destination Selector */}
-                        <div className="flex bg-slate-100 p-1 rounded-lg w-full sm:w-auto">
-                            {(['pc', 'phone', 'both'] as const).map((t) => (
-                                <button
-                                    key={t}
-                                    onClick={() => setSaveTo(t)}
-                                    className={`px-3 py-1 text-[10px] md:text-xs rounded-md transition-all whitespace-nowrap ${saveTo === t ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-slate-500 hover:bg-slate-50'}`}
-                                >
-                                    {t === 'pc' ? 'PC 다운로드' : t === 'phone' ? (backupMode === 'local' ? '서버에 저장' : '폰에 저장') : '둘 다 저장'}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <button
