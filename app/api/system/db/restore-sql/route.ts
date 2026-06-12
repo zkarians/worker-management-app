@@ -3,6 +3,7 @@ import { getSession } from '@/app/lib/auth';
 import { Client } from 'ssh2';
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { exec } from 'child_process';
 import { addLog, clearLogs } from '@/app/lib/ssh-utils';
 
@@ -55,10 +56,7 @@ export async function POST(request: Request) {
             }
 
             addLog('📦 업로드된 파일을 임시 저장 중...');
-            tempFilePath = path.join(process.cwd(), 'tmp', `restore_sql_${Date.now()}.sql`);
-            if (!fs.existsSync(path.join(process.cwd(), 'tmp'))) {
-                fs.mkdirSync(path.join(process.cwd(), 'tmp'), { recursive: true });
-            }
+            tempFilePath = path.join(os.tmpdir(), `restore_sql_${Date.now()}.sql`);
             const buffer = Buffer.from(await file.arrayBuffer());
             fs.writeFileSync(tempFilePath, buffer);
             addLog(`✅ 파일 임시 저장 완료 (${(buffer.length / 1024 / 1024).toFixed(2)} MB).`);

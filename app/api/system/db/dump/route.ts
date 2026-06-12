@@ -48,14 +48,14 @@ export async function GET(request: Request) {
         const decodedPassword = password.includes('%') ? decodeURIComponent(password) : password;
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const filename = `db_dump_${dbname}_${timestamp}.sql`;
-        const localBackupPath = path.join(process.cwd(), 'backup', filename);
-
-        // Ensure backup directory exists
-        if (!fs.existsSync(path.join(process.cwd(), 'backup'))) {
-            fs.mkdirSync(path.join(process.cwd(), 'backup'), { recursive: true });
-        }
 
         if (localMode) {
+            const localBackupPath = path.join(process.cwd(), 'backup', filename);
+
+            // Ensure backup directory exists
+            if (!fs.existsSync(path.join(process.cwd(), 'backup'))) {
+                fs.mkdirSync(path.join(process.cwd(), 'backup'), { recursive: true });
+            }
             console.log(`📡 [Local] DB Dump starting (${saveTo}): ${dbname}...`);
             addLog(`[로컬] DB 백업 시작 (대상: ${saveTo})...`);
 
