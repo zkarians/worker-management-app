@@ -24,6 +24,8 @@ export async function GET(request: Request) {
         const user = searchParams.get('user') || match[1];
         const password = searchParams.get('password') || decodeURIComponent(match[2] || '');
         const sshPort = parseInt(searchParams.get('sshPort') || '9022');
+        const sshUser = searchParams.get('sshUser') || user;
+        const sshPasswordRaw = searchParams.get('sshPassword') || password;
         const decodedPassword = password.includes('%') ? decodeURIComponent(password) : password;
 
         const localMode = searchParams.get('localMode') === 'true' || 
@@ -106,8 +108,8 @@ export async function GET(request: Request) {
             }).connect({
                 host,
                 port: sshPort,
-                username: user,
-                password: decodedPassword,
+                username: sshUser,
+                password: sshPasswordRaw.includes('%') ? decodeURIComponent(sshPasswordRaw) : sshPasswordRaw,
                 tryKeyboard: true,
                 readyTimeout: 30000
             });
@@ -140,6 +142,8 @@ export async function DELETE(request: Request) {
         const user = searchParams.get('user') || match[1];
         const password = searchParams.get('password') || decodeURIComponent(match[2] || '');
         const sshPort = parseInt(searchParams.get('sshPort') || '9022');
+        const sshUser = searchParams.get('sshUser') || user;
+        const sshPasswordRaw = searchParams.get('sshPassword') || password;
         const decodedPassword = password.includes('%') ? decodeURIComponent(password) : password;
 
         const localMode = searchParams.get('localMode') === 'true' || 
@@ -215,8 +219,8 @@ export async function DELETE(request: Request) {
             }).connect({
                 host,
                 port: sshPort,
-                username: user,
-                password: decodedPassword,
+                username: sshUser,
+                password: sshPasswordRaw.includes('%') ? decodeURIComponent(sshPasswordRaw) : sshPasswordRaw,
                 tryKeyboard: true,
                 readyTimeout: 30000
             });

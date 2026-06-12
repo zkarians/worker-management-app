@@ -1037,7 +1037,9 @@ function DatabaseManagement() {
         user: 'postgres',
         password: 'z456qwe12!@',
         dbname: 'work',
-        sshPort: '9022'
+        sshPort: '9022',
+        sshUser: '',
+        sshPassword: ''
     });
     const [backupMode, setBackupMode] = useState<'local' | 'remote'>('local');
     const [logs, setLogs] = useState<string[]>([]);
@@ -1374,16 +1376,38 @@ function DatabaseManagement() {
                             />
                         </div>
                         {backupMode === 'remote' && (
-                            <div className="space-y-1">
-                                <label className="text-xs text-slate-500 ml-1">SSH 포트 (SSH Port)</label>
-                                <input
-                                    type="text"
-                                    value={config.sshPort}
-                                    onChange={e => setConfig({ ...config, sshPort: e.target.value })}
-                                    className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                    placeholder="9022"
-                                />
-                            </div>
+                            <>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-slate-500 ml-1">SSH 포트 (SSH Port)</label>
+                                    <input
+                                        type="text"
+                                        value={config.sshPort}
+                                        onChange={e => setConfig({ ...config, sshPort: e.target.value })}
+                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="9022"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-slate-500 ml-1">SSH 사용자 (SSH User)</label>
+                                    <input
+                                        type="text"
+                                        value={config.sshUser}
+                                        onChange={e => setConfig({ ...config, sshUser: e.target.value })}
+                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="공란 시 DB 사용자 사용"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs text-slate-500 ml-1">SSH 비밀번호 (SSH Password)</label>
+                                    <input
+                                        type="password"
+                                        value={config.sshPassword}
+                                        onChange={e => setConfig({ ...config, sshPassword: e.target.value })}
+                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="공란 시 DB 비밀번호 사용"
+                                    />
+                                </div>
+                            </>
                         )}
                     </div>
                 </div>

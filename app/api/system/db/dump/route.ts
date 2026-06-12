@@ -34,6 +34,8 @@ export async function GET(request: Request) {
         const dbname = searchParams.get('dbname') || (match[5] ? match[5].split('?')[0] : '');
         const port = searchParams.get('port') || match[4] || '5432';
         const sshPort = parseInt(searchParams.get('sshPort') || '9022');
+        const sshUser = searchParams.get('sshUser') || user;
+        const sshPasswordRaw = searchParams.get('sshPassword') || password;
         const localMode = searchParams.get('localMode') === 'true' || 
                          host === 'localhost' || 
                          host === '127.0.0.1';
@@ -235,8 +237,8 @@ export async function GET(request: Request) {
             }).connect({
                 host,
                 port: sshPort,
-                username: user,
-                password: decodedPassword,
+                username: sshUser,
+                password: sshPasswordRaw.includes('%') ? decodeURIComponent(sshPasswordRaw) : sshPasswordRaw,
                 tryKeyboard: true,
                 readyTimeout: 30000
             });
