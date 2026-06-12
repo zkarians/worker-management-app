@@ -33,7 +33,7 @@
     "html2canvas": "^1.4.1",
     "jose": "^6.1.2",
     "lucide-react": "^0.555.0",
-    "next": "^16.1.6",
+    "next": "^16.2.9",
     "nodemailer": "^8.0.1",
     "pg": "^8.16.3",
     "prisma": "^5.22.0",
@@ -53,7 +53,7 @@
     "@types/react-dom": "^19",
     "@types/ssh2": "^1.15.5",
     "eslint": "^9",
-    "eslint-config-next": "^16.1.6",
+    "eslint-config-next": "^16.2.9",
     "tailwindcss": "^4",
     "typescript": "^5"
   },
