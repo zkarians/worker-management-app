@@ -1037,7 +1037,7 @@ function DatabaseManagement() {
         user: 'postgres',
         password: 'z456qwe12!@',
         dbname: 'work',
-        sshPort: '9022',
+        sshPort: '22',
         sshUser: '',
         sshPassword: ''
     });

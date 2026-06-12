@@ -24,7 +24,7 @@ export async function GET() {
                 user,
                 password: decodeURIComponent(password),
                 dbname: dbname.split('?')[0],
-                sshPort: '9022' // Default AidLux SSH port
+                sshPort: '22'
             });
         }
 

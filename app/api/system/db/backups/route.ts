@@ -23,7 +23,7 @@ export async function GET(request: Request) {
         const host = searchParams.get('host') || match[3];
         const user = searchParams.get('user') || match[1];
         const password = searchParams.get('password') || decodeURIComponent(match[2] || '');
-        const sshPort = parseInt(searchParams.get('sshPort') || '9022');
+        const sshPort = parseInt(searchParams.get('sshPort') || '22');
         const sshUser = searchParams.get('sshUser') || user;
         const sshPasswordRaw = searchParams.get('sshPassword') || password;
         const decodedPassword = password.includes('%') ? decodeURIComponent(password) : password;
@@ -141,7 +141,7 @@ export async function DELETE(request: Request) {
         const host = searchParams.get('host') || match[3];
         const user = searchParams.get('user') || match[1];
         const password = searchParams.get('password') || decodeURIComponent(match[2] || '');
-        const sshPort = parseInt(searchParams.get('sshPort') || '9022');
+        const sshPort = parseInt(searchParams.get('sshPort') || '22');
         const sshUser = searchParams.get('sshUser') || user;
         const sshPasswordRaw = searchParams.get('sshPassword') || password;
         const decodedPassword = password.includes('%') ? decodeURIComponent(password) : password;

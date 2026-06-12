@@ -33,7 +33,7 @@ export async function GET(request: Request) {
         const password = searchParams.get('password') || decodeURIComponent(match[2] || '');
         const dbname = searchParams.get('dbname') || (match[5] ? match[5].split('?')[0] : '');
         const port = searchParams.get('port') || match[4] || '5432';
-        const sshPort = parseInt(searchParams.get('sshPort') || '9022');
+        const sshPort = parseInt(searchParams.get('sshPort') || '22');
         const sshUser = searchParams.get('sshUser') || user;
         const sshPasswordRaw = searchParams.get('sshPassword') || password;
         const localMode = searchParams.get('localMode') === 'true' || 
