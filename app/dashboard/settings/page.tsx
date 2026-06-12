@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { GlassCard } from '@/app/components/GlassCard';
 import { useUser } from '@/app/components/UserContext';
-import { Settings, Lock, Building, Trash2, Plus, Users as UsersIcon, Monitor, Smartphone, User, Edit2, Check, X, Shield, Upload, Download, ExternalLink, Camera, Database, Terminal } from 'lucide-react';
+import { Settings, Lock, Building, Trash2, Plus, Users as UsersIcon, Monitor, Server, User, Edit2, Check, X, Shield, Upload, Download, ExternalLink, Camera, Database, Terminal } from 'lucide-react';
 import { useSettings } from '@/app/components/SettingsContext';
 import * as XLSX from 'xlsx';
 import Link from 'next/link';
@@ -1132,7 +1132,7 @@ function DatabaseManagement() {
 
             if (saveTo === 'phone') {
                 const result = await res.json();
-                setStatus({ type: 'success', message: `${backupMode === 'local' ? '서버' : '폰'}에 백업 파일이 생성되었습니다: ${result.path}` });
+                setStatus({ type: 'success', message: `${backupMode === 'local' ? '로컬' : '원격'} 서버에 백업 파일이 생성되었습니다: ${result.path}` });
                 fetchRemoteBackups(); // Refresh list
                 return;
             }
@@ -1314,7 +1314,7 @@ function DatabaseManagement() {
                         onClick={() => setBackupMode('remote')}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all ${backupMode === 'remote' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
                     >
-                        <Smartphone size={18} /> 원격 폰 백업 (SSH)
+                        <Server size={18} /> 원격 서버 백업 (SSH)
                     </button>
                 </div>
 
@@ -1398,7 +1398,7 @@ function DatabaseManagement() {
                     {backupMode === 'local' ? (
                         <p className="mt-2 text-[11px] text-blue-600 font-medium">✨ 로컬 모드: SSH 없이 서버 엔진에서 직접 고속 백업을 수행합니다.</p>
                     ) : (
-                        <p className="mt-2 text-[11px] text-amber-600 font-medium">⚠️ 원격 모드: 대용량 파일은 '폰에 저장' 후 '원격 파일로 복구'를 이용하세요.</p>
+                        <p className="mt-2 text-[11px] text-amber-600 font-medium">⚠️ 원격 모드: 대용량 파일은 '원격 서버에 저장' 후 '원격 서버에서 복구'를 이용하세요.</p>
                     )}
                 </div>
 
@@ -1415,7 +1415,7 @@ function DatabaseManagement() {
                                     onClick={() => setSaveTo(t)}
                                     className={`px-3 py-1 text-[10px] md:text-xs rounded-md transition-all whitespace-nowrap ${saveTo === t ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-slate-500 hover:bg-slate-50'}`}
                                 >
-                                    {t === 'pc' ? 'PC 다운로드' : t === 'phone' ? (backupMode === 'local' ? '서버에 저장' : '폰에 저장') : '둘 다 저장'}
+                                    {t === 'pc' ? 'PC 다운로드' : t === 'phone' ? (backupMode === 'local' ? '로컬 서버에 저장' : '원격 서버에 저장') : '둘 다 저장'}
                                 </button>
                             ))}
                         </div>
@@ -1463,13 +1463,13 @@ function DatabaseManagement() {
 
                 {/* Remote Backup Selection */}
                 <div className="space-y-3">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{backupMode === 'local' ? '서버 백업 폴더에서 복구 (Local)' : '폰의 백업 폴더에서 복구 (Remote)'}</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{backupMode === 'local' ? '로컬 서버 백업 폴더에서 복구 (Local)' : '원격 서버 백업 폴더에서 복구 (Remote)'}</p>
                     <button
                         onClick={fetchRemoteBackups}
                         disabled={isLoadingBackups || isImporting}
                         className="w-full flex items-center justify-center gap-2 p-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-all font-medium disabled:opacity-50"
                     >
-                        <Database size={18} /> {isLoadingBackups ? '목록 불러오는 중...' : (backupMode === 'local' ? '서버에서 백업 목록 불러오기' : '폰에서 백업 목록 불러오기')}
+                        <Database size={18} /> {isLoadingBackups ? '목록 불러오는 중...' : (backupMode === 'local' ? '로컬 서버에서 백업 목록 불러오기' : '원격 서버에서 백업 목록 불러오기')}
                     </button>
 
                     {remoteBackups.length > 0 && (
