@@ -79,7 +79,7 @@ export async function GET(request: Request) {
                     function runList() {
                         const cmd = isLinux
                             ? `mkdir -p backup && ls -1t backup/`
-                            : `cmd.exe /c "if not exist backup mkdir backup & dir /B /O:-D /A:-D backup\\*.sql 2>nul"`;
+                            : `cmd.exe /c "(if not exist backup mkdir backup) & dir /B /O:-D /A:-D backup\\*.sql 2>nul"`;
 
                         conn.exec(cmd, (err, stream) => {
                             if (err) {
