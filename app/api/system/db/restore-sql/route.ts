@@ -137,11 +137,11 @@ export async function POST(request: Request) {
                             } else {
                                 // Windows SSH Server Command
                                 const escapedPassword = decodedPassword.replace(/"/g, '\\"');
-                                const winPsql = `\"D:\\\\Gemini\\\\pg_bin\\\\pgsql\\\\bin\\\\psql.exe\"`;
+                                const winPsql = `D:\\\\Gemini\\\\pg_bin\\\\pgsql\\\\bin\\\\psql.exe`;
                                 const psqlWinCmd = `if exist ${winPsql} (${winPsql} -h localhost -U ${user} -d ${dbname}) else (psql -h localhost -U ${user} -d ${dbname})`;
                                 
                                 finalRestoreCmd = remoteFilename
-                                    ? `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& ${psqlWinCmd} < \\"backup\\\\${remoteFilename}\\""`
+                                    ? `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& ${psqlWinCmd} < backup\\${remoteFilename}"`
                                     : `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& ${psqlWinCmd}"`;
                             }
 

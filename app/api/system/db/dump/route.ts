@@ -170,16 +170,16 @@ export async function GET(request: Request) {
                         } else {
                             // Windows SSH Server Command
                             const escapedPassword = decodedPassword.replace(/"/g, '\\"');
-                            const winPgDump = `\"D:\\\\Gemini\\\\pg_bin\\\\pgsql\\\\bin\\\\pg_dump.exe\"`;
+                            const winPgDump = `D:\\\\Gemini\\\\pg_bin\\\\pgsql\\\\bin\\\\pg_dump.exe`;
                             const pgDumpWinCmd = `if exist ${winPgDump} (${winPgDump} -U ${user} -h localhost -p 5432 ${dbname}) else (pg_dump -U ${user} -h localhost -p 5432 ${dbname})`;
                             
                             if (saveTo === 'phone') {
-                                finalDumpCmd = `cmd.exe /c "mkdir backup 2>nul & set PGPASSWORD=${escapedPassword}&& ${pgDumpWinCmd} > \\"backup\\\\${filename}\\""`;
+                                finalDumpCmd = `cmd.exe /c "mkdir backup 2>nul & set PGPASSWORD=${escapedPassword}&& ${pgDumpWinCmd} > backup\\${filename}"`;
                             } else if (saveTo === 'pc') {
                                 finalDumpCmd = `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& ${pgDumpWinCmd}"`;
                             } else {
                                 // both (save to file and print to stdout)
-                                finalDumpCmd = `cmd.exe /c "mkdir backup 2>nul & set PGPASSWORD=${escapedPassword}&& ${pgDumpWinCmd} > \\"backup\\\\${filename}\\" & type \\"backup\\\\${filename}\\""`;
+                                finalDumpCmd = `cmd.exe /c "mkdir backup 2>nul & set PGPASSWORD=${escapedPassword}&& ${pgDumpWinCmd} > backup\\${filename} & type backup\\${filename}"`;
                             }
                         }
 
