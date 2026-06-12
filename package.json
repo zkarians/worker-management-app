@@ -20,7 +20,9 @@
     "db:stop": "D:\\Gemini\\pg_bin\\pgsql\\bin\\pg_ctl.exe stop -D D:\\Gemini\\pg_data",
     "db:export": "tsx prisma/export-data.ts",
     "db:import": "tsx prisma/import-data.ts",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:sync:to-ssh": "tsx scripts/sync-to-ssh.ts",
+    "db:sync:from-ssh": "tsx scripts/sync-from-ssh.ts"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",

@@ -142,48 +142,91 @@ export async function GET(request: Request) {
         return new Promise<Response>((resolve) => {
             const conn = new Client();
             conn.on('ready', () => {
-                conn.exec(dumpCmd, (err: Error | undefined, stream: any) => {
-                    if (err) {
-                        conn.end();
-                        addLog(`에러: ${err.message}`);
-                        resolve(NextResponse.json({ error: '백업 명령 실행 실패', details: err.message }, { status: 500 }));
-                        return;
+                // Detect remote OS
+                conn.exec('uname', (detectErr, detectStream) => {
+                    let isLinux = false;
+                    let detectOutput = '';
+                    
+                    if (!detectErr) {
+                        detectStream.on('data', (data: any) => {
+                            detectOutput += data.toString();
+                        });
+                        detectStream.on('close', () => {
+                            isLinux = detectOutput.toLowerCase().includes('linux') || 
+                                      detectOutput.toLowerCase().includes('darwin');
+                            runDump();
+                        });
+                        detectStream.stderr.on('data', () => {});
+                    } else {
+                        runDump();
                     }
 
-                    if (saveTo === 'phone') {
-                        // For 'phone' only, we don't stream back a file, we return JSON success after closure
-                        stream.on('close', (code: number) => {
-                            conn.end();
-                            if (code === 0) {
-                                addLog(`폰 백업 완료: ${remotePath}`);
-                                resolve(NextResponse.json({ success: true, message: '폰에 백업 파일이 생성되었습니다.', path: remotePath }));
+                    function runDump() {
+                        let finalDumpCmd = '';
+                        if (isLinux) {
+                            finalDumpCmd = dumpCmd;
+                        } else {
+                            // Windows SSH Server Command
+                            const escapedPassword = decodedPassword.replace(/"/g, '\\"');
+                            const winPgDump = `\"D:\\\\Gemini\\\\pg_bin\\\\pgsql\\\\bin\\\\pg_dump.exe\"`;
+                            const pgDumpWinCmd = `if exist ${winPgDump} (${winPgDump} -U ${user} -h localhost -p 5432 ${dbname}) else (pg_dump -U ${user} -h localhost -p 5432 ${dbname})`;
+                            
+                            if (saveTo === 'phone') {
+                                finalDumpCmd = `cmd.exe /c "mkdir backup 2>nul & set PGPASSWORD=${escapedPassword}&& ${pgDumpWinCmd} > \\"backup\\\\${filename}\\""`;
+                            } else if (saveTo === 'pc') {
+                                finalDumpCmd = `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& ${pgDumpWinCmd}"`;
                             } else {
-                                resolve(NextResponse.json({ error: '폰 백업 실패' }, { status: 500 }));
+                                // both (save to file and print to stdout)
+                                finalDumpCmd = `cmd.exe /c "mkdir backup 2>nul & set PGPASSWORD=${escapedPassword}&& ${pgDumpWinCmd} > \\"backup\\\\${filename}\\" & type \\"backup\\\\${filename}\\""`;
                             }
-                        });
-                        // Drain the stream even if we don't use it to ensure closure
-                        stream.on('data', () => { });
-                    } else {
-                        // For 'pc' or 'both', we stream to the response
-                        const headers = new Headers();
-                        headers.set('Content-Type', 'application/sql');
-                        headers.set('Content-Disposition', `attachment; filename="${filename}"`);
+                        }
 
-                        const responseStream = new ReadableStream({
-                            start(controller) {
-                                stream.on('data', (data: any) => controller.enqueue(data));
-                                stream.on('close', () => {
+                        console.log(`Executing remote DB dump command: ${finalDumpCmd}`);
+
+                        conn.exec(finalDumpCmd, (err: Error | undefined, stream: any) => {
+                            if (err) {
+                                conn.end();
+                                addLog(`에러: ${err.message}`);
+                                resolve(NextResponse.json({ error: '백업 명령 실행 실패', details: err.message }, { status: 500 }));
+                                return;
+                            }
+
+                            if (saveTo === 'phone') {
+                                // For 'phone' only, we don't stream back a file, we return JSON success after closure
+                                stream.on('close', (code: number) => {
                                     conn.end();
-                                    addLog('백업 완료 및 전송 완료.');
-                                    controller.close();
+                                    if (code === 0) {
+                                        addLog(`서버 백업 완료: ${remotePath}`);
+                                        resolve(NextResponse.json({ success: true, message: '서버에 백업 파일이 생성되었습니다.', path: remotePath }));
+                                    } else {
+                                        resolve(NextResponse.json({ error: '서버 백업 실패' }, { status: 500 }));
+                                    }
                                 });
-                                stream.stderr.on('data', (data: any) => {
-                                    console.error('pg_dump error:', data.toString());
+                                // Drain the stream even if we don't use it to ensure closure
+                                stream.on('data', () => { });
+                            } else {
+                                // For 'pc' or 'both', we stream to the response
+                                const headers = new Headers();
+                                headers.set('Content-Type', 'application/sql');
+                                headers.set('Content-Disposition', `attachment; filename="${filename}"`);
+
+                                const responseStream = new ReadableStream({
+                                    start(controller) {
+                                        stream.on('data', (data: any) => controller.enqueue(data));
+                                        stream.on('close', () => {
+                                            conn.end();
+                                            addLog('백업 완료 및 전송 완료.');
+                                            controller.close();
+                                        });
+                                        stream.stderr.on('data', (data: any) => {
+                                            console.error('pg_dump error:', data.toString());
+                                        });
+                                    }
                                 });
+
+                                resolve(new Response(responseStream, { headers }));
                             }
                         });
-
-                        resolve(new Response(responseStream, { headers }));
                     }
                 });
             }).on('error', (err: Error) => {

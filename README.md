@@ -128,6 +128,8 @@ npx prisma studio       # 로컬 DB 편집 (현재 상태)
 자세한 가이드: [`EDIT_BACKUP_GUIDE.md`](./EDIT_BACKUP_GUIDE.md)
 
 ### 데이터베이스 동기화
+
+#### ☁️ Cloudtype 동기화
 ```bash
 # Cloudtype에 로컬 데이터 동기화
 .\sync-to-cloudtype.ps1             # 로컬 → Cloudtype 업로드
@@ -135,8 +137,16 @@ npx prisma studio       # 로컬 DB 편집 (현재 상태)
 # Cloudtype에서 데이터 백업받기
 .\cloudtype-backup.bat              # 원클릭 백업 ⭐ (더블클릭!)
 .\download-backup-from-cloudtype.ps1  # PowerShell 백업
+```
 
-# 또는 /sync_db 워크플로우 사용
+#### 🔑 SSH 원격 서버 동기화 (Aidlux 등)
+먼저 프로젝트 루트의 `ssh-config.json` 파일에 원격 SSH 서버 및 데이터베이스 정보를 설정합니다.
+```bash
+# 로컬 DB 데이터를 SSH를 통해 원격 DB로 덮어쓰기 (Sync To SSH)
+npm run db:sync:to-ssh
+
+# 원격 DB 데이터를 SSH를 통해 로컬 DB로 덮어쓰기 (Sync From SSH)
+npm run db:sync:from-ssh
 ```
 
 - **원클릭 백업**: [`ONE_CLICK_BACKUP_GUIDE.md`](./ONE_CLICK_BACKUP_GUIDE.md) ⭐ 가장 쉬움

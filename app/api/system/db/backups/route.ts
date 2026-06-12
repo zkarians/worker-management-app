@@ -55,26 +55,51 @@ export async function GET(request: Request) {
         return new Promise<NextResponse>((resolve) => {
             const conn = new Client();
             conn.on('ready', () => {
-                const cmd = `mkdir -p backup && ls -1t backup/`;
-                conn.exec(cmd, (err, stream) => {
-                    if (err) {
-                        conn.end();
-                        resolve(NextResponse.json({ error: '목록 조회 실패', details: err.message }, { status: 500 }));
-                        return;
+                // Detect remote OS
+                conn.exec('uname', (detectErr, detectStream) => {
+                    let isLinux = false;
+                    let detectOutput = '';
+                    
+                    if (!detectErr) {
+                        detectStream.on('data', (data: any) => {
+                            detectOutput += data.toString();
+                        });
+                        detectStream.on('close', () => {
+                            isLinux = detectOutput.toLowerCase().includes('linux') || 
+                                      detectOutput.toLowerCase().includes('darwin');
+                            runList();
+                        });
+                        detectStream.stderr.on('data', () => {});
+                    } else {
+                        runList();
                     }
 
-                    let output = '';
-                    stream.on('data', (data: any) => {
-                        output += data.toString();
-                    });
+                    function runList() {
+                        const cmd = isLinux
+                            ? `mkdir -p backup && ls -1t backup/`
+                            : `cmd.exe /c "if not exist backup mkdir backup & dir /B /O:-D /A:-D backup\\*.sql 2>nul"`;
 
-                    stream.on('close', (code: number) => {
-                        conn.end();
-                        const files = output.split('\n')
-                            .map(f => f.trim())
-                            .filter(f => f.endsWith('.sql'));
-                        resolve(NextResponse.json({ files }));
-                    });
+                        conn.exec(cmd, (err, stream) => {
+                            if (err) {
+                                conn.end();
+                                resolve(NextResponse.json({ error: '목록 조회 실패', details: err.message }, { status: 500 }));
+                                return;
+                            }
+
+                            let output = '';
+                            stream.on('data', (data: any) => {
+                                output += data.toString();
+                            });
+
+                            stream.on('close', (code: number) => {
+                                conn.end();
+                                const files = output.split('\n')
+                                    .map(f => f.trim())
+                                    .filter(f => f.endsWith('.sql'));
+                                resolve(NextResponse.json({ files }));
+                            });
+                        });
+                    }
                 });
             }).on('error', (err) => {
                 resolve(NextResponse.json({ error: 'SSH 접속 실패', details: err.message }, { status: 500 }));
@@ -143,22 +168,47 @@ export async function DELETE(request: Request) {
         return new Promise<NextResponse>((resolve) => {
             const conn = new Client();
             conn.on('ready', () => {
-                const cmd = `rm "backup/${filename}"`;
-                conn.exec(cmd, (err, stream) => {
-                    if (err) {
-                        conn.end();
-                        resolve(NextResponse.json({ error: '삭제 실패', details: err.message }, { status: 500 }));
-                        return;
+                // Detect remote OS
+                conn.exec('uname', (detectErr, detectStream) => {
+                    let isLinux = false;
+                    let detectOutput = '';
+                    
+                    if (!detectErr) {
+                        detectStream.on('data', (data: any) => {
+                            detectOutput += data.toString();
+                        });
+                        detectStream.on('close', () => {
+                            isLinux = detectOutput.toLowerCase().includes('linux') || 
+                                      detectOutput.toLowerCase().includes('darwin');
+                            runDelete();
+                        });
+                        detectStream.stderr.on('data', () => {});
+                    } else {
+                        runDelete();
                     }
 
-                    stream.on('close', (code: number) => {
-                        conn.end();
-                        if (code === 0) {
-                            resolve(NextResponse.json({ success: true, message: '파일이 삭제되었습니다.' }));
-                        } else {
-                            resolve(NextResponse.json({ error: '삭제 실패', details: `Shell exited with code ${code}` }, { status: 500 }));
-                        }
-                    });
+                    function runDelete() {
+                        const cmd = isLinux
+                            ? `rm "backup/${filename}"`
+                            : `cmd.exe /c "del /Q /F \\"backup\\\\${filename}\\""`;
+
+                        conn.exec(cmd, (err, stream) => {
+                            if (err) {
+                                conn.end();
+                                resolve(NextResponse.json({ error: '삭제 실패', details: err.message }, { status: 500 }));
+                                return;
+                            }
+
+                            stream.on('close', (code: number) => {
+                                conn.end();
+                                if (code === 0) {
+                                    resolve(NextResponse.json({ success: true, message: '파일이 삭제되었습니다.' }));
+                                } else {
+                                    resolve(NextResponse.json({ error: '삭제 실패', details: `Shell exited with code ${code}` }, { status: 500 }));
+                                }
+                            });
+                        });
+                    }
                 });
             }).on('error', (err) => {
                 resolve(NextResponse.json({ error: 'SSH 접속 실패', details: err.message }, { status: 500 }));

@@ -103,62 +103,96 @@ export async function POST(request: Request) {
             let stderr = '';
 
             conn.on('ready', () => {
-                addLog('✅ SSH 연결 성공. DB 복구 명령을 준비합니다...');
+                addLog('✅ SSH 연결 성공. 원격 운영체제 확인 중...');
 
-                try {
-                    // Safety: escape single quotes for shell command
-                    const safePassword = decodedPassword.replace(/'/g, "'\\''");
-                    const psqlCmd = `export PGPASSWORD='${safePassword}'; psql -h localhost -U ${user} -d ${dbname}`;
-                    const cmd = remoteFilename
-                        ? `${psqlCmd} < "backup/${remoteFilename}"`
-                        : psqlCmd;
+                conn.exec('uname', (detectErr, detectStream) => {
+                    let isLinux = false;
+                    let detectOutput = '';
+                    
+                    if (!detectErr) {
+                        detectStream.on('data', (data: any) => {
+                            detectOutput += data.toString();
+                        });
+                        detectStream.on('close', () => {
+                            isLinux = detectOutput.toLowerCase().includes('linux') || 
+                                      detectOutput.toLowerCase().includes('darwin');
+                            runRestore();
+                        });
+                        detectStream.stderr.on('data', () => {});
+                    } else {
+                        runRestore();
+                    }
 
-                    addLog(`실행 명령어 준비 완료. (대상: ${dbname})`);
+                    function runRestore() {
+                        try {
+                            let finalRestoreCmd = '';
+                            if (isLinux) {
+                                const safePassword = decodedPassword.replace(/'/g, "'\\''");
+                                const psqlCmd = `export PGPASSWORD='${safePassword}'; psql -h localhost -U ${user} -d ${dbname}`;
+                                finalRestoreCmd = remoteFilename
+                                    ? `${psqlCmd} < "backup/${remoteFilename}"`
+                                    : psqlCmd;
+                            } else {
+                                // Windows SSH Server Command
+                                const escapedPassword = decodedPassword.replace(/"/g, '\\"');
+                                const winPsql = `\"D:\\\\Gemini\\\\pg_bin\\\\pgsql\\\\bin\\\\psql.exe\"`;
+                                const psqlWinCmd = `if exist ${winPsql} (${winPsql} -h localhost -U ${user} -d ${dbname}) else (psql -h localhost -U ${user} -d ${dbname})`;
+                                
+                                finalRestoreCmd = remoteFilename
+                                    ? `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& ${psqlWinCmd} < \\"backup\\\\${remoteFilename}\\""`
+                                    : `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& ${psqlWinCmd}"`;
+                            }
 
-                    conn.exec(cmd, (err: Error | undefined, stream: any) => {
-                        if (err) {
-                            addLog(`❌ SSH 실행 오류: ${err.message}`);
-                            conn.end();
-                            resolve(NextResponse.json({ error: '명령 실행 실패', details: err.message }, { status: 500 }));
-                            return;
-                        }
+                            addLog(`실행 명령어 준비 완료. (대상: ${dbname})`);
+                            console.log(`Executing remote DB restore command: ${finalRestoreCmd}`);
 
-                        if (!remoteFilename) {
-                            addLog('📤 로컬 데이터를 폰으로 전송하는 중 (Streaming)...');
-                            const fileStream = fs.createReadStream(tempFilePath);
-                            fileStream.on('error', (fsErr) => {
-                                addLog(`❌ 파일 읽기 오류: ${fsErr.message}`);
+                            conn.exec(finalRestoreCmd, (err: Error | undefined, stream: any) => {
+                                if (err) {
+                                    addLog(`❌ SSH 실행 오류: ${err.message}`);
+                                    conn.end();
+                                    resolve(NextResponse.json({ error: '명령 실행 실패', details: err.message }, { status: 500 }));
+                                    return;
+                                }
+
+                                if (!remoteFilename) {
+                                    addLog('📤 로컬 데이터를 서버로 전송하는 중 (Streaming)...');
+                                    const fileStream = fs.createReadStream(tempFilePath);
+                                    fileStream.on('error', (fsErr) => {
+                                        addLog(`❌ 파일 읽기 오류: ${fsErr.message}`);
+                                    });
+                                    fileStream.pipe(stream);
+                                } else {
+                                    addLog(`서버 내부 파일(${remoteFilename})을 사용하여 직접 복구 중...`);
+                                }
+
+                                stream.on('close', (code: number) => {
+                                    addLog(`🚪 스트림 종료 (코드: ${code})`);
+                                    conn.end();
+                                    if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
+                                    if (code === 0) {
+                                        addLog('✅ DB 복구가 성공적으로 완료되었습니다.');
+                                        resolve(NextResponse.json({ success: true }));
+                                    } else {
+                                        addLog(`❌ 복원 실패 (코드: ${code})`);
+                                        resolve(NextResponse.json({ error: '복원 실패', details: stderr }, { status: 500 }));
+                                    }
+                                }).on('data', (data: any) => {
+                                    // psql stdout
+                                }).stderr.on('data', (data: any) => {
+                                    const msg = data.toString();
+                                    stderr += msg;
+                                    // Log first few errors to UI
+                                    if (stderr.length < 1000) addLog(`[DB-MSG] ${msg.trim()}`);
+                                });
                             });
-                            fileStream.pipe(stream);
-                        } else {
-                            addLog(`폰 내부 파일(${remoteFilename})을 사용하여 직접 복구 중...`);
-                        }
-
-                        stream.on('close', (code: number) => {
-                            addLog(`🚪 스트림 종료 (코드: ${code})`);
+                        } catch (internalErr: any) {
+                            addLog(`❌ 내부 처리 오류: ${internalErr.message}`);
                             conn.end();
                             if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
-                            if (code === 0) {
-                                addLog('✅ DB 복구가 성공적으로 완료되었습니다.');
-                                resolve(NextResponse.json({ success: true }));
-                            } else {
-                                addLog(`❌ 복원 실패 (코드: ${code})`);
-                                resolve(NextResponse.json({ error: '복원 실패', details: stderr }, { status: 500 }));
-                            }
-                        }).on('data', (data: any) => {
-                            // psql stdout
-                        }).stderr.on('data', (data: any) => {
-                            const msg = data.toString();
-                            stderr += msg;
-                            // Log first few errors to UI
-                            if (stderr.length < 1000) addLog(`[DB-MSG] ${msg.trim()}`);
-                        });
-                    });
-                } catch (internalErr: any) {
-                    addLog(`❌ 내부 처리 오류: ${internalErr.message}`);
-                    conn.end();
-                    resolve(NextResponse.json({ error: '내부 처리 오류', details: internalErr.message }, { status: 500 }));
-                }
+                            resolve(NextResponse.json({ error: '내부 처리 오류', details: internalErr.message }, { status: 500 }));
+                        }
+                    }
+                });
             }).on('error', (err: Error) => {
                 addLog(`❌ SSH 연결 오류: ${err.message}`);
                 if (fs.existsSync(tempFilePath)) fs.unlinkSync(tempFilePath);
