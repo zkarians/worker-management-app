@@ -1086,6 +1086,17 @@ function DatabaseManagement() {
         return () => clearInterval(interval);
     }, [isPolling]);
 
+    const fetchFinalLogs = async () => {
+        setIsPolling(false);
+        try {
+            const res = await fetch('/api/system/db/dump/status');
+            if (res.ok) {
+                const data = await res.json();
+                if (data.logs) setLogs(data.logs);
+            }
+        } catch (e) { console.error('Failed to fetch final logs', e); }
+    };
+
     const getQueryString = () => {
         const params = new URLSearchParams(config);
         params.set('localMode', backupMode === 'local' ? 'true' : 'false');
@@ -1115,7 +1126,7 @@ function DatabaseManagement() {
             setStatus({ type: 'error', message: '백업 중 오류가 발생했습니다.' });
         } finally {
             setIsExporting(false);
-            setIsPolling(false);
+            fetchFinalLogs();
         }
     };
 
@@ -1153,7 +1164,7 @@ function DatabaseManagement() {
             setStatus({ type: 'error', message: error.message || 'SQL 백업 중 오류가 발생했습니다.' });
         } finally {
             setIsExporting(false);
-            setIsPolling(false);
+            fetchFinalLogs();
         }
     };
 
@@ -1184,7 +1195,7 @@ function DatabaseManagement() {
             setStatus({ type: 'error', message: '복구 오류가 발생했습니다.' });
         } finally {
             setIsImporting(false);
-            setIsPolling(false);
+            fetchFinalLogs();
         }
     };
 
@@ -1222,7 +1233,7 @@ function DatabaseManagement() {
             setStatus({ type: 'error', message: error.message || 'SQL 복구 중 오류가 발생했습니다.' });
         } finally {
             setIsImporting(false);
-            setIsPolling(false);
+            fetchFinalLogs();
         }
     };
 
@@ -1273,7 +1284,7 @@ function DatabaseManagement() {
             setStatus({ type: 'error', message: error.message || 'SQL 복구 중 오류가 발생했습니다.' });
         } finally {
             setIsImporting(false);
-            setIsPolling(false);
+            fetchFinalLogs();
         }
     };
 
