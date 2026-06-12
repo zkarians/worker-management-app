@@ -393,30 +393,47 @@ export default function AttendancePage() {
         }
     };
 
-    const handleBulkApply = () => {
+    const handleBulkStatusApply = () => {
         if (!bulkStatus) {
             alert('상태를 선택해주세요.');
             return;
         }
 
-        if (!confirm(`현재 검색된 목록(${filteredData.length}명)에 대해 일괄 적용하시겠습니까?`)) return;
-
-        const isOffOrAbsent = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT';
-        const workHoursToApply = isOffOrAbsent ? 0 : bulkWorkHours;
-        const overtimeToApply = isOffOrAbsent ? 0 : bulkOvertime;
+        if (!confirm(`현재 검색된 목록(${filteredData.length}명)의 출근 상태를 일괄 적용하시겠습니까? (기존 근무/잔업 시간은 보존됩니다.)`)) return;
 
         setAttendanceData(prev => prev.map(item => {
             // Check if item matches current search filters
             const matchesName = item.user.name.toLowerCase().includes(searchName.toLowerCase());
             const matchesStatus = searchStatus === '' || item.status === searchStatus;
 
-            // Only update if it matches filters (is visible)
+            // Only update status if it matches filters (is visible)
             if (matchesName && matchesStatus) {
+                const isOffOrAbsent = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT';
                 return {
                     ...item,
                     status: bulkStatus,
-                    workHours: workHoursToApply,
-                    overtimeHours: overtimeToApply
+                    workHours: isOffOrAbsent ? 0 : item.workHours,
+                    overtimeHours: isOffOrAbsent ? 0 : item.overtimeHours
+                };
+            }
+            return item;
+        }));
+    };
+
+    const handleBulkHoursApply = () => {
+        if (!confirm(`현재 검색된 목록(${filteredData.length}명)의 근무/잔업 시간을 일괄 적용하시겠습니까? (기존 출근 상태는 보존됩니다.)`)) return;
+
+        setAttendanceData(prev => prev.map(item => {
+            // Check if item matches current search filters
+            const matchesName = item.user.name.toLowerCase().includes(searchName.toLowerCase());
+            const matchesStatus = searchStatus === '' || item.status === searchStatus;
+
+            // Only update hours if it matches filters (is visible)
+            if (matchesName && matchesStatus) {
+                return {
+                    ...item,
+                    workHours: bulkWorkHours,
+                    overtimeHours: bulkOvertime
                 };
             }
             return item;
@@ -531,68 +548,86 @@ export default function AttendancePage() {
             </div>
 
             {isManager && (
-                <GlassCard className="flex flex-col md:flex-row items-start md:items-center gap-4 p-4 bg-blue-50 border-blue-200">
-                    <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-                        <span className="text-sm font-medium text-blue-700">일괄 적용:</span>
-
-                        {/* 상태 선택 */}
-                        <div className="flex items-center gap-2">
-                            <label className="text-xs text-slate-500">상태</label>
-                            <select
-                                value={bulkStatus}
-                                onChange={(e) => setBulkStatus(e.target.value)}
-                                className="glass-input py-1 px-2 text-xs bg-white border-slate-200"
+                <div className="flex flex-col gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* 상태 일괄 적용 카드 */}
+                        <GlassCard className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-emerald-50/50 border-emerald-200">
+                            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                                <span className="text-sm font-semibold text-emerald-800 flex items-center gap-1.5">
+                                    <CheckSquare size={16} /> 상태 일괄 적용:
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    <select
+                                        value={bulkStatus}
+                                        onChange={(e) => setBulkStatus(e.target.value)}
+                                        className="bg-white border border-slate-200 rounded-lg text-slate-900 text-sm px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                    >
+                                        <option value="PRESENT">출근</option>
+                                        <option value="ABSENT">결근</option>
+                                        <option value="OFF_DAY">휴무</option>
+                                        <option value="LATE">지각</option>
+                                        <option value="EARLY_LEAVE">조퇴</option>
+                                        <option value="SCHEDULED">예정</option>
+                                        <option value="">-</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleBulkStatusApply}
+                                className="p-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-md transition-colors text-xs font-medium px-4 py-2 flex items-center gap-1.5 w-full sm:w-auto justify-center"
                             >
-                                <option value="PRESENT">출근</option>
-                                <option value="ABSENT">결근</option>
-                                <option value="OFF_DAY">휴무</option>
-                                <option value="LATE">지각</option>
-                                <option value="EARLY_LEAVE">조퇴</option>
-                                <option value="SCHEDULED">예정</option>
-                                <option value="">-</option>
-                            </select>
-                        </div>
+                                <CheckSquare size={14} /> 상태 적용
+                            </button>
+                        </GlassCard>
 
-                        {/* 근무 시간 */}
-                        <div className="flex items-center gap-2">
-                            <label className="text-xs text-slate-500">기본</label>
-                            <input
-                                type="number"
-                                value={bulkWorkHours}
-                                onChange={(e) => setBulkWorkHours(Number(e.target.value))}
-                                className="glass-input w-16 py-1 px-2 text-sm bg-white"
-                            />
-                            <span className="text-xs text-slate-500">시간</span>
-                        </div>
-
-                        {/* 잔업 시간 */}
-                        <div className="flex items-center gap-2">
-                            <label className="text-xs text-slate-500">잔업</label>
-                            <input
-                                type="number"
-                                value={bulkOvertime}
-                                onChange={(e) => setBulkOvertime(Number(e.target.value))}
-                                className="glass-input w-16 py-1 px-2 text-sm bg-white"
-                            />
-                            <span className="text-xs text-slate-500">시간</span>
-                        </div>
-
-                        <button
-                            onClick={handleBulkApply}
-                            className="btn-primary glass-button text-xs py-1.5 px-3 flex items-center gap-1"
-                        >
-                            <CheckSquare size={14} /> 적용
-                        </button>
+                        {/* 시간 일괄 적용 카드 */}
+                        <GlassCard className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-indigo-50/50 border-indigo-200">
+                            <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                                <span className="text-sm font-semibold text-indigo-800 flex items-center gap-1.5">
+                                    <Clock size={16} /> 시간 일괄 적용:
+                                </span>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-1.5">
+                                        <label className="text-xs text-slate-500">기본</label>
+                                        <input
+                                            type="number"
+                                            value={bulkWorkHours}
+                                            onChange={(e) => setBulkWorkHours(Number(e.target.value))}
+                                            className="bg-white border border-slate-200 rounded-lg text-slate-900 text-sm px-2.5 py-1 w-14 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-xs text-slate-400">시간</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <label className="text-xs text-slate-500">잔업</label>
+                                        <input
+                                            type="number"
+                                            value={bulkOvertime}
+                                            onChange={(e) => setBulkOvertime(Number(e.target.value))}
+                                            className="bg-white border border-slate-200 rounded-lg text-slate-900 text-sm px-2.5 py-1 w-14 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-xs text-slate-400">시간</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={handleBulkHoursApply}
+                                className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-md transition-colors text-xs font-medium px-4 py-2 flex items-center gap-1.5 w-full sm:w-auto justify-center"
+                            >
+                                <Clock size={14} /> 시간 적용
+                            </button>
+                        </GlassCard>
                     </div>
-                    <div className="ml-auto w-full md:w-auto flex justify-end">
+
+                    {/* 전체 저장 버튼 바 */}
+                    <div className="flex justify-end bg-slate-50 p-3 rounded-xl border border-slate-200/60 shadow-sm">
                         <button
                             onClick={handleSaveAll}
-                            className="btn-primary glass-button flex items-center gap-2 bg-green-600 hover:bg-green-500"
+                            className="bg-green-600 hover:bg-green-500 text-white font-medium text-sm px-6 py-2.5 rounded-lg shadow-sm flex items-center gap-2 transition-all"
                         >
-                            <Save size={16} /> 전체 저장
+                            <Save size={16} /> 변경사항 저장 (전체 저장)
                         </button>
                     </div>
-                </GlassCard>
+                </div>
             )}
 
             {/* Desktop Table View */}
