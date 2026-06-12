@@ -1058,7 +1058,7 @@ function DatabaseManagement() {
                     setConfig(prev => ({ ...prev, ...data }));
                     
                     // Auto-detect local mode if host matches
-                    if (data.host === 'localhost' || data.host === '127.0.0.1' || data.host === 'idlezero.iptime.org') {
+                    if (data.host === 'localhost' || data.host === '127.0.0.1') {
                         setBackupMode('local');
                     } else {
                         setBackupMode('remote');

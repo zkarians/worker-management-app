@@ -28,8 +28,7 @@ export async function GET(request: Request) {
 
         const localMode = searchParams.get('localMode') === 'true' || 
                          host === 'localhost' || 
-                         host === '127.0.0.1' || 
-                         host === 'idlezero.iptime.org';
+                         host === '127.0.0.1';
 
         if (!host || !user || !decodedPassword) {
             throw new Error('Connection settings are incomplete');
@@ -120,8 +119,7 @@ export async function DELETE(request: Request) {
 
         const localMode = searchParams.get('localMode') === 'true' || 
                          host === 'localhost' || 
-                         host === '127.0.0.1' || 
-                         host === 'idlezero.iptime.org';
+                         host === '127.0.0.1';
 
         if (!host || !user || !decodedPassword) {
             throw new Error('Connection settings are incomplete');

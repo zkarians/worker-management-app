@@ -36,8 +36,7 @@ export async function GET(request: Request) {
         const sshPort = parseInt(searchParams.get('sshPort') || '9022');
         const localMode = searchParams.get('localMode') === 'true' || 
                          host === 'localhost' || 
-                         host === '127.0.0.1' || 
-                         host === 'idlezero.iptime.org';
+                         host === '127.0.0.1';
 
         const saveTo = searchParams.get('saveTo') || 'both'; // 'pc', 'phone', 'both'
 

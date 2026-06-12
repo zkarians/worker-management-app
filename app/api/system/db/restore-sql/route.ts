@@ -35,8 +35,7 @@ export async function POST(request: Request) {
 
         const localMode = searchParams.get('localMode') === 'true' || 
                          host === 'localhost' || 
-                         host === '127.0.0.1' || 
-                         host === 'idlezero.iptime.org';
+                         host === '127.0.0.1';
 
         if (!host || !user || !decodedPassword || !dbname) {
             throw new Error('Connection settings are incomplete');
