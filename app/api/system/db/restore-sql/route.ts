@@ -141,7 +141,7 @@ export async function POST(request: Request) {
                                 const psqlWinCmd = `if exist ${winPsql} (${winPsql} -h localhost -U ${user} -d ${dbname}) else (psql -h localhost -U ${user} -d ${dbname})`;
                                 
                                 finalRestoreCmd = remoteFilename
-                                    ? `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& ${psqlWinCmd} < backup\\${remoteFilename}"`
+                                    ? `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& (${psqlWinCmd}) < backup\\${remoteFilename}"`
                                     : `cmd.exe /c "set PGPASSWORD=${escapedPassword}&& ${psqlWinCmd}"`;
                             }
 
