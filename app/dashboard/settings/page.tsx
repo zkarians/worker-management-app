@@ -1030,7 +1030,6 @@ export function SafetyEducationManagement() {
 function DatabaseManagement() {
     const [isExporting, setIsExporting] = useState(false);
     const [isImporting, setIsImporting] = useState(false);
-    const [isSyncing, setIsSyncing] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error' | 'info', message: string } | null>(null);
     const [includeProductsInJson, setIncludeProductsInJson] = useState(false);
     const jsonFileInputRef = useRef<HTMLInputElement>(null);
@@ -1113,31 +1112,6 @@ function DatabaseManagement() {
         }
     };
 
-    const handleSyncExcel = async () => {
-        if (!confirm('정말 Excel DB(제품등록.xlsx)의 치수 정보(가로/세로/높이/무게/CBM)로 DB 제품 데이터를 동기화하시겠습니까?\n\n- 기존에 등록된 모델은 치수만 엑셀 값으로 업데이트되며 카테고리와 사업부는 그대로 보존됩니다.\n- 기존에 없던 새로운 모델은 치수 값만 적용되어 신규 추가되고 카테고리와 사업부는 비어있게(NULL) 등록됩니다.')) return;
-
-        setIsSyncing(true);
-        setStatus({ type: 'info', message: 'Excel DB 규격 동기화를 진행 중입니다. 잠시만 기다려 주세요 (약 5~10초)...' });
-        try {
-            const res = await fetch('/api/products/sync-excel', {
-                method: 'POST'
-            });
-            const data = await res.json();
-            if (!res.ok) {
-                throw new Error(data.error || '동기화 실패');
-            }
-            setStatus({ 
-                type: 'success', 
-                message: `Excel DB 치수 동기화가 완료되었습니다. (업데이트: ${data.updatedCount.toLocaleString()}건, 신규 등록: ${data.insertedCount.toLocaleString()}건)` 
-            });
-        } catch (error: any) {
-            console.error(error);
-            setStatus({ type: 'error', message: error.message || '동기화 진행 중 오류가 발생했습니다.' });
-        } finally {
-            setIsSyncing(false);
-        }
-    };
-
     return (
         <GlassCard>
             <h2 className="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
@@ -1196,22 +1170,6 @@ function DatabaseManagement() {
                     </div>
                 </div>
 
-                {/* Excel DB Specification Sync */}
-                <div className="space-y-3 pt-4 border-t border-slate-200">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Excel DB 규격 치수 동기화</p>
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                        <p className="text-xs text-slate-500">
-                            로컬 서버의 <strong>제품등록.xlsx</strong>에 기록된 최신 규격(가로, 세로, 높이, 무게, CBM)을 제품 DB에 동기화합니다. 기존 제품의 카테고리/사업부는 변경되지 않고 보존됩니다.
-                        </p>
-                        <button
-                            onClick={handleSyncExcel}
-                            disabled={isExporting || isImporting || isSyncing}
-                            className="w-full flex items-center justify-center gap-2 p-3.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all font-semibold disabled:opacity-50 cursor-pointer"
-                        >
-                            <ExternalLink size={18} /> {isSyncing ? '동기화 진행 중...' : 'Excel 규격 DB 동기화 실행'}
-                        </button>
-                    </div>
-                </div>
 
                 {status && (
                     <div className={`p-3 rounded-lg text-sm break-all ${status.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' :
