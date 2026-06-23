@@ -37,7 +37,8 @@ export async function GET(request: Request) {
             addLog('로컬 데이터베이스에서 데이터를 추출합니다.');
         }
 
-        const data = await getAllData(prisma);
+        const includeProducts = searchParams.get('includeProducts') === 'true';
+        const data = await getAllData(prisma, includeProducts);
         addLog(`✅ 데이터 추출 완료 (총 ${Object.keys(data).length}개 테이블).`);
 
         if (isCustom) {

@@ -8,8 +8,11 @@ async function exportData() {
     console.log('📤 Exporting data from local database...')
 
     try {
-        // Export all data
-        const data = {
+        const includeProducts = process.argv.includes('--include-products') || process.env.INCLUDE_PRODUCTS === 'true'
+        console.log(`📋 Option: includeProducts = ${includeProducts}`)
+
+        // Export data
+        const data: any = {
             companies: await prisma.company.findMany(),
             teams: await prisma.team.findMany(),
             users: await prisma.user.findMany(),
@@ -20,9 +23,12 @@ async function exportData() {
             dailyLogs: await prisma.dailyLog.findMany(),
             announcements: await prisma.announcement.findMany(),
             categories: await prisma.category.findMany(),
-            products: await prisma.product.findMany(),
             schedules: await prisma.schedule.findMany(),
             safetyEducations: await prisma.safetyEducation.findMany(),
+        }
+
+        if (includeProducts) {
+            data.products = await prisma.product.findMany()
         }
 
         // Create backup directory if it doesn't exist
@@ -50,7 +56,11 @@ async function exportData() {
         console.log(`  - Daily Logs: ${data.dailyLogs.length}`)
         console.log(`  - Announcements: ${data.announcements.length}`)
         console.log(`  - Categories: ${data.categories.length}`)
-        console.log(`  - Products: ${data.products.length}`)
+        if (includeProducts) {
+            console.log(`  - Products: ${data.products.length}`)
+        } else {
+            console.log(`  - Products: EXCLUDED`)
+        }
         console.log(`  - Schedules: ${data.schedules.length}`)
         console.log(`  - Safety Educations: ${data.safetyEducations.length}`)
 

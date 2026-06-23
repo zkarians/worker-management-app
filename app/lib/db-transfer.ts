@@ -1,7 +1,7 @@
 import { prisma } from './prisma';
 
-export async function getAllData(p: any = prisma) {
-    const data = {
+export async function getAllData(p: any = prisma, includeProducts: boolean = false) {
+    const data: any = {
         companies: await p.company.findMany(),
         teams: await p.team.findMany(),
         users: await p.user.findMany(),
@@ -12,11 +12,13 @@ export async function getAllData(p: any = prisma) {
         dailyLogs: await p.dailyLog.findMany(),
         announcements: await p.announcement.findMany(),
         categories: await p.category.findMany(),
-        products: await p.product.findMany(),
         schedules: await p.schedule.findMany(),
         safetyEducation: await p.safetyEducation.findMany(),
         systemConfig: await p.systemConfig.findMany(),
     };
+    if (includeProducts) {
+        data.products = await p.product.findMany();
+    }
     return data;
 }
 
@@ -30,9 +32,30 @@ export async function restoreAllData(data: any, p: any = prisma) {
             'user', 'team', 'company', 'systemConfig'
         ];
 
+        const modelToKeyMap: Record<string, string> = {
+            company: 'companies',
+            team: 'teams',
+            user: 'users',
+            attendance: 'attendances',
+            leaveRequest: 'leaveRequests',
+            roster: 'rosters',
+            rosterAssignment: 'rosterAssignments',
+            dailyLog: 'dailyLogs',
+            announcement: 'announcements',
+            category: 'categories',
+            product: 'products',
+            schedule: 'schedules',
+            safetyEducation: 'safetyEducation',
+            systemConfig: 'systemConfig',
+            passwordResetToken: 'users',
+        };
+
         for (const model of models) {
+            const key = modelToKeyMap[model] || model;
+            const hasKey = data[key] !== undefined || (model === 'safetyEducation' && data['safetyEducations'] !== undefined);
+
             // @ts-ignore
-            if (tx[model]) {
+            if (tx[model] && hasKey) {
                 // @ts-ignore
                 await tx[model].deleteMany();
             }
@@ -104,13 +127,27 @@ export async function generateSqlBackup(p: any = prisma): Promise<string> {
 
     // 1. Clear all data first
     const tables = [
-        'RosterAssignment', 'Roster', 'Attendance', 'LeaveRequest', 'DailyLog',
-        'Announcement', 'Product', 'PasswordResetToken', 'User', 'Company',
-        'Team', 'Category', 'Schedule', 'SystemConfig', 'SafetyEducation'
+        { name: 'RosterAssignment', key: 'rosterAssignments' },
+        { name: 'Roster', key: 'rosters' },
+        { name: 'Attendance', key: 'attendances' },
+        { name: 'LeaveRequest', key: 'leaveRequests' },
+        { name: 'DailyLog', key: 'dailyLogs' },
+        { name: 'Announcement', key: 'announcements' },
+        { name: 'Product', key: 'products' },
+        { name: 'PasswordResetToken', key: 'users' },
+        { name: 'User', key: 'users' },
+        { name: 'Company', key: 'companies' },
+        { name: 'Team', key: 'teams' },
+        { name: 'Category', key: 'categories' },
+        { name: 'Schedule', key: 'schedules' },
+        { name: 'SystemConfig', key: 'systemConfig' },
+        { name: 'SafetyEducation', key: 'safetyEducation' }
     ];
 
     for (const table of tables) {
-        sql += `TRUNCATE TABLE "${table}" CASCADE;\n`;
+        if ((data as any)[table.key] !== undefined || table.name === 'PasswordResetToken') {
+            sql += `TRUNCATE TABLE "${table.name}" CASCADE;\n`;
+        }
     }
     sql += `\n`;
 

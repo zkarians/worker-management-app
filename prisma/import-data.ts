@@ -32,9 +32,32 @@ async function importData(filename: string) {
                 'user', 'team', 'company', 'systemConfig'
             ];
 
+            const modelToKeyMap: Record<string, string> = {
+                company: 'companies',
+                team: 'teams',
+                user: 'users',
+                attendance: 'attendances',
+                leaveRequest: 'leaveRequests',
+                roster: 'rosters',
+                rosterAssignment: 'rosterAssignments',
+                dailyLog: 'dailyLogs',
+                announcement: 'announcements',
+                category: 'categories',
+                product: 'products',
+                schedule: 'schedules',
+                safetyEducation: 'safetyEducations',
+                systemConfig: 'systemConfig',
+                passwordResetToken: 'users',
+            };
+
             for (const model of models) {
+                const key = modelToKeyMap[model] || model;
+                const hasKey = data[key] !== undefined || 
+                    (model === 'safetyEducation' && data['safetyEducation'] !== undefined);
+
                 // @ts-ignore
-                if (tx[model]) {
+                if (tx[model] && hasKey) {
+                    console.log(`  🗑️  Clearing ${model}...`);
                     // @ts-ignore
                     await tx[model].deleteMany();
                 }

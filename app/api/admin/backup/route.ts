@@ -19,9 +19,29 @@ export async function GET(request: Request) {
             )
         }
 
-        console.log('🔄 Starting database backup...')
+        const { searchParams } = new URL(request.url)
+        const includeProducts = searchParams.get('includeProducts') === 'true'
 
-        // 모든 데이터 가져오기
+        console.log(`🔄 Starting database backup (includeProducts: ${includeProducts})...`)
+
+        // 모든 데이터 가져오기 (제품은 선택사항)
+        const queries: [
+            Promise<any>, Promise<any>, Promise<any>, Promise<any>, Promise<any>,
+            Promise<any>, Promise<any>, Promise<any>, Promise<any>, Promise<any>, Promise<any>
+        ] = [
+            prisma.company.findMany(),
+            prisma.team.findMany(),
+            prisma.user.findMany(),
+            prisma.attendance.findMany(),
+            prisma.leaveRequest.findMany(),
+            prisma.roster.findMany(),
+            prisma.rosterAssignment.findMany(),
+            prisma.dailyLog.findMany(),
+            prisma.announcement.findMany(),
+            prisma.category.findMany(),
+            includeProducts ? prisma.product.findMany() : Promise.resolve(null),
+        ]
+
         const [
             companies,
             teams,
@@ -34,21 +54,9 @@ export async function GET(request: Request) {
             announcements,
             categories,
             products,
-        ] = await Promise.all([
-            prisma.company.findMany(),
-            prisma.team.findMany(),
-            prisma.user.findMany(),
-            prisma.attendance.findMany(),
-            prisma.leaveRequest.findMany(),
-            prisma.roster.findMany(),
-            prisma.rosterAssignment.findMany(),
-            prisma.dailyLog.findMany(),
-            prisma.announcement.findMany(),
-            prisma.category.findMany(),
-            prisma.product.findMany(),
-        ])
+        ] = await Promise.all(queries)
 
-        const backup = {
+        const backup: any = {
             exportDate: new Date().toISOString(),
             version: '1.0',
             data: {
@@ -62,7 +70,6 @@ export async function GET(request: Request) {
                 dailyLogs,
                 announcements,
                 categories,
-                products,
             },
             summary: {
                 companies: companies.length,
@@ -75,8 +82,12 @@ export async function GET(request: Request) {
                 dailyLogs: dailyLogs.length,
                 announcements: announcements.length,
                 categories: categories.length,
-                products: products.length,
             },
+        }
+
+        if (includeProducts && products !== null) {
+            backup.data.products = products
+            backup.summary.products = products.length
         }
 
         console.log('✅ Backup completed successfully')
@@ -122,7 +133,7 @@ export async function POST(request: Request) {
         const { tables } = body
 
         console.log('🔄 Starting selective database backup...')
-        console.log('📋 Tables to backup:', tables || 'all')
+        console.log('📋 Tables to backup:', tables || 'default (excluding products)')
 
         // 선택적 백업 (요청된 테이블만)
         const backup: any = {
@@ -146,7 +157,8 @@ export async function POST(request: Request) {
             products: () => prisma.product.findMany(),
         }
 
-        const tablesToBackup = tables || Object.keys(allTables)
+        // 기본적으로 products는 제외하고 백업 (tables가 명시되지 않은 경우)
+        const tablesToBackup = tables || Object.keys(allTables).filter(k => k !== 'products')
 
         for (const table of tablesToBackup) {
             if (table in allTables) {
