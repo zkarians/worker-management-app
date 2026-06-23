@@ -1048,6 +1048,7 @@ function DatabaseManagement() {
     const [remoteBackups, setRemoteBackups] = useState<string[]>([]);
     const [isLoadingBackups, setIsLoadingBackups] = useState(false);
     const [saveTo, setSaveTo] = useState<'pc' | 'phone' | 'both'>('both');
+    const [includeProductsInJson, setIncludeProductsInJson] = useState(false);
     const jsonFileInputRef = useRef<HTMLInputElement>(null);
     const sqlFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -1110,7 +1111,7 @@ function DatabaseManagement() {
         setLogs([]);
         setStatus({ type: 'info', message: '데이터를 추출 중입니다 (JSON)...' });
         try {
-            const res = await fetch(`/api/system/db/export?${getQueryString()}`);
+            const res = await fetch(`/api/system/db/export?${getQueryString()}&includeProducts=${includeProductsInJson}`);
             if (!res.ok) throw new Error('백업 실패');
             const result = await res.json();
             const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
@@ -1497,6 +1498,47 @@ function DatabaseManagement() {
                             <Upload size={18} /> 정식 SQL 복구
                         </button>
                         <input type="file" ref={sqlFileInputRef} onChange={handleSqlRestore} accept=".sql" className="hidden" />
+                    </div>
+                </div>
+
+
+                {/* JSON Backup/Restore (Custom) */}
+                <div className="space-y-3 pt-3 border-t border-slate-100">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">JSON 백업/복구 (호환용)</p>
+                            <p className="text-[11px] text-slate-400 mt-0.5">서버 환경에 무관하게 데이터 테이블 단위로 이식성이 높은 백업입니다.</p>
+                        </div>
+
+                        {/* Include Products Toggle */}
+                        <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-lg px-3">
+                            <label className="text-[11px] text-slate-600 font-medium cursor-pointer flex items-center gap-1.5 select-none">
+                                <input
+                                    type="checkbox"
+                                    checked={includeProductsInJson}
+                                    onChange={(e) => setIncludeProductsInJson(e.target.checked)}
+                                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+                                />
+                                제품 정보(대용량) 포함
+                            </label>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <button
+                            onClick={handleJsonBackup}
+                            disabled={isExporting || isImporting}
+                            className="flex items-center justify-center gap-2 p-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-medium disabled:opacity-50"
+                        >
+                            <Download size={18} /> JSON 백업 다운로드
+                        </button>
+                        <button
+                            onClick={() => jsonFileInputRef.current?.click()}
+                            disabled={isExporting || isImporting}
+                            className="flex items-center justify-center gap-2 p-3 bg-white border-2 border-emerald-600 text-emerald-600 rounded-xl hover:bg-emerald-50 transition-all font-medium disabled:opacity-50"
+                        >
+                            <Upload size={18} /> JSON 백업 복구
+                        </button>
+                        <input type="file" ref={jsonFileInputRef} onChange={handleJsonRestore} accept=".json" className="hidden" />
                     </div>
                 </div>
 
