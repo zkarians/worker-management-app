@@ -1032,86 +1032,21 @@ function DatabaseManagement() {
     const [isImporting, setIsImporting] = useState(false);
     const [isSyncing, setIsSyncing] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error' | 'info', message: string } | null>(null);
-    const [config, setConfig] = useState({
-        host: 'idlezero.iptime.org',
-        port: '5432',
-        user: 'postgres',
-        password: 'z456qwe12!@',
-        dbname: 'work',
-        sshPort: '22',
-        sshUser: '',
-        sshPassword: ''
-    });
-    const [backupMode, setBackupMode] = useState<'local' | 'remote'>('local');
-    const [logs, setLogs] = useState<string[]>([]);
-    const [isPolling, setIsPolling] = useState(false);
-    const [remoteBackups, setRemoteBackups] = useState<string[]>([]);
-    const [isLoadingBackups, setIsLoadingBackups] = useState(false);
-    const [saveTo, setSaveTo] = useState<'pc' | 'phone' | 'both'>('both');
     const [includeProductsInJson, setIncludeProductsInJson] = useState(false);
     const jsonFileInputRef = useRef<HTMLInputElement>(null);
-    const sqlFileInputRef = useRef<HTMLInputElement>(null);
-
-    // Initial load from session/env if possible
-    useEffect(() => {
-        const fetchCurrentConfig = async () => {
-            try {
-                const res = await fetch('/api/system/db/config');
-                if (res.ok) {
-                    const data = await res.json();
-                    setConfig(prev => ({ ...prev, ...data }));
-                    
-                    // Auto-detect local mode if host matches
-                    if (data.host === 'localhost' || data.host === '127.0.0.1') {
-                        setBackupMode('local');
-                    } else {
-                        setBackupMode('remote');
-                    }
-                }
-            } catch (e) { console.error('Failed to fetch db config', e); }
-        };
-        fetchCurrentConfig();
-    }, []);
-
-    // Polling logs
-    useEffect(() => {
-        let interval: any;
-        if (isPolling) {
-            interval = setInterval(async () => {
-                const res = await fetch('/api/system/db/dump/status');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data.logs) setLogs(data.logs);
-                }
-            }, 1000);
-        }
-        return () => clearInterval(interval);
-    }, [isPolling]);
-
-    const fetchFinalLogs = async () => {
-        setIsPolling(false);
-        try {
-            const res = await fetch('/api/system/db/dump/status');
-            if (res.ok) {
-                const data = await res.json();
-                if (data.logs) setLogs(data.logs);
-            }
-        } catch (e) { console.error('Failed to fetch final logs', e); }
-    };
-
-    const getQueryString = () => {
-        const params = new URLSearchParams(config);
-        params.set('localMode', backupMode === 'local' ? 'true' : 'false');
-        return params.toString();
-    };
 
     const handleJsonBackup = async () => {
+        if (includeProductsInJson) {
+            const proceed = confirm(
+                "⚠️ 경고: 제품 정보(22만여 건)를 포함하여 백업하시겠습니까?\n\n이 대용량 데이터 전송 작업은 서버 리소스를 많이 소모하며, Vercel 서버리스 환경에서 메모리 초과 또는 타임아웃(Timeout)으로 인해 백업이 실패할 가능성이 높습니다."
+            );
+            if (!proceed) return;
+        }
+
         setIsExporting(true);
-        setIsPolling(true);
-        setLogs([]);
         setStatus({ type: 'info', message: '데이터를 추출 중입니다 (JSON)...' });
         try {
-            const res = await fetch(`/api/system/db/export?${getQueryString()}&includeProducts=${includeProductsInJson}`);
+            const res = await fetch(`/api/system/db/export?includeProducts=${includeProductsInJson}`);
             if (!res.ok) throw new Error('백업 실패');
             const result = await res.json();
             const blob = new Blob([JSON.stringify(result, null, 2)], { type: 'application/json' });
@@ -1119,7 +1054,7 @@ function DatabaseManagement() {
             const a = document.createElement('a');
             const date = new Date().toISOString().split('T')[0];
             a.href = url;
-            a.download = `worker_db_backup_${config.dbname}_${date}.json`;
+            a.download = `worker_db_backup_${date}.json`;
             a.click();
             URL.revokeObjectURL(url);
             setStatus({ type: 'success', message: 'JSON 백업 파일이 생성되었습니다.' });
@@ -1128,186 +1063,53 @@ function DatabaseManagement() {
             setStatus({ type: 'error', message: '백업 중 오류가 발생했습니다.' });
         } finally {
             setIsExporting(false);
-            fetchFinalLogs();
-        }
-    };
-
-    const handleSqlBackup = async () => {
-        setIsExporting(true);
-        setIsPolling(true);
-        setLogs([]);
-        setStatus({ type: 'info', message: `정식 SQL 백업을 생성 중입니다 (${saveTo === 'phone' ? (backupMode === 'local' ? '로컬 서버' : '원격 서버') : saveTo === 'pc' ? 'PC 다운로드' : '둘 다'})...` });
-        try {
-            const res = await fetch(`/api/system/db/dump?${getQueryString()}&saveTo=${saveTo}`);
-            if (!res.ok) {
-                const errData = await res.json();
-                const fullError = `${errData.error}${errData.details ? ` (${errData.details})` : ''}`;
-                throw new Error(fullError);
-            }
-
-            if (saveTo === 'phone') {
-                const result = await res.json();
-                setStatus({ type: 'success', message: `${backupMode === 'local' ? '로컬' : '원격'} 서버에 백업 파일이 생성되었습니다: ${result.path}` });
-                fetchRemoteBackups(); // Refresh list
-                return;
-            }
-
-            const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const date = new Date().toISOString().split('T')[0];
-            a.href = url;
-            a.download = `worker_db_dump_${config.dbname}_${date}.sql`;
-            a.click();
-            URL.revokeObjectURL(url);
-            setStatus({ type: 'success', message: '정식 SQL 백업 파일(.sql)이 생성되었습니다.' });
-        } catch (error: any) {
-            console.error(error);
-            setStatus({ type: 'error', message: error.message || 'SQL 백업 중 오류가 발생했습니다.' });
-        } finally {
-            setIsExporting(false);
-            fetchFinalLogs();
         }
     };
 
     const handleJsonRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        if (!confirm(`정말 [${config.host}] 의 [${config.dbname}] DB로 JSON 복구를 진행하시겠습니까?\n\n주의: 기존 데이터가 삭제됩니다.`)) { e.target.value = ''; return; }
+        if (!confirm("정말 데이터베이스 복구를 진행하시겠습니까?\n\n주의: 기존 데이터가 모두 삭제되고 업로드한 백업 파일의 데이터로 대체됩니다.")) { e.target.value = ''; return; }
 
         setIsImporting(true);
-        setIsPolling(true);
-        setLogs([]);
         setStatus({ type: 'info', message: 'JSON 데이터를 복구 중입니다...' });
         try {
             const reader = new FileReader();
             reader.onload = async (event) => {
-                const data = JSON.parse(event.target?.result as string);
-                const res = await fetch(`/api/system/db/import?${getQueryString()}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data),
-                });
-                if (!res.ok) throw new Error('복구 실패');
-                setStatus({ type: 'success', message: '복구가 완료되었습니다.' });
+                try {
+                    const data = JSON.parse(event.target?.result as string);
+
+                    if (data.products && data.products.length > 0) {
+                        const proceed = confirm(
+                            "⚠️ 경고: 업로드한 백업 파일에 제품 정보(22만여 건)가 포함되어 있습니다.\n\n이 대용량 데이터를 복구하는 과정에서 트랜잭션 타임아웃이 발생하거나 데이터베이스 부하가 급증할 수 있습니다. 정말 진행하시겠습니까?"
+                        );
+                        if (!proceed) {
+                            setIsImporting(false);
+                            e.target.value = '';
+                            return;
+                        }
+                    }
+
+                    const res = await fetch('/api/system/db/import', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data),
+                    });
+                    if (!res.ok) throw new Error('복구 실패');
+                    setStatus({ type: 'success', message: '복구가 완료되었습니다.' });
+                } catch (err: any) {
+                    console.error(err);
+                    setStatus({ type: 'error', message: err.message || '복구 처리 중 오류가 발생했습니다.' });
+                } finally {
+                    setIsImporting(false);
+                    e.target.value = '';
+                }
             };
             reader.readAsText(file);
         } catch (err) {
             console.error(err);
-            setStatus({ type: 'error', message: '복구 오류가 발생했습니다.' });
-        } finally {
+            setStatus({ type: 'error', message: '파일을 읽는 중 오류가 발생했습니다.' });
             setIsImporting(false);
-            fetchFinalLogs();
-        }
-    };
-
-    const handleSqlRestore = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        if (!confirm(`정말 [${config.host}] 의 [${config.dbname}] DB로 정식 복구를 진행하시겠습니까?\n\n주의: 모든 내용이 파일 내용으로 교체됩니다.`)) { e.target.value = ''; return; }
-
-        setIsImporting(true);
-        setIsPolling(true);
-        setLogs([]);
-        setStatus({ type: 'info', message: `${backupMode === 'local' ? '로컬 직접' : '원격 SSH'} 복구를 진행 중입니다...` });
-        try {
-            const formData = new FormData();
-            formData.append('file', file);
-            const res = await fetch(`/api/system/db/restore-sql?${getQueryString()}`, {
-                method: 'POST',
-                body: formData,
-            });
-            const text = await res.text();
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                console.error('Non-JSON response:', text);
-                throw new Error(`서버 오류 (상태: ${res.status}): ${text.substring(0, 50)}...`);
-            }
-
-            if (!res.ok) {
-                throw new Error(data.error || 'SQL 복구 실패');
-            }
-            setStatus({ type: 'success', message: '정식 SQL 복구가 완료되었습니다.' });
-        } catch (error: any) {
-            console.error(error);
-            setStatus({ type: 'error', message: error.message || 'SQL 복구 중 오류가 발생했습니다.' });
-        } finally {
-            setIsImporting(false);
-            fetchFinalLogs();
-        }
-    };
-
-    const fetchRemoteBackups = async () => {
-        setIsLoadingBackups(true);
-        try {
-            const res = await fetch(`/api/system/db/backups?${getQueryString()}`);
-            if (res.ok) {
-                const data = await res.json();
-                setRemoteBackups(data.files || []);
-            } else {
-                throw new Error('목록 조회 실패');
-            }
-        } catch (e) {
-            console.error(e);
-            setStatus({ type: 'error', message: '백업 목록을 가져오지 못했습니다.' });
-        } finally {
-            setIsLoadingBackups(false);
-        }
-    };
-
-    const handleRemoteRestore = async (filename: string) => {
-        if (!confirm(`정말 서버에 저장된 [${filename}] 파일로 복구를 진행하시겠습니까?\n\n주의: 모든 내용이 파일 내용으로 교체됩니다.`)) return;
-
-        setIsImporting(true);
-        setIsPolling(true);
-        setLogs([]);
-        setStatus({ type: 'info', message: '서버 파일로 복구를 진행 중입니다...' });
-        try {
-            const res = await fetch(`/api/system/db/restore-sql?${getQueryString()}&remotePath=${filename}`, {
-                method: 'POST'
-            });
-            const text = await res.text();
-            let data;
-            try {
-                data = JSON.parse(text);
-            } catch (e) {
-                console.error('Non-JSON response:', text);
-                throw new Error(`서버 오류 (상태: ${res.status}): ${text.substring(0, 50)}...`);
-            }
-
-            if (!res.ok) {
-                throw new Error(data.error || 'SQL 복구 실패');
-            }
-            setStatus({ type: 'success', message: '정식 SQL 복구가 완료되었습니다.' });
-        } catch (error: any) {
-            console.error(error);
-            setStatus({ type: 'error', message: error.message || 'SQL 복구 중 오류가 발생했습니다.' });
-        } finally {
-            setIsImporting(false);
-            fetchFinalLogs();
-        }
-    };
-
-    const handleDeleteRemoteBackup = async (filename: string) => {
-        if (!confirm(`정말 [${filename}] 파일을 삭제하시겠습니까?`)) return;
-
-        try {
-            const res = await fetch(`/api/system/db/backups?${getQueryString()}&filename=${filename}`, {
-                method: 'DELETE'
-            });
-            if (res.ok) {
-                setStatus({ type: 'success', message: '백업 파일이 삭제되었습니다.' });
-                // Refresh list
-                setRemoteBackups(prev => prev.filter(f => f !== filename));
-            } else {
-                const errData = await res.json();
-                throw new Error(errData.error || '삭제 실패');
-            }
-        } catch (error: any) {
-            console.error(error);
-            setStatus({ type: 'error', message: error.message || '삭제 중 오류가 발생했습니다.' });
         }
     };
 
@@ -1342,247 +1144,56 @@ function DatabaseManagement() {
                 <Database size={18} /> 데이터베이스 관리
             </h2>
             <div className="space-y-6">
-                {/* Backup Mode Toggle */}
-                <div className="flex bg-slate-100 p-1 rounded-xl w-full">
-                    <button
-                        onClick={() => setBackupMode('local')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all ${backupMode === 'local' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
-                    >
-                        <Monitor size={18} /> 로컬 PC 백업 (Direct)
-                    </button>
-                    <button
-                        onClick={() => setBackupMode('remote')}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium rounded-lg transition-all ${backupMode === 'remote' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}
-                    >
-                        <Server size={18} /> 원격 서버 백업 (SSH)
-                    </button>
-                </div>
-
-                {/* Connection Settings */}
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-4">
-                    <p className="text-sm font-bold text-slate-700 flex items-center gap-2">
-                        <Settings size={16} /> 백업용 DB 연결 설정
+                {/* Description Guidance */}
+                <div className="text-sm text-slate-500 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <p className="font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                        💡 원클릭 백업 및 복구 안내
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="space-y-1">
-                            <label className="text-xs text-slate-500 ml-1">호스트 (Host)</label>
-                            <input
-                                type="text"
-                                value={config.host}
-                                onChange={e => setConfig({ ...config, host: e.target.value })}
-                                className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="idlezero.iptime.org"
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-xs text-slate-500 ml-1">포트 (Port)</label>
-                            <input
-                                type="text"
-                                value={config.port}
-                                onChange={e => setConfig({ ...config, port: e.target.value })}
-                                className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="5432"
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-xs text-slate-500 ml-1">사용자 (User)</label>
-                            <input
-                                type="text"
-                                value={config.user}
-                                onChange={e => setConfig({ ...config, user: e.target.value })}
-                                className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="postgres"
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-xs text-slate-500 ml-1">비밀번호 (Password)</label>
-                            <input
-                                type="password"
-                                value={config.password}
-                                onChange={e => setConfig({ ...config, password: e.target.value })}
-                                className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                            />
-                        </div>
-                        <div className="space-y-1">
-                            <label className="text-xs text-slate-500 ml-1">DB명 (DB Name)</label>
-                            <input
-                                type="text"
-                                value={config.dbname}
-                                onChange={e => setConfig({ ...config, dbname: e.target.value })}
-                                className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                placeholder="work"
-                            />
-                        </div>
-                        {backupMode === 'remote' && (
-                            <>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-slate-500 ml-1">SSH 포트 (SSH Port)</label>
-                                    <input
-                                        type="text"
-                                        value={config.sshPort}
-                                        onChange={e => setConfig({ ...config, sshPort: e.target.value })}
-                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                        placeholder="9022"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-slate-500 ml-1">SSH 사용자 (SSH User)</label>
-                                    <input
-                                        type="text"
-                                        value={config.sshUser}
-                                        onChange={e => setConfig({ ...config, sshUser: e.target.value })}
-                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                        placeholder="공란 시 DB 사용자 사용"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-xs text-slate-500 ml-1">SSH 비밀번호 (SSH Password)</label>
-                                    <input
-                                        type="password"
-                                        value={config.sshPassword}
-                                        onChange={e => setConfig({ ...config, sshPassword: e.target.value })}
-                                        className="w-full p-2 text-sm border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                                        placeholder="공란 시 DB 비밀번호 사용"
-                                    />
-                                </div>
-                            </>
-                        )}
-                    </div>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                        원격 CockroachDB 데이터베이스를 접속 중인 로컬 PC로 원클릭 백업하거나 복구합니다.
+                        백업 파일은 브라우저 다운로드를 통해 파일(JSON)로 저장됩니다.
+                    </p>
                 </div>
-
-                <div className="text-sm text-slate-500 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
-                    <p className="font-medium text-slate-700 mb-1">💡 백업 방식 선택 가이드</p>
-                    <ul className="list-disc list-inside space-y-1">
-                        <li><strong>정식 SQL 백업</strong>: DB 전체 구조와 데이터를 가장 완벽하게 복구합니다. (권장)</li>
-                        <li><strong>JSON 백업</strong>: 데이터 위주로 백업하며 호환성이 좋습니다.</li>
-                        <li className="text-amber-600 font-bold">⚠️ 413 오류 발생 시: 파일이 너무 커서 업로드할 수 없습니다. 하단의 [서버에서 복구] 기능을 이용하세요.</li>
-                    </ul>
-                    {backupMode === 'local' ? (
-                        <p className="mt-2 text-[11px] text-blue-600 font-medium">✨ 로컬 모드: SSH 없이 서버 엔진에서 직접 고속 백업을 수행합니다.</p>
-                    ) : (
-                        <p className="mt-2 text-[11px] text-amber-600 font-medium">⚠️ 원격 모드: 대용량 파일은 '원격 서버에 저장' 후 '원격 서버에서 복구'를 이용하세요.</p>
-                    )}
-                </div>
-
-                {/* SQL Backup/Restore (Native) */}
-                <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">정식 PostgreSQL 백업 (Native)</p>
-
-                        {/* Destination Selector */}
-                        <div className="flex bg-slate-100 p-1 rounded-lg w-full sm:w-auto">
-                            {(['pc', 'phone', 'both'] as const).map((t) => (
-                                <button
-                                    key={t}
-                                    onClick={() => setSaveTo(t)}
-                                    className={`px-3 py-1 text-[10px] md:text-xs rounded-md transition-all whitespace-nowrap ${saveTo === t ? 'bg-white text-blue-600 shadow-sm font-bold' : 'text-slate-500 hover:bg-slate-50'}`}
-                                >
-                                    {t === 'pc' ? 'PC 다운로드' : t === 'phone' ? (backupMode === 'local' ? '로컬 서버에 저장' : '원격 서버에 저장') : '둘 다 저장'}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <button
-                            onClick={handleSqlBackup}
-                            disabled={isExporting || isImporting}
-                            className="flex items-center justify-center gap-2 p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all font-medium disabled:opacity-50"
-                        >
-                            <Download size={18} /> 정식 SQL 백업 (.sql)
-                        </button>
-                        <button
-                            onClick={() => sqlFileInputRef.current?.click()}
-                            disabled={isExporting || isImporting}
-                            className="flex items-center justify-center gap-2 p-3 bg-white border-2 border-blue-600 text-blue-600 rounded-xl hover:bg-blue-50 transition-all font-medium disabled:opacity-50"
-                        >
-                            <Upload size={18} /> 정식 SQL 복구
-                        </button>
-                        <input type="file" ref={sqlFileInputRef} onChange={handleSqlRestore} accept=".sql" className="hidden" />
-                    </div>
-                </div>
-
 
                 {/* JSON Backup/Restore (Custom) */}
-                <div className="space-y-3 pt-3 border-t border-slate-100">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">JSON 백업/복구 (호환용)</p>
-                            <p className="text-[11px] text-slate-400 mt-0.5">서버 환경에 무관하게 데이터 테이블 단위로 이식성이 높은 백업입니다.</p>
+                <div className="space-y-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-100 shadow-sm">
+                        <div className="space-y-0.5">
+                            <p className="text-sm font-semibold text-slate-800">백업/복구 옵션</p>
+                            <p className="text-[11px] text-slate-400">제품 정보 테이블 포함 여부를 설정합니다.</p>
                         </div>
 
                         {/* Include Products Toggle */}
-                        <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-lg px-3">
-                            <label className="text-[11px] text-slate-600 font-medium cursor-pointer flex items-center gap-1.5 select-none">
+                        <div className="flex items-center gap-2 bg-slate-50 border border-slate-100 p-2 rounded-xl px-4">
+                            <label className="text-xs text-slate-700 font-semibold cursor-pointer flex items-center gap-2 select-none">
                                 <input
                                     type="checkbox"
                                     checked={includeProductsInJson}
                                     onChange={(e) => setIncludeProductsInJson(e.target.checked)}
-                                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+                                    className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 w-4 h-4"
                                 />
                                 제품 정보(대용량) 포함
                             </label>
                         </div>
                     </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <button
                             onClick={handleJsonBackup}
                             disabled={isExporting || isImporting}
-                            className="flex items-center justify-center gap-2 p-3 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-medium disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 p-3.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-all font-semibold disabled:opacity-50 shadow-md shadow-emerald-600/10 cursor-pointer"
                         >
-                            <Download size={18} /> JSON 백업 다운로드
+                            <Download size={18} /> 백업 파일 다운로드
                         </button>
                         <button
                             onClick={() => jsonFileInputRef.current?.click()}
                             disabled={isExporting || isImporting}
-                            className="flex items-center justify-center gap-2 p-3 bg-white border-2 border-emerald-600 text-emerald-600 rounded-xl hover:bg-emerald-50 transition-all font-medium disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 p-3.5 bg-white border-2 border-emerald-600 text-emerald-600 rounded-xl hover:bg-emerald-50 transition-all font-semibold disabled:opacity-50 cursor-pointer"
                         >
-                            <Upload size={18} /> JSON 백업 복구
+                            <Upload size={18} /> 백업 파일 복구하기
                         </button>
                         <input type="file" ref={jsonFileInputRef} onChange={handleJsonRestore} accept=".json" className="hidden" />
                     </div>
-                </div>
-
-
-                {/* Remote Backup Selection */}
-                <div className="space-y-3">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">{backupMode === 'local' ? '로컬 서버 백업 폴더에서 복구 (Local)' : '원격 서버 백업 폴더에서 복구 (Remote)'}</p>
-                    <button
-                        onClick={fetchRemoteBackups}
-                        disabled={isLoadingBackups || isImporting}
-                        className="w-full flex items-center justify-center gap-2 p-3 bg-slate-800 text-white rounded-xl hover:bg-slate-900 transition-all font-medium disabled:opacity-50"
-                    >
-                        <Database size={18} /> {isLoadingBackups ? '목록 불러오는 중...' : (backupMode === 'local' ? '로컬 서버에서 백업 목록 불러오기' : '원격 서버에서 백업 목록 불러오기')}
-                    </button>
-
-                    {remoteBackups.length > 0 && (
-                        <div className="bg-slate-50 border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-200">
-                            {remoteBackups.map(file => (
-                                <div key={file} className="flex items-center justify-between p-3 hover:bg-white transition-colors group">
-                                    <div className="flex items-center gap-3">
-                                        <Database size={16} className="text-slate-400" />
-                                        <span className="text-sm font-medium text-slate-700 truncate max-w-[200px] md:max-w-xs">{file}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => handleRemoteRestore(file)}
-                                            disabled={isImporting}
-                                            className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
-                                        >
-                                            복원하기
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteRemoteBackup(file)}
-                                            disabled={isImporting}
-                                            className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
-                                            title="삭제"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
                 </div>
 
                 {/* Excel DB Specification Sync */}
@@ -1595,7 +1206,7 @@ function DatabaseManagement() {
                         <button
                             onClick={handleSyncExcel}
                             disabled={isExporting || isImporting || isSyncing}
-                            className="w-full flex items-center justify-center gap-2 p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all font-medium disabled:opacity-50"
+                            className="w-full flex items-center justify-center gap-2 p-3.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-all font-semibold disabled:opacity-50 cursor-pointer"
                         >
                             <ExternalLink size={18} /> {isSyncing ? '동기화 진행 중...' : 'Excel 규격 DB 동기화 실행'}
                         </button>
@@ -1609,27 +1220,6 @@ function DatabaseManagement() {
                         }`}>
                         {status.type === 'info' && <span className="animate-spin text-blue-500 mr-2">⏳</span>}
                         {status.message}
-                    </div>
-                )}
-
-                {/* Real-time Log Viewer */}
-                {(isPolling || logs.length > 0) && (
-                    <div className="mt-4 space-y-2">
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                            <Terminal size={14} /> 실시간 작업 로그
-                        </p>
-                        <div className="bg-slate-900 text-slate-300 p-3 rounded-xl font-mono text-[10px] md:text-xs h-48 overflow-y-auto space-y-1 shadow-inner border border-slate-800">
-                            {logs.length === 0 ? (
-                                <div className="text-slate-500 italic">로그를 기다리는 중...</div>
-                            ) : (
-                                logs.map((log, i) => (
-                                    <div key={i} className={log.includes('완료') || log.includes('성공') ? 'text-green-400' : log.includes('실패') || log.includes('에러') ? 'text-red-400' : ''}>
-                                        {log}
-                                    </div>
-                                ))
-                            )}
-                            {isPolling && <div className="animate-pulse text-blue-400 font-bold mt-1">_ 작업 진행 중...</div>}
-                        </div>
                     </div>
                 )}
             </div>
