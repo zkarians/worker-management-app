@@ -51,11 +51,16 @@ export async function GET(request: Request) {
         const filename = `db_dump_${dbname}_${timestamp}.sql`;
 
         if (localMode) {
-            const localBackupPath = path.join(process.cwd(), 'backup', filename);
+            const isVercel = process.env.VERCEL === '1' || process.env.NOW_BUILDER === '1';
+            const baseDir = isVercel ? '/tmp' : process.cwd();
+            const localBackupPath = path.join(baseDir, 'backup', filename);
 
-            // Ensure backup directory exists
-            if (!fs.existsSync(path.join(process.cwd(), 'backup'))) {
-                fs.mkdirSync(path.join(process.cwd(), 'backup'), { recursive: true });
+            // Ensure backup directory exists if we need to write a file locally
+            if (saveTo !== 'pc') {
+                const backupFolder = path.join(baseDir, 'backup');
+                if (!fs.existsSync(backupFolder)) {
+                    fs.mkdirSync(backupFolder, { recursive: true });
+                }
             }
             console.log(`📡 [Local] DB Dump starting (${saveTo}): ${dbname}...`);
             addLog(`[로컬] DB 백업 시작 (대상: ${saveTo === 'phone' ? '로컬 서버' : saveTo === 'pc' ? 'PC' : '둘 다'})...`);

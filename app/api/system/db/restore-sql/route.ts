@@ -70,8 +70,10 @@ export async function POST(request: Request) {
                 ? path.join(LOCAL_PG_BIN, 'psql.exe')
                 : 'psql';
 
+            const isVercel = process.env.VERCEL === '1' || process.env.NOW_BUILDER === '1';
+            const baseDir = isVercel ? '/tmp' : process.cwd();
             const sourceFile = remoteFilename 
-                ? path.join(process.cwd(), 'backup', remoteFilename)
+                ? path.join(baseDir, 'backup', remoteFilename)
                 : tempFilePath;
 
             if (!fs.existsSync(sourceFile)) {

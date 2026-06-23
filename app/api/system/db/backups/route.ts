@@ -37,7 +37,9 @@ export async function GET(request: Request) {
         }
 
         if (localMode) {
-            const backupDir = path.join(process.cwd(), 'backup');
+            const isVercel = process.env.VERCEL === '1' || process.env.NOW_BUILDER === '1';
+            const baseDir = isVercel ? '/tmp' : process.cwd();
+            const backupDir = path.join(baseDir, 'backup');
             if (!fs.existsSync(backupDir)) {
                 fs.mkdirSync(backupDir, { recursive: true });
             }
@@ -160,7 +162,9 @@ export async function DELETE(request: Request) {
         }
 
         if (localMode) {
-            const filePath = path.join(process.cwd(), 'backup', filename);
+            const isVercel = process.env.VERCEL === '1' || process.env.NOW_BUILDER === '1';
+            const baseDir = isVercel ? '/tmp' : process.cwd();
+            const filePath = path.join(baseDir, 'backup', filename);
             if (fs.existsSync(filePath)) {
                 fs.unlinkSync(filePath);
                 return NextResponse.json({ success: true, message: '파일이 삭제되었습니다.' });
