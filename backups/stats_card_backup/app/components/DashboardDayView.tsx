@@ -59,7 +59,7 @@ const COMPANY_STYLES = [
 export function DashboardDayView({ date, isManager, compact = false, className = '' }: DashboardDayViewProps) {
     const [assignments, setAssignments] = useState<Assignment[]>([]);
     const [teams, setTeams] = useState<Team[]>([]);
-    const [stats, setStats] = useState({ total: 0, present: 0, absent: 0, leave: 0 });
+    const [stats, setStats] = useState({ total: 0, present: 0, absent: 0 });
     const [loading, setLoading] = useState(true);
     const [paletteTeam, setPaletteTeam] = useState<{ id: string; name: string } | null>(null);
     const [cleaningTeam, setCleaningTeam] = useState<{ id: string; name: string } | null>(null);
@@ -118,18 +118,13 @@ export function DashboardDayView({ date, isManager, compact = false, className =
                 const workingCount = assignedWorkerIds.size;
                 const totalUsers = allWorkers.length + allManagers.length;
 
-                const vacationOrLeaveCount = attendanceDataRes.attendance
-                    ? attendanceDataRes.attendance.filter((a: any) => a.status === 'VACATION' || a.status === 'LEAVE_OF_ABSENCE').length
-                    : 0;
-
                 setStats({
                     total: totalUsers,
                     present: workingCount,
-                    leave: vacationOrLeaveCount,
-                    absent: Math.max(0, totalUsers - workingCount - vacationOrLeaveCount)
+                    absent: Math.max(0, totalUsers - workingCount)
                 });
             } else {
-                setStats({ total: 0, present: 0, absent: 0, leave: 0 });
+                setStats({ total: 0, present: 0, absent: 0 });
             }
 
             // Missing position check logic is kept in the main page or can be added here if needed.
@@ -190,7 +185,6 @@ export function DashboardDayView({ date, isManager, compact = false, className =
                     <div className="flex gap-2 text-xs">
                         <span className="text-slate-600">총원 {stats.total}</span>
                         <span className="text-emerald-600">근무 {stats.present}</span>
-                        <span className="text-purple-600">휴가/휴직 {stats.leave}</span>
                         <span className="text-red-500">결근 {stats.absent}</span>
                     </div>
                 </div>
@@ -198,7 +192,7 @@ export function DashboardDayView({ date, isManager, compact = false, className =
 
             {/* Summary Cards - Only show if not compact or if requested */}
             {!compact && (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+                <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
                     <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                         <span className="text-slate-600 text-xs sm:text-sm font-semibold">총원</span>
                         <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{stats.total}</span>
@@ -206,10 +200,6 @@ export function DashboardDayView({ date, isManager, compact = false, className =
                     <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                         <span className="text-slate-600 text-xs sm:text-sm font-semibold">결근/휴무</span>
                         <span className="text-xl sm:text-2xl font-bold text-red-500 mt-1">{stats.absent}</span>
-                    </GlassCard>
-                    <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
-                        <span className="text-slate-600 text-xs sm:text-sm font-semibold">휴가/휴직</span>
-                        <span className="text-xl sm:text-2xl font-bold text-purple-600 mt-1">{stats.leave}</span>
                     </GlassCard>
                     <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                         <span className="text-slate-600 text-xs sm:text-sm font-semibold">근무</span>

@@ -81,7 +81,7 @@ export default function DashboardPage() {
     const [teams, setTeams] = useState<Team[]>([]);
     const [logs, setLogs] = useState<DailyLog[]>([]);
     const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
-    const [stats, setStats] = useState({ total: 0, present: 0, absent: 0, leave: 0 });
+    const [stats, setStats] = useState({ total: 0, present: 0, absent: 0 });
     const [loading, setLoading] = useState(true);
     const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
     const [lastUpdate, setLastUpdate] = useState(0); // Initialize with 0 for hydration stability
@@ -208,22 +208,17 @@ export default function DashboardPage() {
 
                 const workingCount = assignedWorkerIds.size;
 
-                const vacationOrLeaveCount = attendanceDataRes.attendance
-                    ? attendanceDataRes.attendance.filter((a: any) => a.status === 'VACATION' || a.status === 'LEAVE_OF_ABSENCE').length
-                    : 0;
-
                 // Total includes both workers and managers
                 const totalUsers = allWorkers.length + allManagers.length;
 
                 setStats({
                     total: totalUsers,
                     present: workingCount,
-                    leave: vacationOrLeaveCount,
-                    absent: Math.max(0, totalUsers - workingCount - vacationOrLeaveCount)
+                    absent: Math.max(0, totalUsers - workingCount)
                 });
             } else {
                 // If users data is not available, set default stats
-                setStats({ total: 0, present: 0, absent: 0, leave: 0 });
+                setStats({ total: 0, present: 0, absent: 0 });
             }
 
             if (logsData.logs) {
@@ -474,7 +469,7 @@ export default function DashboardPage() {
 
 
             {/* Summary Cards - Mobile First */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
                 <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">총원</span>
                     <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{stats.total}</span>
@@ -482,10 +477,6 @@ export default function DashboardPage() {
                 <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">결근/휴무</span>
                     <span className="text-xl sm:text-2xl font-bold text-red-500 mt-1">{stats.absent}</span>
-                </GlassCard>
-                <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
-                    <span className="text-slate-600 text-xs sm:text-sm font-semibold">휴가/휴직</span>
-                    <span className="text-xl sm:text-2xl font-bold text-purple-600 mt-1">{stats.leave}</span>
                 </GlassCard>
                 <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">근무</span>

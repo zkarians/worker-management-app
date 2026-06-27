@@ -72,7 +72,7 @@ export default function ViewPage() {
     const [teams, setTeams] = useState<Team[]>([]);
     const [logs, setLogs] = useState<DailyLog[]>([]);
     const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
-    const [stats, setStats] = useState({ total: 0, present: 0, absent: 0, leave: 0 });
+    const [stats, setStats] = useState({ total: 0, present: 0, absent: 0 });
     const [loading, setLoading] = useState(true);
     const [paletteTeam, setPaletteTeam] = useState<{ id: string; name: string } | null>(null);
     const [cleaningTeam, setCleaningTeam] = useState<{ id: string; name: string } | null>(null);
@@ -183,18 +183,13 @@ export default function ViewPage() {
                 const workingCount = assignedWorkerIds.size;
                 const totalUsers = allWorkers.length + allManagers.length;
 
-                const vacationOrLeaveCount = attendanceDataRes.attendance
-                    ? attendanceDataRes.attendance.filter((a: any) => a.status === 'VACATION' || a.status === 'LEAVE_OF_ABSENCE').length
-                    : 0;
-
                 setStats({
                     total: totalUsers,
                     present: workingCount,
-                    leave: vacationOrLeaveCount,
-                    absent: Math.max(0, totalUsers - workingCount - vacationOrLeaveCount)
+                    absent: Math.max(0, totalUsers - workingCount)
                 });
             } else {
-                setStats({ total: 0, present: 0, absent: 0, leave: 0 });
+                setStats({ total: 0, present: 0, absent: 0 });
             }
 
             if (logsData.logs) {
@@ -313,7 +308,7 @@ export default function ViewPage() {
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-3 gap-4 md:gap-6">
                     <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
                         <span className="text-slate-500 text-xs sm:text-sm font-medium">총원</span>
                         <span className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">{stats.total}</span>
@@ -321,10 +316,6 @@ export default function ViewPage() {
                     <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
                         <span className="text-slate-500 text-xs sm:text-sm font-medium">결근/휴무</span>
                         <span className="text-2xl sm:text-3xl font-bold text-red-500 mt-2">{stats.absent}</span>
-                    </GlassCard>
-                    <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
-                        <span className="text-slate-500 text-xs sm:text-sm font-medium">휴가/휴직</span>
-                        <span className="text-2xl sm:text-3xl font-bold text-purple-600 mt-2">{stats.leave}</span>
                     </GlassCard>
                     <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
                         <span className="text-slate-500 text-xs sm:text-sm font-medium">근무</span>
@@ -609,5 +600,3 @@ export default function ViewPage() {
         </div>
     );
 }
-
-
