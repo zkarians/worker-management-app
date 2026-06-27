@@ -725,9 +725,8 @@ export default function DashboardPage() {
                         const lateWorkers = attendanceData.filter(a => a.status === 'LATE');
                         const earlyLeaveWorkers = attendanceData.filter(a => a.status === 'EARLY_LEAVE');
                         const leaveOfAbsenceWorkers = attendanceData.filter(a => a.status === 'LEAVE_OF_ABSENCE');
-                        const vacationWorkers = attendanceData.filter(a => a.status === 'VACATION');
 
-                        const hasAnyStatus = offDayWorkers.length > 0 || absentWorkers.length > 0 || lateWorkers.length > 0 || earlyLeaveWorkers.length > 0 || leaveOfAbsenceWorkers.length > 0 || vacationWorkers.length > 0;
+                        const hasAnyStatus = offDayWorkers.length > 0 || absentWorkers.length > 0 || lateWorkers.length > 0 || earlyLeaveWorkers.length > 0 || leaveOfAbsenceWorkers.length > 0;
 
                         if (!hasAnyStatus) return null;
 
@@ -748,35 +747,6 @@ export default function DashboardPage() {
                                             </div>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {leaveOfAbsenceWorkers.map((worker, idx) => {
-                                                    const companyName = worker.user?.company?.name;
-                                                    const style = getCompanyStyle(companyName);
-                                                    return (
-                                                        <div
-                                                            key={idx}
-                                                            className={`flex flex-col items-center px-2 py-1 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 ${style.bg} ${style.border}`}
-                                                            title={worker.reason || undefined}
-                                                        >
-                                                            <span className="text-xs font-medium text-slate-900">
-                                                                {worker.user?.name}{worker.reason ? ` (${worker.reason})` : ''}
-                                                            </span>
-                                                            <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
-                                                                {companyName || '소속없음'}
-                                                            </span>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {vacationWorkers.length > 0 && (
-                                        <div>
-                                            <div className="flex items-center gap-1.5 mb-1.5">
-                                                <span className="text-xs font-semibold text-teal-800">휴가</span>
-                                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-700">{vacationWorkers.length}</span>
-                                            </div>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {vacationWorkers.map((worker, idx) => {
                                                     const companyName = worker.user?.company?.name;
                                                     const style = getCompanyStyle(companyName);
                                                     return (

@@ -464,7 +464,7 @@ export default function ViewPage() {
                         {/* Attendance Status Section */}
                         {(() => {
                             const allAttendance = attendanceData.filter(a =>
-                                a.status === 'OFF_DAY' || a.status === 'ABSENT' || a.status === 'LATE' || a.status === 'EARLY_LEAVE' || a.status === 'LEAVE_OF_ABSENCE' || a.status === 'VACATION'
+                                a.status === 'OFF_DAY' || a.status === 'ABSENT' || a.status === 'LATE' || a.status === 'EARLY_LEAVE' || a.status === 'LEAVE_OF_ABSENCE'
                             );
 
                             if (allAttendance.length === 0) return null;
@@ -472,9 +472,6 @@ export default function ViewPage() {
                             const getStatusLabel = (worker: any) => {
                                 if (worker.status === 'LEAVE_OF_ABSENCE') {
                                     return worker.reason ? `휴직 (${worker.reason})` : '휴직';
-                                }
-                                if (worker.status === 'VACATION') {
-                                    return worker.reason ? `휴가 (${worker.reason})` : '휴가';
                                 }
                                 switch (worker.status) {
                                     case 'OFF_DAY': return '휴무';
@@ -490,7 +487,6 @@ export default function ViewPage() {
                                     case 'OFF_DAY': return 'bg-purple-100 text-purple-700 border-purple-300';
                                     case 'ABSENT': return 'bg-red-100 text-red-700 border-red-300';
                                     case 'LEAVE_OF_ABSENCE': return 'bg-indigo-100 text-indigo-700 border-indigo-300';
-                                    case 'VACATION': return 'bg-teal-100 text-teal-700 border-teal-300';
                                     case 'LATE': return 'bg-orange-100 text-orange-700 border-orange-300';
                                     case 'EARLY_LEAVE': return 'bg-yellow-100 text-yellow-700 border-yellow-300';
                                     default: return 'bg-gray-100 text-gray-700 border-gray-300';

@@ -54,21 +54,21 @@ export function SpecialNotesCalendar({
     isManager = false
 }: SpecialNotesCalendarProps) {
 
-    // Helper to detect consecutive periods for LEAVE_OF_ABSENCE / VACATION
-    const getConsecutivePeriods = (status: string) => {
-        const matchingRecords = (attendance || []).filter(a => a.status === status);
-        const userRecords: { [userId: string]: typeof matchingRecords } = {};
+    // Period detection code for LEAVE_OF_ABSENCE
+    const leavePeriods = (() => {
+        const leaveOfAbsenceRecords = (attendance || []).filter(a => a.status === 'LEAVE_OF_ABSENCE');
+        const userLeaveRecords: { [userId: string]: typeof leaveOfAbsenceRecords } = {};
         
-        matchingRecords.forEach(rec => {
-            if (!userRecords[rec.userId]) {
-                userRecords[rec.userId] = [];
+        leaveOfAbsenceRecords.forEach(rec => {
+            if (!userLeaveRecords[rec.userId]) {
+                userLeaveRecords[rec.userId] = [];
             }
-            userRecords[rec.userId].push(rec);
+            userLeaveRecords[rec.userId].push(rec);
         });
 
         const periods: { userName: string; startDate: string; endDate: string; reason?: string | null }[] = [];
 
-        Object.entries(userRecords).forEach(([userId, records]) => {
+        Object.entries(userLeaveRecords).forEach(([userId, records]) => {
             if (records.length === 0) return;
             const userName = records[0].user?.name || '근무자';
 
@@ -117,10 +117,7 @@ export function SpecialNotesCalendar({
         });
 
         return periods;
-    };
-
-    const leavePeriods = getConsecutivePeriods('LEAVE_OF_ABSENCE');
-    const vacationPeriods = getConsecutivePeriods('VACATION');
+    })();
 
     const getDaysInMonth = (year: number, month: number) => {
         return new Date(year, month, 0).getDate();
@@ -374,17 +371,6 @@ export function SpecialNotesCalendar({
                                                 }
                                             });
 
-                                            const dayVacationPeriods: { type: 'START' | 'END' | 'SINGLE'; userName: string; reason?: string | null }[] = [];
-                                            vacationPeriods.forEach(p => {
-                                                if (p.startDate === dateStr && p.endDate === dateStr) {
-                                                    dayVacationPeriods.push({ type: 'SINGLE', userName: p.userName, reason: p.reason });
-                                                } else if (p.startDate === dateStr) {
-                                                    dayVacationPeriods.push({ type: 'START', userName: p.userName, reason: p.reason });
-                                                } else if (p.endDate === dateStr) {
-                                                    dayVacationPeriods.push({ type: 'END', userName: p.userName });
-                                                }
-                                            });
-
                                             return (
                                                 <>
                                                     {/* Render Leave of Absence Boundary Badges */}
@@ -405,32 +391,6 @@ export function SpecialNotesCalendar({
                                                         return (
                                                             <div
                                                                 key={`leave-boundary-${idx}-${lp.userName}`}
-                                                                className={`text-[7px] sm:text-[8px] p-0.5 px-1 rounded border flex items-start gap-0.5 sm:gap-1 ${logColor}`}
-                                                                title={label}
-                                                            >
-                                                                <span className="flex-1 whitespace-normal break-words leading-tight">{label}</span>
-                                                            </div>
-                                                        );
-                                                    })}
-
-                                                    {/* Render Vacation Boundary Badges */}
-                                                    {dayVacationPeriods.map((vp, idx) => {
-                                                        let label = '';
-                                                        if (vp.type === 'START') {
-                                                            label = `[휴가 시작] ${vp.userName}`;
-                                                            if (vp.reason) label += ` (사유: ${vp.reason})`;
-                                                        } else if (vp.type === 'END') {
-                                                            label = `[휴가 종료] ${vp.userName}`;
-                                                        } else {
-                                                            label = `[휴가] ${vp.userName}`;
-                                                            if (vp.reason) label += ` (사유: ${vp.reason})`;
-                                                        }
-
-                                                        const logColor = 'bg-teal-100 border-teal-300 text-teal-800 font-semibold';
-
-                                                        return (
-                                                            <div
-                                                                key={`vacation-boundary-${idx}-${vp.userName}`}
                                                                 className={`text-[7px] sm:text-[8px] p-0.5 px-1 rounded border flex items-start gap-0.5 sm:gap-1 ${logColor}`}
                                                                 title={label}
                                                             >

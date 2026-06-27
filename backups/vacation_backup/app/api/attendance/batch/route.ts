@@ -79,8 +79,8 @@ export async function POST(request: Request) {
                     await addStatusLog(userId, date, statusText, session.userId as string);
                 }
 
-                // If status is ABSENT, OFF_DAY, LEAVE_OF_ABSENCE, or VACATION, remove from Roster
-                if (finalStatus === 'ABSENT' || finalStatus === 'OFF_DAY' || finalStatus === 'LEAVE_OF_ABSENCE' || finalStatus === 'VACATION') {
+                // If status is ABSENT, OFF_DAY, or LEAVE_OF_ABSENCE, remove from Roster
+                if (finalStatus === 'ABSENT' || finalStatus === 'OFF_DAY' || finalStatus === 'LEAVE_OF_ABSENCE') {
                     const roster = await prisma.roster.findUnique({ where: { date } });
                     if (roster) {
                         await prisma.rosterAssignment.deleteMany({

@@ -357,8 +357,8 @@ export default function AttendancePage() {
             if (item.userId === userId && item.date === date) {
                 const updates: any = { [field]: value };
 
-                // If status changes to OFF_DAY, ABSENT, LEAVE_OF_ABSENCE, or VACATION, set hours to 0
-                if (field === 'status' && (value === 'OFF_DAY' || value === 'ABSENT' || value === 'LEAVE_OF_ABSENCE' || value === 'VACATION')) {
+                // If status changes to OFF_DAY, ABSENT or LEAVE_OF_ABSENCE, set hours to 0
+                if (field === 'status' && (value === 'OFF_DAY' || value === 'ABSENT' || value === 'LEAVE_OF_ABSENCE')) {
                     updates.workHours = 0;
                     updates.overtimeHours = 0;
                 }
@@ -410,12 +410,12 @@ export default function AttendancePage() {
 
             // Only update status if it matches filters (is visible)
             if (matchesName && matchesStatus) {
-                const isOffOrAbsentOrLeaveOrVacation = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT' || bulkStatus === 'LEAVE_OF_ABSENCE' || bulkStatus === 'VACATION';
+                const isOffOrAbsentOrLeave = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT' || bulkStatus === 'LEAVE_OF_ABSENCE';
                 return {
                     ...item,
                     status: bulkStatus,
-                    workHours: isOffOrAbsentOrLeaveOrVacation ? 0 : item.workHours,
-                    overtimeHours: isOffOrAbsentOrLeaveOrVacation ? 0 : item.overtimeHours
+                    workHours: isOffOrAbsentOrLeave ? 0 : item.workHours,
+                    overtimeHours: isOffOrAbsentOrLeave ? 0 : item.overtimeHours
                 };
             }
             return item;
@@ -506,7 +506,6 @@ export default function AttendancePage() {
                                 <option value="ABSENT">결근</option>
                                 <option value="OFF_DAY">휴무</option>
                                 <option value="LEAVE_OF_ABSENCE">휴직</option>
-                                <option value="VACATION">휴가</option>
                                 <option value="LATE">지각</option>
                                 <option value="EARLY_LEAVE">조퇴</option>
                                 <option value="SCHEDULED">예정</option>
@@ -570,7 +569,6 @@ export default function AttendancePage() {
                                         <option value="ABSENT">결근</option>
                                         <option value="OFF_DAY">휴무</option>
                                         <option value="LEAVE_OF_ABSENCE">휴직</option>
-                                        <option value="VACATION">휴가</option>
                                         <option value="LATE">지각</option>
                                         <option value="EARLY_LEAVE">조퇴</option>
                                         <option value="SCHEDULED">예정</option>
@@ -670,7 +668,6 @@ export default function AttendancePage() {
                                                 <option value="ABSENT">결근</option>
                                                 <option value="OFF_DAY">휴무</option>
                                                 <option value="LEAVE_OF_ABSENCE">휴직</option>
-                                                <option value="VACATION">휴가</option>
                                                 <option value="LATE">지각</option>
                                                 <option value="EARLY_LEAVE">조퇴</option>
                                                 <option value="SCHEDULED">예정</option>
@@ -680,20 +677,18 @@ export default function AttendancePage() {
                                                 record.status === 'ABSENT' ? 'bg-red-500/20 text-red-400' :
                                                     record.status === 'OFF_DAY' ? 'bg-slate-500/20 text-slate-500' :
                                                         record.status === 'LEAVE_OF_ABSENCE' ? 'bg-purple-500/20 text-purple-600' :
-                                                            record.status === 'VACATION' ? 'bg-teal-500/20 text-teal-600' :
-                                                                record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-400' :
-                                                                    record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                                        'bg-slate-500/20 text-slate-400'
+                                                            record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-400' :
+                                                                record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                                    'bg-slate-500/20 text-slate-400'
                                                 }`}>
                                                 {record.status === 'PRESENT' ? '출근' :
                                                     record.status === 'ABSENT' ? '결근' :
                                                         record.status === 'OFF_DAY' ? '휴무' :
                                                             record.status === 'LEAVE_OF_ABSENCE' ? '휴직' :
-                                                                record.status === 'VACATION' ? '휴가' :
-                                                                    record.status === 'SCHEDULED' ? '예정' :
-                                                                        record.status === 'LATE' ? '지각' :
-                                                                            record.status === 'EARLY_LEAVE' ? '조퇴' :
-                                                                                record.status || '-'}
+                                                                record.status === 'SCHEDULED' ? '예정' :
+                                                                    record.status === 'LATE' ? '지각' :
+                                                                        record.status === 'EARLY_LEAVE' ? '조퇴' :
+                                                                            record.status || '-'}
                                             </span>
                                         )}
                                     </td>
@@ -776,20 +771,18 @@ export default function AttendancePage() {
                                             record.status === 'ABSENT' ? 'bg-red-500/20 text-red-700' :
                                                 record.status === 'OFF_DAY' ? 'bg-slate-500/20 text-slate-700' :
                                                     record.status === 'LEAVE_OF_ABSENCE' ? 'bg-purple-500/20 text-purple-700' :
-                                                        record.status === 'VACATION' ? 'bg-teal-500/20 text-teal-700' :
-                                                            record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-700' :
-                                                                record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-700' :
-                                                                    'bg-slate-500/20 text-slate-600'
+                                                        record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-700' :
+                                                            record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-700' :
+                                                                'bg-slate-500/20 text-slate-600'
                                             }`}>
                                             {record.status === 'PRESENT' ? '출근' :
                                                 record.status === 'ABSENT' ? '결근' :
                                                     record.status === 'OFF_DAY' ? '휴무' :
                                                         record.status === 'LEAVE_OF_ABSENCE' ? '휴직' :
-                                                            record.status === 'VACATION' ? '휴가' :
-                                                                record.status === 'SCHEDULED' ? '예정' :
-                                                                    record.status === 'LATE' ? '지각' :
-                                                                        record.status === 'EARLY_LEAVE' ? '조퇴' :
-                                                                            record.status || '-'}
+                                                            record.status === 'SCHEDULED' ? '예정' :
+                                                                record.status === 'LATE' ? '지각' :
+                                                                    record.status === 'EARLY_LEAVE' ? '조퇴' :
+                                                                        record.status || '-'}
                                         </span>
                                     )}
                                 </div>
@@ -809,7 +802,6 @@ export default function AttendancePage() {
                                                 <option value="ABSENT">결근</option>
                                                 <option value="OFF_DAY">휴무</option>
                                                 <option value="LEAVE_OF_ABSENCE">휴직</option>
-                                                <option value="VACATION">휴가</option>
                                                 <option value="LATE">지각</option>
                                                 <option value="EARLY_LEAVE">조퇴</option>
                                                 <option value="SCHEDULED">예정</option>
@@ -820,11 +812,10 @@ export default function AttendancePage() {
                                                     record.status === 'ABSENT' ? '결근' :
                                                         record.status === 'OFF_DAY' ? '휴무' :
                                                             record.status === 'LEAVE_OF_ABSENCE' ? '휴직' :
-                                                                record.status === 'VACATION' ? '휴가' :
-                                                                    record.status === 'SCHEDULED' ? '예정' :
-                                                                        record.status === 'LATE' ? '지각' :
-                                                                            record.status === 'EARLY_LEAVE' ? '조퇴' :
-                                                                                record.status || '-'}
+                                                                record.status === 'SCHEDULED' ? '예정' :
+                                                                    record.status === 'LATE' ? '지각' :
+                                                                        record.status === 'EARLY_LEAVE' ? '조퇴' :
+                                                                            record.status || '-'}
                                             </p>
                                         )}
                                     </div>

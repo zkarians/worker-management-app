@@ -593,43 +593,9 @@ export default function ReportPage() {
                                         const lateWorkers = attendanceData.filter((a: any) => a.status === 'LATE');
                                         const earlyLeaveWorkers = attendanceData.filter((a: any) => a.status === 'EARLY_LEAVE');
                                         const leaveOfAbsenceWorkers = attendanceData.filter((a: any) => a.status === 'LEAVE_OF_ABSENCE');
-                                        const vacationWorkers = attendanceData.filter((a: any) => a.status === 'VACATION');
 
                                         return (
                                             <>
-                                                {/* 휴가 */}
-                                                {vacationWorkers.length > 0 && (
-                                                    <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden print:rounded print:border-slate-300">
-                                                        <div className="bg-gradient-to-r from-teal-50 to-teal-100 p-1.5 border-b border-teal-200 print:p-1">
-                                                            <h3 className="text-[10px] font-bold text-slate-800 flex items-center gap-1 print:text-[8px]">
-                                                                 <div className="w-0.5 h-3 bg-teal-500 rounded-full print:h-2"></div>
-                                                                 휴가 ({vacationWorkers.length}명)
-                                                            </h3>
-                                                        </div>
-                                                        <div className="p-1.5 print:p-1">
-                                                            <div className="flex flex-wrap gap-1 print:gap-0.5">
-                                                                 {vacationWorkers.map((worker: any, idx: number) => {
-                                                                     const style = getCompanyStyle(worker.user?.company?.name);
-                                                                     return (
-                                                                         <div
-                                                                             key={idx}
-                                                                             className={`flex flex-col items-center px-1.5 py-0.5 rounded-md border shadow-sm ${style.bg} ${style.border} print:px-1 print:py-0 print:rounded-sm`}
-                                                                             title={worker.reason || undefined}
-                                                                         >
-                                                                             <span className={`font-bold text-[10px] ${style.text} print:text-[8px]`}>
-                                                                                 {worker.user?.name}{worker.reason ? ` (${worker.reason})` : ''}
-                                                                             </span>
-                                                                             <span className="text-[8px] text-slate-600 leading-none mt-0.5 print:text-[6px]">
-                                                                                 {worker.user?.company?.name || '-'}
-                                                                             </span>
-                                                                         </div>
-                                                                     );
-                                                                 })}
-                                                             </div>
-                                                         </div>
-                                                     </div>
-                                                 )}
-
                                                 {/* 휴직 */}
                                                 {leaveOfAbsenceWorkers.length > 0 && (
                                                     <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden print:rounded print:border-slate-300">
