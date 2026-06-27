@@ -341,7 +341,7 @@ export function SpecialNotesCalendar({
                                                     const status = match[1];
                                                     const name = match[2];
                                                     // Only group specific statuses if needed, or all bracketed tags
-                                                    if (['결근', '지각', '조퇴', '휴무', '퇴사'].includes(status)) {
+                                                    if (['결근', '지각', '조퇴', '휴무'].includes(status)) {
                                                         if (!groupedLogs[status]) {
                                                             groupedLogs[status] = { ids: [], names: [], status };
                                                         }
@@ -459,9 +459,6 @@ export function SpecialNotesCalendar({
                                                             case '조퇴':
                                                                 statusColor = 'bg-yellow-100 border-yellow-400 text-yellow-900';
                                                                 break;
-                                                            case '퇴사':
-                                                                statusColor = 'bg-rose-100 border-rose-300 text-rose-800';
-                                                                break;
                                                             default:
                                                                 statusColor = 'bg-gray-100 border-gray-300 text-gray-800';
                                                         }
@@ -485,18 +482,14 @@ export function SpecialNotesCalendar({
                                                         let logColor = '';
                                                         if (isMissingPositionNote) {
                                                             logColor = 'bg-red-100 border-red-400 text-red-900';
-                                                        } else if (log.content.includes('[휴무]') || log.content.includes('휴무')) {
+                                                        } else if (log.content.includes('[휴무]')) {
                                                             logColor = 'bg-blue-100 border-blue-300 text-blue-800';
-                                                        } else if (log.content.includes('[결근]') || log.content.includes('결근')) {
+                                                        } else if (log.content.includes('[결근]')) {
                                                             logColor = 'bg-red-100 border-red-400 text-red-900';
-                                                        } else if (log.content.includes('[지각]') || log.content.includes('지각')) {
+                                                        } else if (log.content.includes('[지각]')) {
                                                             logColor = 'bg-orange-100 border-orange-300 text-orange-800';
-                                                        } else if (log.content.includes('[조퇴]') || log.content.includes('조퇴')) {
+                                                        } else if (log.content.includes('[조퇴]')) {
                                                             logColor = 'bg-yellow-100 border-yellow-400 text-yellow-900';
-                                                        } else if (log.content.includes('[퇴사]') || log.content.includes('퇴사')) {
-                                                            logColor = 'bg-rose-100 border-rose-300 text-rose-800';
-                                                        } else if (log.content.includes('입사')) {
-                                                            logColor = 'bg-emerald-100 border-emerald-300 text-emerald-800';
                                                         } else {
                                                             logColor = 'bg-gray-100 border-gray-300 text-gray-800';
                                                         }
