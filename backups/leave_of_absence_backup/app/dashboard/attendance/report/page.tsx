@@ -25,7 +25,6 @@ interface UserStats {
     earlyLeaveDays: number;
     scheduledDays: number;
     offDays: number;
-    leaveOfAbsenceDays: number;
     totalWorkHours: number;
     totalOvertimeHours: number;
 }
@@ -144,7 +143,6 @@ export default function AttendanceReportPage() {
                     earlyLeaveDays: 0,
                     scheduledDays: 0,
                     offDays: 0,
-                    leaveOfAbsenceDays: 0,
                     totalWorkHours: 0,
                     totalOvertimeHours: 0
                 });
@@ -196,9 +194,6 @@ export default function AttendanceReportPage() {
                             break;
                         case 'OFF_DAY':
                             stats.offDays++;
-                            break;
-                        case 'LEAVE_OF_ABSENCE':
-                            stats.leaveOfAbsenceDays++;
                             break;
                     }
                 }
@@ -533,7 +528,6 @@ export default function AttendanceReportPage() {
                                 <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">출근</th>
                                 <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">결근</th>
                                 <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">휴무</th>
-                                <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">휴직</th>
                                 <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">지각</th>
                                 <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">조퇴</th>
                                 <th className="px-4 py-3 text-center text-sm font-bold text-slate-700">예정</th>
@@ -544,13 +538,13 @@ export default function AttendanceReportPage() {
                         <tbody className="divide-y-2 divide-slate-100">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={11} className="px-4 py-6 text-center text-slate-500 text-sm">
+                                    <td colSpan={10} className="px-4 py-6 text-center text-slate-500 text-sm">
                                         조회 중...
                                     </td>
                                 </tr>
                             ) : userStats.length === 0 ? (
                                 <tr>
-                                    <td colSpan={11} className="px-4 py-6 text-center text-slate-500 text-sm">
+                                    <td colSpan={10} className="px-4 py-6 text-center text-slate-500 text-sm">
                                         데이터가 없습니다.
                                     </td>
                                 </tr>
@@ -578,11 +572,6 @@ export default function AttendanceReportPage() {
                                         <td className="px-4 py-3 text-center">
                                             <span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-slate-100 border border-slate-300 text-slate-700">
                                                 {stat.offDays}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 text-center">
-                                            <span className="px-3 py-1.5 rounded-lg text-sm font-bold bg-purple-100 border border-purple-300 text-purple-700">
-                                                {stat.leaveOfAbsenceDays}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-center">

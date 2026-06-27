@@ -12,7 +12,6 @@ interface Attendance {
     status: string;
     overtimeHours: number;
     workHours: number;
-    reason?: string | null;
     user: { name: string };
 }
 
@@ -357,8 +356,8 @@ export default function AttendancePage() {
             if (item.userId === userId && item.date === date) {
                 const updates: any = { [field]: value };
 
-                // If status changes to OFF_DAY, ABSENT or LEAVE_OF_ABSENCE, set hours to 0
-                if (field === 'status' && (value === 'OFF_DAY' || value === 'ABSENT' || value === 'LEAVE_OF_ABSENCE')) {
+                // If status changes to OFF_DAY or ABSENT, set hours to 0
+                if (field === 'status' && (value === 'OFF_DAY' || value === 'ABSENT')) {
                     updates.workHours = 0;
                     updates.overtimeHours = 0;
                 }
@@ -387,7 +386,6 @@ export default function AttendancePage() {
                     status: record.status,
                     overtimeHours: Number(record.overtimeHours),
                     workHours: Number(record.workHours),
-                    reason: record.reason,
                 }),
             });
         } catch (error) {
@@ -410,12 +408,12 @@ export default function AttendancePage() {
 
             // Only update status if it matches filters (is visible)
             if (matchesName && matchesStatus) {
-                const isOffOrAbsentOrLeave = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT' || bulkStatus === 'LEAVE_OF_ABSENCE';
+                const isOffOrAbsent = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT';
                 return {
                     ...item,
                     status: bulkStatus,
-                    workHours: isOffOrAbsentOrLeave ? 0 : item.workHours,
-                    overtimeHours: isOffOrAbsentOrLeave ? 0 : item.overtimeHours
+                    workHours: isOffOrAbsent ? 0 : item.workHours,
+                    overtimeHours: isOffOrAbsent ? 0 : item.overtimeHours
                 };
             }
             return item;
@@ -505,7 +503,6 @@ export default function AttendancePage() {
                                 <option value="PRESENT">출근</option>
                                 <option value="ABSENT">결근</option>
                                 <option value="OFF_DAY">휴무</option>
-                                <option value="LEAVE_OF_ABSENCE">휴직</option>
                                 <option value="LATE">지각</option>
                                 <option value="EARLY_LEAVE">조퇴</option>
                                 <option value="SCHEDULED">예정</option>
@@ -568,7 +565,6 @@ export default function AttendancePage() {
                                         <option value="PRESENT">출근</option>
                                         <option value="ABSENT">결근</option>
                                         <option value="OFF_DAY">휴무</option>
-                                        <option value="LEAVE_OF_ABSENCE">휴직</option>
                                         <option value="LATE">지각</option>
                                         <option value="EARLY_LEAVE">조퇴</option>
                                         <option value="SCHEDULED">예정</option>
@@ -645,7 +641,6 @@ export default function AttendancePage() {
                                 <th className="px-6 py-4">상태</th>
                                 <th className="px-6 py-4">근무 시간</th>
                                 <th className="px-6 py-4">잔업 시간</th>
-                                <th className="px-6 py-4">사유</th>
                                 {isManager && <th className="px-6 py-4">작업</th>}
                             </tr>
                         </thead>
@@ -667,7 +662,6 @@ export default function AttendancePage() {
                                                 <option value="PRESENT">출근</option>
                                                 <option value="ABSENT">결근</option>
                                                 <option value="OFF_DAY">휴무</option>
-                                                <option value="LEAVE_OF_ABSENCE">휴직</option>
                                                 <option value="LATE">지각</option>
                                                 <option value="EARLY_LEAVE">조퇴</option>
                                                 <option value="SCHEDULED">예정</option>
@@ -676,19 +670,17 @@ export default function AttendancePage() {
                                             <span className={`px-2 py-1 rounded-full text-xs ${record.status === 'PRESENT' ? 'bg-green-500/20 text-green-400' :
                                                 record.status === 'ABSENT' ? 'bg-red-500/20 text-red-400' :
                                                     record.status === 'OFF_DAY' ? 'bg-slate-500/20 text-slate-500' :
-                                                        record.status === 'LEAVE_OF_ABSENCE' ? 'bg-purple-500/20 text-purple-600' :
-                                                            record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-400' :
-                                                                record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-400' :
-                                                                    'bg-slate-500/20 text-slate-400'
+                                                        record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-400' :
+                                                            record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-400' :
+                                                                'bg-slate-500/20 text-slate-400'
                                                 }`}>
                                                 {record.status === 'PRESENT' ? '출근' :
                                                     record.status === 'ABSENT' ? '결근' :
                                                         record.status === 'OFF_DAY' ? '휴무' :
-                                                            record.status === 'LEAVE_OF_ABSENCE' ? '휴직' :
-                                                                record.status === 'SCHEDULED' ? '예정' :
-                                                                    record.status === 'LATE' ? '지각' :
-                                                                        record.status === 'EARLY_LEAVE' ? '조퇴' :
-                                                                            record.status || '-'}
+                                                            record.status === 'SCHEDULED' ? '예정' :
+                                                                record.status === 'LATE' ? '지각' :
+                                                                    record.status === 'EARLY_LEAVE' ? '조퇴' :
+                                                                        record.status || '-'}
                                             </span>
                                         )}
                                     </td>
@@ -714,19 +706,6 @@ export default function AttendancePage() {
                                             />
                                         ) : (
                                             <span>{record.overtimeHours}시간</span>
-                                        )}
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        {isManager ? (
-                                            <input
-                                                type="text"
-                                                value={record.reason || ''}
-                                                onChange={(e) => handleChange(record.userId, record.date, 'reason', e.target.value)}
-                                                className="glass-input py-1 px-2 w-full bg-white border-slate-200 text-xs min-w-[120px]"
-                                                placeholder="사유 입력"
-                                            />
-                                        ) : (
-                                            <span className="text-xs text-slate-600">{record.reason || '-'}</span>
                                         )}
                                     </td>
                                     {isManager && (
@@ -770,19 +749,17 @@ export default function AttendancePage() {
                                         <span className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap ${record.status === 'PRESENT' ? 'bg-green-500/20 text-green-700' :
                                             record.status === 'ABSENT' ? 'bg-red-500/20 text-red-700' :
                                                 record.status === 'OFF_DAY' ? 'bg-slate-500/20 text-slate-700' :
-                                                    record.status === 'LEAVE_OF_ABSENCE' ? 'bg-purple-500/20 text-purple-700' :
-                                                        record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-700' :
-                                                            record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-700' :
-                                                                'bg-slate-500/20 text-slate-600'
+                                                    record.status === 'SCHEDULED' ? 'bg-blue-500/20 text-blue-700' :
+                                                        record.status === 'LATE' || record.status === 'EARLY_LEAVE' ? 'bg-yellow-500/20 text-yellow-700' :
+                                                            'bg-slate-500/20 text-slate-600'
                                             }`}>
                                             {record.status === 'PRESENT' ? '출근' :
                                                 record.status === 'ABSENT' ? '결근' :
                                                     record.status === 'OFF_DAY' ? '휴무' :
-                                                        record.status === 'LEAVE_OF_ABSENCE' ? '휴직' :
-                                                            record.status === 'SCHEDULED' ? '예정' :
-                                                                record.status === 'LATE' ? '지각' :
-                                                                    record.status === 'EARLY_LEAVE' ? '조퇴' :
-                                                                        record.status || '-'}
+                                                        record.status === 'SCHEDULED' ? '예정' :
+                                                            record.status === 'LATE' ? '지각' :
+                                                                record.status === 'EARLY_LEAVE' ? '조퇴' :
+                                                                    record.status || '-'}
                                         </span>
                                     )}
                                 </div>
@@ -801,7 +778,6 @@ export default function AttendancePage() {
                                                 <option value="PRESENT">출근</option>
                                                 <option value="ABSENT">결근</option>
                                                 <option value="OFF_DAY">휴무</option>
-                                                <option value="LEAVE_OF_ABSENCE">휴직</option>
                                                 <option value="LATE">지각</option>
                                                 <option value="EARLY_LEAVE">조퇴</option>
                                                 <option value="SCHEDULED">예정</option>
@@ -811,11 +787,10 @@ export default function AttendancePage() {
                                                 {record.status === 'PRESENT' ? '출근' :
                                                     record.status === 'ABSENT' ? '결근' :
                                                         record.status === 'OFF_DAY' ? '휴무' :
-                                                            record.status === 'LEAVE_OF_ABSENCE' ? '휴직' :
-                                                                record.status === 'SCHEDULED' ? '예정' :
-                                                                    record.status === 'LATE' ? '지각' :
-                                                                        record.status === 'EARLY_LEAVE' ? '조퇴' :
-                                                                            record.status || '-'}
+                                                            record.status === 'SCHEDULED' ? '예정' :
+                                                                record.status === 'LATE' ? '지각' :
+                                                                    record.status === 'EARLY_LEAVE' ? '조퇴' :
+                                                                        record.status || '-'}
                                             </p>
                                         )}
                                     </div>
@@ -847,22 +822,6 @@ export default function AttendancePage() {
                                             <p className="text-sm text-slate-700 font-medium">{record.overtimeHours}h</p>
                                         )}
                                     </div>
-                                </div>
-
-                                {/* Reason Input / Label */}
-                                <div className="space-y-1 pt-2 border-t border-slate-200">
-                                    <p className="text-xs text-slate-500 font-medium">사유</p>
-                                    {isManager ? (
-                                        <input
-                                            type="text"
-                                            value={record.reason || ''}
-                                            onChange={(e) => handleChange(record.userId, record.date, 'reason', e.target.value)}
-                                            className="glass-input py-1.5 px-2.5 bg-white border-slate-200 text-xs w-full"
-                                            placeholder="사유 입력"
-                                        />
-                                    ) : (
-                                        <p className="text-sm text-slate-700 font-medium">{record.reason || '-'}</p>
-                                    )}
                                 </div>
 
                                 {/* Save Button for Manager */}

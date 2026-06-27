@@ -70,8 +70,6 @@ export function AttendanceCalendar({ attendanceData, currentMonth }: AttendanceC
                 return 'bg-red-50 border-red-300 text-red-700';
             case 'OFF_DAY':
                 return 'bg-gray-50 border-gray-300 text-gray-700';
-            case 'LEAVE_OF_ABSENCE':
-                return 'bg-purple-50 border-purple-300 text-purple-700';
             case 'LATE':
             case 'EARLY_LEAVE':
                 return 'bg-yellow-50 border-yellow-300 text-yellow-700';
@@ -88,7 +86,6 @@ export function AttendanceCalendar({ attendanceData, currentMonth }: AttendanceC
             case 'PRESENT': return '출근';
             case 'ABSENT': return '결근';
             case 'OFF_DAY': return '휴무';
-            case 'LEAVE_OF_ABSENCE': return '휴직';
             case 'LATE': return '지각';
             case 'EARLY_LEAVE': return '조퇴';
             case 'SCHEDULED': return '예정';

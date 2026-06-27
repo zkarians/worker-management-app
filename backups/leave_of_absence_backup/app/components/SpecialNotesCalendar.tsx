@@ -13,12 +13,8 @@ interface DailyLog {
 
 interface Attendance {
     id: string;
-    userId: string;
     date: string;
-    status: string;
     overtimeHours: number;
-    reason?: string | null;
-    user: { name: string };
 }
 
 interface LeaveRequest {
@@ -53,71 +49,6 @@ export function SpecialNotesCalendar({
     onDeleteNote,
     isManager = false
 }: SpecialNotesCalendarProps) {
-
-    // Period detection code for LEAVE_OF_ABSENCE
-    const leavePeriods = (() => {
-        const leaveOfAbsenceRecords = (attendance || []).filter(a => a.status === 'LEAVE_OF_ABSENCE');
-        const userLeaveRecords: { [userId: string]: typeof leaveOfAbsenceRecords } = {};
-        
-        leaveOfAbsenceRecords.forEach(rec => {
-            if (!userLeaveRecords[rec.userId]) {
-                userLeaveRecords[rec.userId] = [];
-            }
-            userLeaveRecords[rec.userId].push(rec);
-        });
-
-        const periods: { userName: string; startDate: string; endDate: string; reason?: string | null }[] = [];
-
-        Object.entries(userLeaveRecords).forEach(([userId, records]) => {
-            if (records.length === 0) return;
-            const userName = records[0].user?.name || '근무자';
-
-            // Sort records by date ascending
-            const sorted = [...records].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-            let currentPeriod: typeof records = [];
-            for (let i = 0; i < sorted.length; i++) {
-                const current = sorted[i];
-                if (currentPeriod.length === 0) {
-                    currentPeriod.push(current);
-                } else {
-                    const last = currentPeriod[currentPeriod.length - 1];
-                    const diffTime = new Date(current.date).getTime() - new Date(last.date).getTime();
-                    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-
-                    // If difference is 3 days or less (to handle weekends or short gaps)
-                    if (diffDays <= 3) {
-                        currentPeriod.push(current);
-                    } else {
-                        // Complete the current period
-                        const startRec = currentPeriod[0];
-                        const endRec = currentPeriod[currentPeriod.length - 1];
-                        const reason = currentPeriod.find(r => r.reason)?.reason || null;
-                        periods.push({
-                            userName,
-                            startDate: startRec.date.split('T')[0],
-                            endDate: endRec.date.split('T')[0],
-                            reason
-                        });
-                        currentPeriod = [current];
-                    }
-                }
-            }
-            if (currentPeriod.length > 0) {
-                const startRec = currentPeriod[0];
-                const endRec = currentPeriod[currentPeriod.length - 1];
-                const reason = currentPeriod.find(r => r.reason)?.reason || null;
-                periods.push({
-                    userName,
-                    startDate: startRec.date.split('T')[0],
-                    endDate: endRec.date.split('T')[0],
-                    reason
-                });
-            }
-        });
-
-        return periods;
-    })();
 
     const getDaysInMonth = (year: number, month: number) => {
         return new Date(year, month, 0).getDate();
@@ -253,7 +184,6 @@ export function SpecialNotesCalendar({
 
                         {/* Calendar days */}
                         {days.map((day) => {
-                            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                             const { dayLogs, displayOvertime, dayLeaves } = getDataForDate(day);
                             const today = new Date();
                             const isToday = today.getDate() === day && today.getMonth() + 1 === month && today.getFullYear() === year;
@@ -360,45 +290,8 @@ export function SpecialNotesCalendar({
                                                 delete groupedLogs['휴무'];
                                             }
 
-                                            const dayLeavePeriods: { type: 'START' | 'END' | 'SINGLE'; userName: string; reason?: string | null }[] = [];
-                                            leavePeriods.forEach(p => {
-                                                if (p.startDate === dateStr && p.endDate === dateStr) {
-                                                    dayLeavePeriods.push({ type: 'SINGLE', userName: p.userName, reason: p.reason });
-                                                } else if (p.startDate === dateStr) {
-                                                    dayLeavePeriods.push({ type: 'START', userName: p.userName, reason: p.reason });
-                                                } else if (p.endDate === dateStr) {
-                                                    dayLeavePeriods.push({ type: 'END', userName: p.userName });
-                                                }
-                                            });
-
                                             return (
                                                 <>
-                                                    {/* Render Leave of Absence Boundary Badges */}
-                                                    {dayLeavePeriods.map((lp, idx) => {
-                                                        let label = '';
-                                                        if (lp.type === 'START') {
-                                                            label = `[휴직 시작] ${lp.userName}`;
-                                                            if (lp.reason) label += ` (사유: ${lp.reason})`;
-                                                        } else if (lp.type === 'END') {
-                                                            label = `[휴직 종료] ${lp.userName}`;
-                                                        } else {
-                                                            label = `[휴직] ${lp.userName}`;
-                                                            if (lp.reason) label += ` (사유: ${lp.reason})`;
-                                                        }
-
-                                                        const logColor = 'bg-purple-100 border-purple-300 text-purple-800 font-semibold';
-
-                                                        return (
-                                                            <div
-                                                                key={`leave-boundary-${idx}-${lp.userName}`}
-                                                                className={`text-[7px] sm:text-[8px] p-0.5 px-1 rounded border flex items-start gap-0.5 sm:gap-1 ${logColor}`}
-                                                                title={label}
-                                                            >
-                                                                <span className="flex-1 whitespace-normal break-words leading-tight">{label}</span>
-                                                            </div>
-                                                        );
-                                                    })}
-
                                                     {/* Render Grouped Logs - Single badge with comma-separated names */}
                                                     {Object.values(groupedLogs).map((group) => {
                                                         const uniqueNames = Array.from(new Set(group.names.map(n => n.trim()))).filter(Boolean).sort();

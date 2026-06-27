@@ -16,8 +16,12 @@ interface DailyLog {
 
 interface Attendance {
     id: string;
+    userId: string;
     date: string;
+    status: string;
     overtimeHours: number;
+    reason?: string | null;
+    user: { name: string };
 }
 
 interface LeaveRequest {

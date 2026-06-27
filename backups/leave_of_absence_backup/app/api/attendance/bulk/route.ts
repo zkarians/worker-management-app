@@ -119,7 +119,7 @@ export async function POST(request: Request) {
                     });
                 }
 
-                // Remove OFF_DAY, ABSENT, or LEAVE_OF_ABSENCE users from Roster
+                // Remove OFF_DAY users from Roster
                 const roster = await prisma.roster.findUnique({ where: { date } });
                 if (roster) {
                     for (const user of users) {
@@ -127,7 +127,7 @@ export async function POST(request: Request) {
                             where: { userId_date: { userId: user.id, date } }
                         });
 
-                        if (userAtt && ['OFF_DAY', 'ABSENT', 'LEAVE_OF_ABSENCE'].includes(userAtt.status)) {
+                        if (userAtt?.status === 'OFF_DAY') {
                             await prisma.rosterAssignment.deleteMany({
                                 where: { rosterId: roster.id, userId: user.id }
                             });
@@ -166,8 +166,8 @@ export async function POST(request: Request) {
                         });
                     }
                 }
-            } else if (!status || ['PRESENT', 'SCHEDULED', 'LEAVE_OF_ABSENCE'].includes(status)) {
-                // Remove logs if status changed to normal or leave of absence
+            } else if (!status || status === 'PRESENT' || status === 'SCHEDULED') {
+                // Remove logs if status changed to normal
                 const startOfDay = new Date(date);
                 startOfDay.setHours(0, 0, 0, 0);
                 const endOfDay = new Date(date);

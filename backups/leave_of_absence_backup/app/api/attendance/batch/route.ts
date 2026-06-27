@@ -28,7 +28,7 @@ export async function POST(request: Request) {
             const chunk = records.slice(i, i + CHUNK_SIZE);
 
             await Promise.all(chunk.map(async (record: any) => {
-                const { userId, date: dateStr, status, overtimeHours, workHours, reason } = record;
+                const { userId, date: dateStr, status, overtimeHours, workHours } = record;
 
                 if (!userId || !dateStr) return;
 
@@ -47,7 +47,6 @@ export async function POST(request: Request) {
                         status: finalStatus,
                         overtimeHours: isNaN(Number(overtimeHours)) ? 0 : Number(overtimeHours),
                         workHours: (workHours === undefined || workHours === null || workHours === '' || isNaN(Number(workHours))) ? 8 : Number(workHours),
-                        reason: reason || null,
                     },
                     create: {
                         userId,
@@ -55,7 +54,6 @@ export async function POST(request: Request) {
                         status: finalStatus,
                         overtimeHours: isNaN(Number(overtimeHours)) ? 0 : Number(overtimeHours),
                         workHours: (workHours === undefined || workHours === null || workHours === '' || isNaN(Number(workHours))) ? 8 : Number(workHours),
-                        reason: reason || null,
                     },
                 });
 
@@ -79,8 +77,8 @@ export async function POST(request: Request) {
                     await addStatusLog(userId, date, statusText, session.userId as string);
                 }
 
-                // If status is ABSENT, OFF_DAY, or LEAVE_OF_ABSENCE, remove from Roster
-                if (finalStatus === 'ABSENT' || finalStatus === 'OFF_DAY' || finalStatus === 'LEAVE_OF_ABSENCE') {
+                // If status is ABSENT or OFF_DAY, remove from Roster
+                if (finalStatus === 'ABSENT' || finalStatus === 'OFF_DAY') {
                     const roster = await prisma.roster.findUnique({ where: { date } });
                     if (roster) {
                         await prisma.rosterAssignment.deleteMany({

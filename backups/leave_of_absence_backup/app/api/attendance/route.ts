@@ -76,7 +76,7 @@ export async function POST(request: Request) {
         }
 
         const body = await request.json();
-        const { userId, date: dateStr, status, overtimeHours, workHours, reason } = body;
+        const { userId, date: dateStr, status, overtimeHours, workHours } = body;
 
         if (!userId || !dateStr) {
             return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
@@ -98,7 +98,6 @@ export async function POST(request: Request) {
                 status: finalStatus,
                 overtimeHours: isNaN(Number(overtimeHours)) ? 0 : Number(overtimeHours),
                 workHours: (workHours === undefined || workHours === null || workHours === '' || isNaN(Number(workHours))) ? 8 : Number(workHours),
-                reason: reason || null,
             },
             create: {
                 userId,
@@ -106,7 +105,6 @@ export async function POST(request: Request) {
                 status: finalStatus,
                 overtimeHours: isNaN(Number(overtimeHours)) ? 0 : Number(overtimeHours),
                 workHours: (workHours === undefined || workHours === null || workHours === '' || isNaN(Number(workHours))) ? 8 : Number(workHours),
-                reason: reason || null,
             },
         });
 
@@ -131,8 +129,8 @@ export async function POST(request: Request) {
             await addStatusLog(userId, date, statusText, session.userId as string);
         }
 
-        // If status is ABSENT, OFF_DAY, or LEAVE_OF_ABSENCE, remove from Roster
-        if (finalStatus === 'ABSENT' || finalStatus === 'OFF_DAY' || finalStatus === 'LEAVE_OF_ABSENCE') {
+        // If status is ABSENT or OFF_DAY, remove from Roster
+        if (finalStatus === 'ABSENT' || finalStatus === 'OFF_DAY') {
             const roster = await prisma.roster.findUnique({ where: { date } });
             if (roster) {
                 await prisma.rosterAssignment.deleteMany({

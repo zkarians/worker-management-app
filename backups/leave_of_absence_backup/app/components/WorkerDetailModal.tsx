@@ -141,17 +141,15 @@ export function WorkerDetailModal({ isOpen, onClose, userId, userName, currentMo
                                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${record.status === 'PRESENT' ? 'bg-green-100 text-green-700' :
                                                             record.status === 'ABSENT' ? 'bg-red-100 text-red-700' :
                                                                 record.status === 'OFF_DAY' ? 'bg-gray-100 text-gray-700' :
-                                                                    record.status === 'LEAVE_OF_ABSENCE' ? 'bg-purple-100 text-purple-700' :
-                                                                        record.status === 'SCHEDULED' ? 'bg-blue-100 text-blue-700' :
-                                                                            'bg-yellow-100 text-yellow-700'
+                                                                    record.status === 'SCHEDULED' ? 'bg-blue-100 text-blue-700' :
+                                                                        'bg-yellow-100 text-yellow-700'
                                                             }`}>
                                                             {record.status === 'PRESENT' ? '출근' :
                                                                 record.status === 'ABSENT' ? '결근' :
                                                                     record.status === 'OFF_DAY' ? '휴무' :
-                                                                        record.status === 'LEAVE_OF_ABSENCE' ? '휴직' :
-                                                                            record.status === 'SCHEDULED' ? '예정' :
-                                                                                record.status === 'LATE' ? '지각' :
-                                                                                    record.status === 'EARLY_LEAVE' ? '조퇴' : '-'}
+                                                                        record.status === 'SCHEDULED' ? '예정' :
+                                                                            record.status === 'LATE' ? '지각' :
+                                                                                record.status === 'EARLY_LEAVE' ? '조퇴' : '-'}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-3 text-slate-700">{record.workHours}h</td>

@@ -464,16 +464,13 @@ export default function ViewPage() {
                         {/* Attendance Status Section */}
                         {(() => {
                             const allAttendance = attendanceData.filter(a =>
-                                a.status === 'OFF_DAY' || a.status === 'ABSENT' || a.status === 'LATE' || a.status === 'EARLY_LEAVE' || a.status === 'LEAVE_OF_ABSENCE'
+                                a.status === 'OFF_DAY' || a.status === 'ABSENT' || a.status === 'LATE' || a.status === 'EARLY_LEAVE'
                             );
 
                             if (allAttendance.length === 0) return null;
 
-                            const getStatusLabel = (worker: any) => {
-                                if (worker.status === 'LEAVE_OF_ABSENCE') {
-                                    return worker.reason ? `휴직 (${worker.reason})` : '휴직';
-                                }
-                                switch (worker.status) {
+                            const getStatusLabel = (status: string) => {
+                                switch (status) {
                                     case 'OFF_DAY': return '휴무';
                                     case 'ABSENT': return '결근';
                                     case 'LATE': return '지각';
@@ -486,7 +483,6 @@ export default function ViewPage() {
                                 switch (status) {
                                     case 'OFF_DAY': return 'bg-purple-100 text-purple-700 border-purple-300';
                                     case 'ABSENT': return 'bg-red-100 text-red-700 border-red-300';
-                                    case 'LEAVE_OF_ABSENCE': return 'bg-indigo-100 text-indigo-700 border-indigo-300';
                                     case 'LATE': return 'bg-orange-100 text-orange-700 border-orange-300';
                                     case 'EARLY_LEAVE': return 'bg-yellow-100 text-yellow-700 border-yellow-300';
                                     default: return 'bg-gray-100 text-gray-700 border-gray-300';
@@ -506,7 +502,7 @@ export default function ViewPage() {
                                             {allAttendance.map((worker, idx) => {
                                                 const companyName = worker.user?.company?.name;
                                                 const style = getCompanyStyle(companyName);
-                                                const statusLabel = getStatusLabel(worker);
+                                                const statusLabel = getStatusLabel(worker.status);
                                                 const statusStyle = getStatusStyle(worker.status);
                                                 return (
                                                     <div
