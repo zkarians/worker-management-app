@@ -50,6 +50,7 @@ export default function AttendancePage() {
     const [bulkWorkHours, setBulkWorkHours] = useState(8);
     const [bulkOvertime, setBulkOvertime] = useState(0);
     const [bulkStatus, setBulkStatus] = useState('PRESENT'); // 상태 일괄 적용 추가
+    const [bulkReason, setBulkReason] = useState(''); // 사유 일괄 적용 추가
 
     // Initialize dates based on role
     useEffect(() => {
@@ -401,7 +402,13 @@ export default function AttendancePage() {
             return;
         }
 
-        if (!confirm(`현재 검색된 목록(${filteredData.length}명)의 출근 상태를 일괄 적용하시겠습니까? (기존 근무/잔업 시간은 보존됩니다.)`)) return;
+        const isOffOrAbsentOrLeaveOrVacation = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT' || bulkStatus === 'LEAVE_OF_ABSENCE' || bulkStatus === 'VACATION';
+        let confirmMsg = `현재 검색된 목록(${filteredData.length}명)의 출근 상태를 일괄 적용하시겠습니까? (기존 근무/잔업 시간은 보존됩니다.)`;
+        if (isOffOrAbsentOrLeaveOrVacation && bulkReason) {
+            confirmMsg = `현재 검색된 목록(${filteredData.length}명)의 출근 상태와 사유("${bulkReason}")를 일괄 적용하시겠습니까?`;
+        }
+
+        if (!confirm(confirmMsg)) return;
 
         setAttendanceData(prev => prev.map(item => {
             // Check if item matches current search filters
@@ -410,12 +417,12 @@ export default function AttendancePage() {
 
             // Only update status if it matches filters (is visible)
             if (matchesName && matchesStatus) {
-                const isOffOrAbsentOrLeaveOrVacation = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT' || bulkStatus === 'LEAVE_OF_ABSENCE' || bulkStatus === 'VACATION';
                 return {
                     ...item,
                     status: bulkStatus,
                     workHours: isOffOrAbsentOrLeaveOrVacation ? 0 : item.workHours,
-                    overtimeHours: isOffOrAbsentOrLeaveOrVacation ? 0 : item.overtimeHours
+                    overtimeHours: isOffOrAbsentOrLeaveOrVacation ? 0 : item.overtimeHours,
+                    reason: isOffOrAbsentOrLeaveOrVacation ? bulkReason : item.reason
                 };
             }
             return item;
@@ -560,7 +567,7 @@ export default function AttendancePage() {
                                 <span className="text-sm font-semibold text-emerald-800 flex items-center gap-1.5">
                                     <CheckSquare size={16} /> 상태 일괄 적용:
                                 </span>
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-wrap items-center gap-2">
                                     <select
                                         value={bulkStatus}
                                         onChange={(e) => setBulkStatus(e.target.value)}
@@ -576,6 +583,15 @@ export default function AttendancePage() {
                                         <option value="SCHEDULED">예정</option>
                                         <option value="">-</option>
                                     </select>
+                                    {(bulkStatus === 'LEAVE_OF_ABSENCE' || bulkStatus === 'VACATION' || bulkStatus === 'ABSENT' || bulkStatus === 'LATE' || bulkStatus === 'EARLY_LEAVE') && (
+                                        <input
+                                            type="text"
+                                            placeholder="일괄 적용 사유 입력"
+                                            value={bulkReason}
+                                            onChange={(e) => setBulkReason(e.target.value)}
+                                            className="bg-white border border-slate-200 rounded-lg text-slate-900 text-sm px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-emerald-500 w-full sm:w-48"
+                                        />
+                                    )}
                                 </div>
                             </div>
                             <button
