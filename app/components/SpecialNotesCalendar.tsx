@@ -451,7 +451,7 @@ export function SpecialNotesCalendar({
                                                                 statusColor = 'bg-blue-100 border-blue-300 text-blue-800';
                                                                 break;
                                                             case '결근':
-                                                                statusColor = 'bg-red-100 border-red-400 text-red-900';
+                                                                statusColor = 'bg-red-50 border-red-200 text-red-600';
                                                                 break;
                                                             case '지각':
                                                                 statusColor = 'bg-orange-100 border-orange-300 text-orange-800';
@@ -485,10 +485,12 @@ export function SpecialNotesCalendar({
                                                         let logColor = '';
                                                         if (isMissingPositionNote) {
                                                             logColor = 'bg-red-100 border-red-400 text-red-900';
+                                                        } else if (log.content.includes('웅동 휴무')) {
+                                                            logColor = 'bg-gray-100 border-gray-300 text-gray-800';
                                                         } else if (log.content.includes('[휴무]') || log.content.includes('휴무')) {
                                                             logColor = 'bg-blue-100 border-blue-300 text-blue-800';
                                                         } else if (log.content.includes('[결근]') || log.content.includes('결근')) {
-                                                            logColor = 'bg-red-100 border-red-400 text-red-900';
+                                                            logColor = 'bg-red-50 border-red-200 text-red-600';
                                                         } else if (log.content.includes('[지각]') || log.content.includes('지각')) {
                                                             logColor = 'bg-orange-100 border-orange-300 text-orange-800';
                                                         } else if (log.content.includes('[조퇴]') || log.content.includes('조퇴')) {
