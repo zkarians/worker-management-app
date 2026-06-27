@@ -36,8 +36,10 @@ export async function GET(request: Request) {
         } else if (monthStr && yearStr) {
             const month = parseInt(monthStr);
             const year = parseInt(yearStr);
-            const startDate = new Date(year, month - 1, 1);
-            const endDate = new Date(year, month, 0);
+            // Pad by 5 days on both sides to allow SpecialNotesCalendar to determine 
+            // true start/end dates for LEAVE_OF_ABSENCE and VACATION across month boundaries.
+            const startDate = new Date(year, month - 1, 1 - 5);
+            const endDate = new Date(year, month, 0 + 5);
 
             where.date = {
                 gte: startDate,
