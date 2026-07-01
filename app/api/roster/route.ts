@@ -69,7 +69,19 @@ export async function POST(request: Request) {
             select: { userId: true }
         });
 
-        const onLeaveUserIds = new Set(approvedLeaves.map(l => l.userId));
+        // Get users who are on VACATION or LEAVE_OF_ABSENCE for this date
+        const attendanceLeaves = await prisma.attendance.findMany({
+            where: {
+                date,
+                status: { in: ['VACATION', 'LEAVE_OF_ABSENCE'] }
+            },
+            select: { userId: true }
+        });
+
+        const onLeaveUserIds = new Set([
+            ...approvedLeaves.map(l => l.userId),
+            ...attendanceLeaves.map(a => a.userId)
+        ]);
 
         // Transaction to update roster
         const roster = await prisma.$transaction(async (tx: any) => {

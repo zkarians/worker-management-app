@@ -60,7 +60,7 @@ export default function RosterManagementPage() {
     const [assignments, setAssignments] = useState<Assignment[]>([]);
     const [workers, setWorkers] = useState<Worker[]>([]);
     const [teams, setTeams] = useState<Team[]>([]);
-    const [approvedLeaves, setApprovedLeaves] = useState<Set<string>>(new Set());
+    const [disabledWorkers, setDisabledWorkers] = useState<Map<string, string>>(new Map());
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
@@ -136,17 +136,19 @@ export default function RosterManagementPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [rosterRes, teamsRes, usersRes, leavesRes] = await Promise.all([
+            const [rosterRes, teamsRes, usersRes, leavesRes, attendanceRes] = await Promise.all([
                 fetch(`/api/roster?date=${date}`),
                 fetch('/api/teams'),
                 fetch('/api/users?includeResigned=true'),
-                fetch(`/api/leaves?status=APPROVED`)
+                fetch(`/api/leaves?status=APPROVED`),
+                fetch(`/api/attendance?date=${date}`)
             ]);
 
             const rosterData = await rosterRes.json();
             const teamsData = await teamsRes.json();
             const usersData = await usersRes.json();
             const leavesData = await leavesRes.json();
+            const attendanceData = await attendanceRes.json();
 
             if (rosterData.roster?.assignments) {
                 setAssignments(rosterData.roster.assignments);
@@ -172,23 +174,32 @@ export default function RosterManagementPage() {
                 setWorkers(usersData.users.filter((u: any) => (u.role === 'WORKER' || u.role === 'MANAGER') && u.isApproved));
             }
 
-            // Get approved leaves for the selected date
+            // Get approved leaves and attendance statuses (vacation/leave of absence)
+            const disabledMap = new Map<string, string>();
             if (leavesData.leaves) {
                 const selectedDate = new Date(date);
-                const onLeaveUserIds = new Set<string>();
-
                 leavesData.leaves.forEach((leave: any) => {
                     const startDate = new Date(leave.startDate);
                     const endDate = new Date(leave.endDate);
 
                     // Check if selected date is within leave period
                     if (selectedDate >= startDate && selectedDate <= endDate) {
-                        onLeaveUserIds.add(leave.userId);
+                        disabledMap.set(leave.userId, '휴무');
                     }
                 });
-
-                setApprovedLeaves(onLeaveUserIds);
             }
+
+            if (attendanceData.attendance) {
+                attendanceData.attendance.forEach((att: any) => {
+                    if (att.status === 'VACATION') {
+                        disabledMap.set(att.userId, '휴가');
+                    } else if (att.status === 'LEAVE_OF_ABSENCE') {
+                        disabledMap.set(att.userId, '휴직');
+                    }
+                });
+            }
+
+            setDisabledWorkers(disabledMap);
         } catch (error) {
             console.error('Failed to fetch data', error);
         } finally {
@@ -229,9 +240,10 @@ export default function RosterManagementPage() {
     const addWorkerToSlot = (teamName: string, position: string, userId: string) => {
         if (!userId || !isManager) return;
 
-        // Check if user is on approved leave for this date
-        if (approvedLeaves.has(userId)) {
-            alert('해당 날짜에 휴무가 승인된 근무자입니다. 근무표에 추가할 수 없습니다.');
+        // Check if user is on approved leave, vacation, or leave of absence for this date
+        const disabledReason = disabledWorkers.get(userId);
+        if (disabledReason) {
+            alert(`해당 날짜에 [${disabledReason}] 상태인 근무자입니다. 근무표에 추가할 수 없습니다.`);
             return;
         }
 
@@ -560,8 +572,8 @@ export default function RosterManagementPage() {
         });
     };
 
-    const isWorkerOnLeave = (userId: string) => {
-        return approvedLeaves.has(userId);
+    const getWorkerDisabledReason = (userId: string) => {
+        return disabledWorkers.get(userId);
     };
 
     const getCompanyStyle = (companyName: string = '') => {
@@ -779,15 +791,15 @@ export default function RosterManagementPage() {
                                         >
                                             <option value="">+ 추가</option>
                                             {getUnassignedManagers().map(w => {
-                                                const onLeave = isWorkerOnLeave(w.id);
+                                                const disabledReason = getWorkerDisabledReason(w.id);
                                                 return (
                                                     <option
                                                         key={w.id}
                                                         value={w.id}
-                                                        disabled={onLeave}
-                                                        className={onLeave ? 'text-red-400 bg-red-50' : ''}
+                                                        disabled={!!disabledReason}
+                                                        className={disabledReason ? 'text-red-400 bg-red-50' : ''}
                                                     >
-                                                        {w.name} (관리자){onLeave ? ' [휴무]' : ''}
+                                                        {w.name} (관리자){disabledReason ? ` [${disabledReason}]` : ''}
                                                     </option>
                                                 );
                                             })}
@@ -853,15 +865,15 @@ export default function RosterManagementPage() {
                                         >
                                             <option value="">+ 추가</option>
                                             {getUnassignedWorkers().concat(getUnassignedManagers()).map(w => {
-                                                const onLeave = isWorkerOnLeave(w.id);
+                                                const disabledReason = getWorkerDisabledReason(w.id);
                                                 return (
                                                     <option
                                                         key={w.id}
                                                         value={w.id}
-                                                        disabled={onLeave}
-                                                        className={onLeave ? 'text-red-400 bg-red-50' : ''}
+                                                        disabled={!!disabledReason}
+                                                        className={disabledReason ? 'text-red-400 bg-red-50' : ''}
                                                     >
-                                                        {w.name} ({w.role === 'MANAGER' ? '관리자' : (w.company?.name || '소속없음')}){onLeave ? ' [휴무]' : ''}
+                                                        {w.name} ({w.role === 'MANAGER' ? '관리자' : (w.company?.name || '소속없음')}){disabledReason ? ` [${disabledReason}]` : ''}
                                                     </option>
                                                 );
                                             })}
@@ -944,15 +956,15 @@ export default function RosterManagementPage() {
                                                 >
                                                     <option value="">+ 추가</option>
                                                     {getUnassignedWorkers().map(w => {
-                                                        const onLeave = isWorkerOnLeave(w.id);
+                                                        const disabledReason = getWorkerDisabledReason(w.id);
                                                         return (
                                                             <option
                                                                 key={w.id}
                                                                 value={w.id}
-                                                                disabled={onLeave}
-                                                                className={onLeave ? 'text-red-400 bg-red-50' : ''}
+                                                                disabled={!!disabledReason}
+                                                                className={disabledReason ? 'text-red-400 bg-red-50' : ''}
                                                             >
-                                                                {w.name} ({w.role === 'MANAGER' ? '관리자' : (w.company?.name || '소속없음')}){onLeave ? ' [휴무]' : ''}
+                                                                {w.name} ({w.role === 'MANAGER' ? '관리자' : (w.company?.name || '소속없음')}){disabledReason ? ` [${disabledReason}]` : ''}
                                                             </option>
                                                         );
                                                     })}

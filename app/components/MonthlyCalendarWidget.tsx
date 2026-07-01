@@ -71,6 +71,8 @@ export function MonthlyCalendarWidget({
 
     const fetchData = async () => {
         setLoading(true);
+        setAttendance([]);
+        setLogs([]);
         try {
             const [logsRes, attendanceRes, leavesRes] = await Promise.all([
                 fetch(`/api/logs?month=${month}&year=${year}`),

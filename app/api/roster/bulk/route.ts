@@ -76,7 +76,7 @@ export async function POST(request: Request) {
             const offOrAbsent = await prisma.attendance.findMany({
                 where: {
                     date: currentDate,
-                    status: { in: ['OFF_DAY', 'ABSENT'] },
+                    status: { in: ['OFF_DAY', 'ABSENT', 'VACATION', 'LEAVE_OF_ABSENCE'] },
                     userId: { in: userIds }
                 },
                 select: { userId: true }
