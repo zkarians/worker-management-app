@@ -57,10 +57,12 @@ const COMPANY_COLORS: { [key: string]: { bg: string; border: string; text: strin
     '보람관리': { bg: '#e0e7ff', border: '#818cf8', text: '#4338ca' },      // indigo
     '디티에스': { bg: '#fef3c7', border: '#f59e0b', text: '#b45309' },      // amber
     '신항만건기': { bg: '#d1fae5', border: '#34d399', text: '#047857' },    // emerald
+    '건우': { bg: '#cffafe', border: '#22d3ee', text: '#0891b2' },          // cyan
 };
 
 const getCompanyColors = (companyName: string = '') => {
-    return COMPANY_COLORS[companyName] || { bg: '#f1f5f9', border: '#94a3b8', text: '#475569' };
+    const normalized = companyName.replace(/\(주\)|\(유\)|\(재\)|\(사\)/g, '').trim();
+    return COMPANY_COLORS[normalized] || { bg: '#f1f5f9', border: '#94a3b8', text: '#475569' };
 };
 
 // Team colors

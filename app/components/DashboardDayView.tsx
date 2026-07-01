@@ -158,12 +158,18 @@ export function DashboardDayView({ date, isManager, compact = false, className =
 
     const getCompanyStyle = (companyName: string = '') => {
         if (!companyName) return COMPANY_STYLES[0];
-        if (companyName === '보람관리') return COMPANY_STYLES[0];
-        if (companyName === '디티에스') return COMPANY_STYLES[2];
-        if (companyName === '신항만건기') return COMPANY_STYLES[1];
+        
+        // (주) 등의 접두사를 제외하고 매칭
+        const normalized = companyName.replace(/\(주\)|\(유\)|\(재\)|\(사\)/g, '').trim();
+        
+        if (normalized === '보람관리') return COMPANY_STYLES[0]; // Indigo
+        if (normalized === '디티에스') return COMPANY_STYLES[2]; // Amber
+        if (normalized === '신항만건기') return COMPANY_STYLES[1]; // Emerald
+        if (normalized === '건우') return COMPANY_STYLES[4]; // Cyan
+        
         let hash = 0;
-        for (let i = 0; i < companyName.length; i++) {
-            hash = companyName.charCodeAt(i) + ((hash << 5) - hash);
+        for (let i = 0; i < normalized.length; i++) {
+            hash = normalized.charCodeAt(i) + ((hash << 5) - hash);
         }
         const index = Math.abs(hash) % COMPANY_STYLES.length;
         return COMPANY_STYLES[index];
