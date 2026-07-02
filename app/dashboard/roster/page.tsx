@@ -370,10 +370,13 @@ export default function RosterManagementPage() {
                 current.setDate(current.getDate() + 1);
             }
 
-            // Save for each date
-            const promises = dates.map(async (dateStr) => {
+            // Save for each date sequentially to prevent database locks and session errors under concurrency
+            for (const dateStr of dates) {
                 // Get current roster assignments for this date
                 const rosterRes = await fetch(`/api/roster?date=${dateStr}`);
+                if (!rosterRes.ok) {
+                    throw new Error(`근무표 정보를 가져오지 못했습니다: ${dateStr}`);
+                }
                 const rosterData = await rosterRes.json();
                 const currentAssignments = rosterData.roster?.assignments || [];
 
@@ -394,12 +397,9 @@ export default function RosterManagementPage() {
 
                 if (!res.ok) {
                     const errorData = await res.json().catch(() => ({}));
-                    throw new Error(errorData.error || `Failed to save for ${dateStr}`);
+                    throw new Error(errorData.error || `저장에 실패했습니다: ${dateStr}`);
                 }
-                return res.json();
-            });
-
-            await Promise.all(promises);
+            }
             alert(`${dates.length}일의 잔바리 정리조와 파레트 정리조가 저장되었습니다.`);
 
             // Refresh current date's data

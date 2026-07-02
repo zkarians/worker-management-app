@@ -51,7 +51,7 @@ export async function login(payload: any, rememberMe: boolean = false) {
     cookieStore.set('token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict', // CSRF protection
+        sameSite: 'lax', // CSRF protection (lax is standard for auth sessions)
         maxAge: maxAge,
         path: '/',
     });
