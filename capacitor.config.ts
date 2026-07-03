@@ -17,7 +17,7 @@ const config: CapacitorConfig = {
     // Allow navigation to external URLs
     allowNavigation: [
       'localhost',
-      '*.cloudtype.app',
+      '*.vercel.app',
       '192.168.*.*',
       '10.0.*.*',
     ],

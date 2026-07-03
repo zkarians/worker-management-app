@@ -5,7 +5,7 @@ const { spawn } = require('child_process');
 if (!process.env.DATABASE_URL) {
   console.error('ERROR: DATABASE_URL environment variable is not set!');
   console.error('Please set DATABASE_URL in your environment variables.');
-  console.error('Expected format: postgresql://username:password@svc.sel3.cloudtype.app:30255/database_name');
+  console.error('Expected format: postgresql://username:password@host:port/database_name');
   process.exit(1);
 }
 
@@ -13,14 +13,6 @@ if (!process.env.DATABASE_URL) {
 const url = process.env.DATABASE_URL;
 const maskedUrl = url.replace(/:[^:@]+@/, ':****@');
 console.log('DATABASE_URL (masked):', maskedUrl);
-
-// Check if URL contains the expected host
-if (!url.includes('svc.sel3.cloudtype.app') && !url.includes('localhost') && !url.includes('127.0.0.1') && !url.includes('postgresql')) {
-  console.warn('WARNING: DATABASE_URL does not contain expected CloudType host');
-  console.warn('Expected formats:');
-  console.warn('  - External: svc.sel3.cloudtype.app:30255');
-  console.warn('  - Internal: postgresql:5432');
-}
 
 // Check for password encoding issues
 if (url.includes('!@') && !url.includes('%21%40')) {

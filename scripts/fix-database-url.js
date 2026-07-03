@@ -1,6 +1,6 @@
 // Helper script to fix DATABASE_URL with special characters in password
 
-const originalUrl = process.env.DATABASE_URL || 'postgresql://root:z456qwe12!@@svc.sel3.cloudtype.app:30255/postgres';
+const originalUrl = process.env.DATABASE_URL || 'postgresql://postgres:password@localhost:5432/work';
 
 console.log('Original DATABASE_URL:', originalUrl.replace(/:[^:@]+@/, ':****@'));
 
