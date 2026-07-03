@@ -150,12 +150,12 @@ export async function PUT(request: Request) {
                 data: {
                     isApproved,
                     role,
-                    companyId,
+                    companyId: companyId === '' ? null : companyId,
                     name,
-                    email,
-                    carNumber,
-                    hireDate: hireDate ? new Date(hireDate) : undefined,
-                    resignationDate: body.resignationDate ? new Date(body.resignationDate) : (body.resignationDate === null ? null : undefined),
+                    email: email === '' ? null : email,
+                    carNumber: carNumber === '' ? null : carNumber,
+                    hireDate: hireDate ? new Date(hireDate) : (hireDate === '' ? null : undefined),
+                    resignationDate: body.resignationDate ? new Date(body.resignationDate) : (body.resignationDate === null || body.resignationDate === '' ? null : undefined),
                     ...(body.password ? { password: await bcrypt.hash(body.password, 10) } : {}),
                 },
             });
@@ -167,15 +167,15 @@ export async function PUT(request: Request) {
             const updateData: any = {};
 
             if (name !== undefined) updateData.name = name;
-            if (email !== undefined) updateData.email = email;
-            if (carNumber !== undefined) updateData.carNumber = carNumber;
-            if (hireDate !== undefined) updateData.hireDate = hireDate ? new Date(hireDate) : null;
+            if (email !== undefined) updateData.email = email === '' ? null : email;
+            if (carNumber !== undefined) updateData.carNumber = carNumber === '' ? null : carNumber;
+            if (hireDate !== undefined) updateData.hireDate = hireDate ? new Date(hireDate) : (hireDate === '' ? null : undefined);
 
             // Only managers can update role, isApproved, and companyId
             if (session.role === 'MANAGER') {
                 if (isApproved !== undefined) updateData.isApproved = isApproved;
                 if (role !== undefined) updateData.role = role;
-                if (companyId !== undefined) updateData.companyId = companyId;
+                if (companyId !== undefined) updateData.companyId = companyId === '' ? null : companyId;
             }
 
             const updatedUser = await prisma.user.update({
