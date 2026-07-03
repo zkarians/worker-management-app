@@ -196,6 +196,10 @@ export default function RosterManagementPage() {
                         disabledMap.set(att.userId, '휴가');
                     } else if (att.status === 'LEAVE_OF_ABSENCE') {
                         disabledMap.set(att.userId, '휴직');
+                    } else if (att.status === 'ABSENT') {
+                        disabledMap.set(att.userId, '결근');
+                    } else if (att.status === 'OFF_DAY') {
+                        disabledMap.set(att.userId, '휴무');
                     }
                 });
             }
@@ -1064,9 +1068,26 @@ export default function RosterManagementPage() {
                             <div className="space-y-2">
                                 {getUnassignedWorkers().map(worker => {
                                     const style = getCompanyStyle(worker.company?.name);
+                                    const status = disabledWorkers.get(worker.id);
+                                    
+                                    const getStatusBadgeStyle = (statusStr: string) => {
+                                        if (statusStr === '결근') return 'bg-rose-50 text-rose-600 border-rose-200';
+                                        if (statusStr === '휴무') return 'bg-purple-50 text-purple-600 border-purple-200';
+                                        if (statusStr === '휴가') return 'bg-teal-50 text-teal-600 border-teal-200';
+                                        if (statusStr === '휴직') return 'bg-indigo-50 text-indigo-600 border-indigo-200';
+                                        return 'bg-slate-50 text-slate-600 border-slate-200';
+                                    };
+
                                     return (
                                         <div key={worker.id} className="p-2 rounded bg-slate-50 text-slate-700 text-sm flex justify-between items-center hover:bg-slate-100 transition-colors">
-                                            <span>{worker.name}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium">{worker.name}</span>
+                                                {status && (
+                                                    <span className={`text-[9px] px-1 py-0.2 rounded border font-semibold ${getStatusBadgeStyle(status)}`}>
+                                                        {status}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <span className={`text-[10px] px-1.5 py-0.5 rounded border ${style.bg} ${style.text} ${style.border}`}>
                                                 {worker.company?.name || '소속없음'}
                                             </span>
