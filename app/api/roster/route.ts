@@ -24,8 +24,26 @@ export async function GET(request: Request) {
         });
 
         if (roster && roster.assignments) {
+            // Map assignments to synthesize a mock user for daily workers
+            roster.assignments = roster.assignments.map((assignment: any) => {
+                if (!assignment.userId && assignment.tempWorkerName) {
+                    return {
+                        ...assignment,
+                        user: {
+                            id: null,
+                            name: assignment.tempWorkerName,
+                            role: 'DAILY_WORKER',
+                            company: { name: '일용직' },
+                            resignationDate: null
+                        }
+                    };
+                }
+                return assignment;
+            });
+
             // Filter out users who have resigned before this roster date
             roster.assignments = roster.assignments.filter((assignment: any) => {
+                if (!assignment.user) return true; // Daily workers have no original user or are already synthesized
                 if (!assignment.user.resignationDate) return true;
                 const resignDate = new Date(assignment.user.resignationDate);
                 // Set time to start of day for accurate comparison
@@ -116,11 +134,11 @@ export async function POST(request: Request) {
             // Delete existing assignments for this roster
             await tx.rosterAssignment.deleteMany({ where: { rosterId: r.id } });
 
-            // Filter out users on approved leave and create new assignments
+            // Filter out users on approved leave (only for registered users) and create new assignments
             const validAssignments = assignments && assignments.length > 0
-                ? assignments.filter((a: any) => !onLeaveUserIds.has(a.userId))
+                ? assignments.filter((a: any) => !a.userId || !onLeaveUserIds.has(a.userId))
                 : [];
-            const newUserIds = new Set<string>(validAssignments.map((a: any) => a.userId as string));
+            const newUserIds = new Set<string>(validAssignments.map((a: any) => a.userId).filter(Boolean));
 
             // Find users who were removed from roster (were in previous but not in new)
             const removedUserIds: string[] = Array.from(previousUserIds).filter((userId) => !newUserIds.has(userId));
@@ -154,67 +172,67 @@ export async function POST(request: Request) {
                 await tx.rosterAssignment.createMany({
                     data: validAssignments.map((a: any, index: number) => ({
                         rosterId: r.id,
-                        userId: a.userId,
+                        userId: a.userId || null,
+                        tempWorkerName: a.tempWorkerName || null,
                         position: a.position,
                         team: a.team,
                         order: index
                     })),
                 });
 
-                // Auto-create attendance records for assigned workers
-                // Only create if attendance doesn't already exist
-                // Auto-create attendance records for assigned workers
-                // Only create if attendance doesn't already exist
-                const assignedUserIds = validAssignments.map((a: any) => a.userId);
+                // Auto-create attendance records for assigned workers (only for registered users)
+                const assignedUserIds = validAssignments.map((a: any) => a.userId).filter(Boolean);
 
-                const existingAttendances = await tx.attendance.findMany({
-                    where: {
-                        userId: { in: assignedUserIds },
-                        date: date
-                    },
-                    select: { userId: true }
-                });
+                if (assignedUserIds.length > 0) {
+                    const existingAttendances = await tx.attendance.findMany({
+                        where: {
+                            userId: { in: assignedUserIds },
+                            date: date
+                        },
+                        select: { userId: true }
+                    });
 
-                const existingAttendanceUserIds = new Set(existingAttendances.map((a: any) => a.userId));
-                const usersNeedingAttendance = validAssignments.filter((a: any) => !existingAttendanceUserIds.has(a.userId));
+                    const existingAttendanceUserIds = new Set(existingAttendances.map((a: any) => a.userId));
+                    const usersNeedingAttendance = validAssignments.filter((a: any) => a.userId && !existingAttendanceUserIds.has(a.userId));
 
-                if (usersNeedingAttendance.length > 0) {
+                    if (usersNeedingAttendance.length > 0) {
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const isFuture = date > today;
+                        const initialStatus = isFuture ? 'SCHEDULED' : 'PRESENT';
+
+                        await tx.attendance.createMany({
+                            data: usersNeedingAttendance.map((a: any) => ({
+                                userId: a.userId,
+                                date: date,
+                                status: initialStatus,
+                                workHours: 8,
+                                overtimeHours: 0,
+                            })),
+                            skipDuplicates: true
+                        });
+                    }
+
+                    // Update existing attendance records that have empty status
+                    // This fixes the issue where workers re-added to roster might stick with empty status
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
                     const isFuture = date > today;
-                    const initialStatus = isFuture ? 'SCHEDULED' : 'PRESENT';
+                    const targetStatus = isFuture ? 'SCHEDULED' : 'PRESENT';
 
-                    await tx.attendance.createMany({
-                        data: usersNeedingAttendance.map((a: any) => ({
-                            userId: a.userId,
+                    await tx.attendance.updateMany({
+                        where: {
+                            userId: { in: assignedUserIds },
                             date: date,
-                            status: initialStatus,
+                            status: '' // Only update if status is empty (reset state)
+                        },
+                        data: {
+                            status: targetStatus, // Set to valid status
                             workHours: 8,
-                            overtimeHours: 0,
-                        })),
-                        skipDuplicates: true
+                            overtimeHours: 0
+                        }
                     });
                 }
-
-                // Update existing attendance records that have empty status
-                // This fixes the issue where workers re-added to roster might stick with empty status
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const isFuture = date > today;
-                const targetStatus = isFuture ? 'SCHEDULED' : 'PRESENT';
-
-                await tx.attendance.updateMany({
-                    where: {
-                        userId: { in: assignedUserIds },
-                        date: date,
-                        status: '' // Only update if status is empty (reset state)
-                    },
-                    data: {
-                        status: targetStatus, // Set to valid status
-                        workHours: 8,
-                        overtimeHours: 0
-                    }
-                });
             }
 
             // Fetch updated roster with relations

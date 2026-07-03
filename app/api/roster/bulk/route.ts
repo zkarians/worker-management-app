@@ -84,20 +84,23 @@ export async function POST(request: Request) {
             const offOrAbsentUserIds = new Set(offOrAbsent.map((a: any) => a.userId as string));
 
             const validAssignments = assignmentsToCopy.filter((a: any) => {
+                // If it is a daily worker (no userId but has tempWorkerName), it is always valid to copy!
+                if (!a.userId && a.tempWorkerName) return true;
+
                 const user = userMap.get(a.userId);
                 if (!user) return false;
-
+ 
                 // Check resignation date
                 if (user.resignationDate) {
                     // Compare dates: if currentDate is on or after resignationDate, exclude
                     // Ensure we compare just the date parts
                     const resignDate = new Date(user.resignationDate);
                     const current = new Date(currentDate);
-
+ 
                     // Reset times to 00:00:00 for accurate date comparison
                     resignDate.setHours(0, 0, 0, 0);
                     current.setHours(0, 0, 0, 0);
-
+ 
                     if (current >= resignDate) return false;
                 }
                 if (onLeaveUserIds.has(a.userId)) return false;
@@ -142,7 +145,8 @@ export async function POST(request: Request) {
                     await tx.rosterAssignment.createMany({
                         data: validAssignments.map((a: any) => ({
                             rosterId: r.id,
-                            userId: a.userId,
+                            userId: a.userId || null,
+                            tempWorkerName: a.tempWorkerName || null,
                             position: a.position,
                             team: a.team,
                             order: a.order ?? 0
@@ -152,7 +156,7 @@ export async function POST(request: Request) {
 
                 // Attendance adjustments:
                 // 1) For users removed from roster, set workHours/overtimeHours to 0
-                const newUserIds = new Set<string>(validAssignments.map((a: any) => a.userId as string));
+                const newUserIds = new Set<string>(validAssignments.map((a: any) => a.userId).filter(Boolean));
                 const removedUserIds: string[] = Array.from(previousUserIds).filter((userId) => !newUserIds.has(userId));
 
                 if (removedUserIds.length > 0) {
@@ -194,10 +198,10 @@ export async function POST(request: Request) {
                     }
                 }
 
-                // 2) Auto-create attendance for newly assigned workers
-                if (validAssignments.length > 0) {
-                    const assignedUserIds = validAssignments.map((a: any) => a.userId);
+                // 2) Auto-create attendance for newly assigned workers (only for registered users)
+                const assignedUserIds = validAssignments.map((a: any) => a.userId).filter(Boolean);
 
+                if (assignedUserIds.length > 0) {
                     const existingAttendances = await tx.attendance.findMany({
                         where: {
                             userId: { in: assignedUserIds },
@@ -207,7 +211,7 @@ export async function POST(request: Request) {
                     });
 
                     const existingAttendanceUserIds = new Set(existingAttendances.map((a: any) => a.userId));
-                    const usersNeedingAttendance = validAssignments.filter((a: any) => !existingAttendanceUserIds.has(a.userId));
+                    const usersNeedingAttendance = validAssignments.filter((a: any) => a.userId && !existingAttendanceUserIds.has(a.userId));
 
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);

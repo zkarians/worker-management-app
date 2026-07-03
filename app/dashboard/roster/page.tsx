@@ -9,14 +9,15 @@ import { ClearRosterModal } from '@/app/components/ClearRosterModal';
 import { Calendar, Save, Trash2, Copy, ChevronLeft, ChevronRight, Users, X as XIcon, ArrowRight } from 'lucide-react';
 
 interface Assignment {
-    userId: string;
+    userId?: string | null;
+    tempWorkerName?: string | null;
     position: string;
     team: string;
-    user: {
+    user?: {
         name: string;
         role: string;
-        company?: { name: string };
-    };
+        company?: { name: string } | null;
+    } | null;
 }
 
 interface Worker {
@@ -275,6 +276,33 @@ export default function RosterManagementPage() {
         setAssignments([...assignments, newAssignment]);
     };
 
+    const addDailyWorkerToSlot = (teamName: string, position: string, tempWorkerName: string) => {
+        if (!tempWorkerName || !isManager) return;
+
+        // Check if a worker with the same name is already assigned to this slot
+        const isAssigned = assignments.some(a => 
+            a.team === teamName && a.position === position && a.tempWorkerName === tempWorkerName
+        );
+        if (isAssigned) {
+            alert('이미 배정된 이름입니다.');
+            return;
+        }
+
+        const newAssignment = {
+            userId: null,
+            tempWorkerName,
+            team: teamName,
+            position,
+            user: {
+                name: tempWorkerName,
+                role: 'DAILY_WORKER',
+                company: { name: '일용직' }
+            }
+        };
+
+        setAssignments([...assignments, newAssignment]);
+    };
+
 
     const [isMoveModalOpen, setIsMoveModalOpen] = useState(false);
     const [selectedSourceTeam, setSelectedSourceTeam] = useState<{ id: string, name: string } | null>(null);
@@ -322,7 +350,8 @@ export default function RosterManagementPage() {
                 body: JSON.stringify({
                     date,
                     assignments: assignments.map(a => ({
-                        userId: a.userId,
+                        userId: a.userId || null,
+                        tempWorkerName: a.tempWorkerName || null,
                         team: a.team,
                         position: a.position
                     })),
@@ -386,7 +415,8 @@ export default function RosterManagementPage() {
                     body: JSON.stringify({
                         date: dateStr,
                         assignments: currentAssignments.map((a: any) => ({
-                            userId: a.userId,
+                            userId: a.userId || null,
+                            tempWorkerName: a.tempWorkerName || null,
                             team: a.team,
                             position: a.position
                         })),
@@ -479,13 +509,13 @@ export default function RosterManagementPage() {
         });
     };
 
-    const removeWorkerFromSlot = (teamName: string, position: string, userId: string) => {
+    const removeWorkerFromSlot = (teamName: string, position: string, userId: string | null | undefined, tempWorkerName?: string | null) => {
         if (!isManager) {
             console.log('Not a manager, cannot remove');
             return;
         }
 
-        console.log('Removing worker:', { teamName, position, userId });
+        console.log('Removing worker:', { teamName, position, userId, tempWorkerName });
 
         // Map position names to handle legacy data (지게차 -> 포크, 상하차 -> 상하역)
         const positionMap: { [key: string]: string[] } = {
@@ -503,33 +533,18 @@ export default function RosterManagementPage() {
             console.log('Current assignments before remove:', prevAssignments);
 
             const newAssignments = prevAssignments.filter(a => {
-                // For OP and Management positions, only check position and userId
+                // For OP and Management positions, only check position and userId/tempWorkerName
                 if (position === OP_POSITION || position === MANAGEMENT_POSITION) {
-                    // Check if the assignment's position is one of the valid aliases for the target position
                     const isPositionMatch = validPositions.includes(a.position);
-                    const shouldKeep = !(isPositionMatch && a.userId === userId);
-                    console.log(`Checking assignment (OP/Management):`, {
-                        assignment: a,
-                        shouldKeep,
-                        positionMatch: isPositionMatch,
-                        userIdMatch: a.userId === userId
-                    });
-                    return shouldKeep;
+                    const isUserMatch = userId ? a.userId === userId : (tempWorkerName ? a.tempWorkerName === tempWorkerName : false);
+                    return !(isPositionMatch && isUserMatch);
                 }
                 const assignmentTeam = a.team || '';
                 const targetTeam = teamName || '';
 
-                // Check if the assignment's position is one of the valid aliases for the target position
                 const isPositionMatch = validPositions.includes(a.position);
-                const shouldKeep = !(assignmentTeam === targetTeam && isPositionMatch && a.userId === userId);
-                console.log(`Checking assignment (Team):`, {
-                    assignment: a,
-                    shouldKeep,
-                    teamMatch: assignmentTeam === targetTeam,
-                    positionMatch: isPositionMatch,
-                    userIdMatch: a.userId === userId
-                });
-                return shouldKeep;
+                const isUserMatch = userId ? a.userId === userId : (tempWorkerName ? a.tempWorkerName === tempWorkerName : false);
+                return !(assignmentTeam === targetTeam && isPositionMatch && isUserMatch);
             });
 
             console.log('New assignments after filter:', newAssignments);
@@ -749,26 +764,29 @@ export default function RosterManagementPage() {
                                 <div className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wider">{MANAGEMENT_POSITION}</div>
                                 <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
                                     {getWorkersInSlot('', MANAGEMENT_POSITION).map(assignment => {
-                                        // Use company name for color, even for managers
-                                        const companyName = assignment.user.company?.name;
-                                        const style = getCompanyStyle(companyName);
+                                        const isDailyWorker = !assignment.userId;
+                                        const name = isDailyWorker ? assignment.tempWorkerName : assignment.user?.name;
+                                        const companyName = isDailyWorker ? '일용직' : assignment.user?.company?.name;
+                                        const style = isDailyWorker 
+                                            ? { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' }
+                                            : getCompanyStyle(companyName);
                                         return (
                                             <div
-                                                key={assignment.userId}
+                                                key={assignment.userId || assignment.tempWorkerName || ''}
                                                 className={`group relative flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border ${style.bg} ${style.border}`}
                                             >
                                                 <div className="flex flex-col min-w-0">
                                                     <span className={`text-xs md:text-sm font-medium ${style.text} truncate max-w-[80px] md:max-w-none`}>
-                                                        {assignment.user.name}
+                                                        {name}
                                                     </span>
                                                     <span className={`text-[9px] md:text-[10px] ${style.subtext} leading-none truncate max-w-[80px] md:max-w-none`}>
-                                                        {assignment.user.role === 'MANAGER' ? '관리자' : (companyName || '소속없음')}
+                                                        {isDailyWorker ? '일용직' : (assignment.user?.role === 'MANAGER' ? '관리자' : (companyName || '소속없음'))}
                                                     </span>
                                                 </div>
 
                                                 {isManager && (
                                                     <button
-                                                        onClick={() => removeWorkerFromSlot('', MANAGEMENT_POSITION, assignment.userId)}
+                                                        onClick={() => removeWorkerFromSlot('', MANAGEMENT_POSITION, assignment.userId, assignment.tempWorkerName)}
                                                         className="text-slate-400 hover:text-red-500 transition-colors ml-0.5 md:ml-1 flex-shrink-0"
                                                         title="제거"
                                                     >
@@ -783,13 +801,20 @@ export default function RosterManagementPage() {
                                         <select
                                             className="bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 px-1.5 md:px-2 py-1 md:py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 w-auto"
                                             onChange={(e) => {
-                                                if (e.target.value) {
+                                                if (e.target.value === '__custom__') {
+                                                    const name = prompt('일용직 근무자 이름을 입력하세요:');
+                                                    if (name && name.trim()) {
+                                                        addDailyWorkerToSlot('', MANAGEMENT_POSITION, name.trim());
+                                                    }
+                                                    e.target.value = '';
+                                                } else if (e.target.value) {
                                                     addWorkerToSlot('', MANAGEMENT_POSITION, e.target.value);
                                                     e.target.value = '';
                                                 }
                                             }}
                                         >
                                             <option value="">+ 추가</option>
+                                            <option value="__custom__" className="font-semibold text-blue-600">+ 직접 입력 (일용직)...</option>
                                             {getUnassignedManagers().map(w => {
                                                 const disabledReason = getWorkerDisabledReason(w.id);
                                                 return (
@@ -823,26 +848,29 @@ export default function RosterManagementPage() {
                                 <div className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wider">{OP_POSITION}</div>
                                 <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
                                     {getWorkersInSlot('', OP_POSITION).map(assignment => {
-                                        // Use company name for color, even for managers
-                                        const companyName = assignment.user.company?.name;
-                                        const style = getCompanyStyle(companyName);
+                                        const isDailyWorker = !assignment.userId;
+                                        const name = isDailyWorker ? assignment.tempWorkerName : assignment.user?.name;
+                                        const companyName = isDailyWorker ? '일용직' : assignment.user?.company?.name;
+                                        const style = isDailyWorker 
+                                            ? { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' }
+                                            : getCompanyStyle(companyName);
                                         return (
                                             <div
-                                                key={assignment.userId}
+                                                key={assignment.userId || assignment.tempWorkerName || ''}
                                                 className={`group relative flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border ${style.bg} ${style.border}`}
                                             >
                                                 <div className="flex flex-col min-w-0">
                                                     <span className={`text-xs md:text-sm font-medium ${style.text} truncate max-w-[80px] md:max-w-none`}>
-                                                        {assignment.user.name}
+                                                        {name}
                                                     </span>
                                                     <span className={`text-[9px] md:text-[10px] ${style.subtext} leading-none truncate max-w-[80px] md:max-w-none`}>
-                                                        {assignment.user.role === 'MANAGER' ? '관리자' : (companyName || '소속없음')}
+                                                        {isDailyWorker ? '일용직' : (assignment.user?.role === 'MANAGER' ? '관리자' : (companyName || '소속없음'))}
                                                     </span>
                                                 </div>
 
                                                 {isManager && (
                                                     <button
-                                                        onClick={() => removeWorkerFromSlot('', OP_POSITION, assignment.userId)}
+                                                        onClick={() => removeWorkerFromSlot('', OP_POSITION, assignment.userId, assignment.tempWorkerName)}
                                                         className="text-slate-400 hover:text-red-500 transition-colors ml-0.5 md:ml-1 flex-shrink-0"
                                                         title="제거"
                                                     >
@@ -857,13 +885,20 @@ export default function RosterManagementPage() {
                                         <select
                                             className="bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 px-1.5 md:px-2 py-1 md:py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 w-auto"
                                             onChange={(e) => {
-                                                if (e.target.value) {
+                                                if (e.target.value === '__custom__') {
+                                                    const name = prompt('일용직 근무자 이름을 입력하세요:');
+                                                    if (name && name.trim()) {
+                                                        addDailyWorkerToSlot('', OP_POSITION, name.trim());
+                                                    }
+                                                    e.target.value = '';
+                                                } else if (e.target.value) {
                                                     addWorkerToSlot('', OP_POSITION, e.target.value);
                                                     e.target.value = '';
                                                 }
                                             }}
                                         >
                                             <option value="">+ 추가</option>
+                                            <option value="__custom__" className="font-semibold text-blue-600">+ 직접 입력 (일용직)...</option>
                                             {getUnassignedWorkers().concat(getUnassignedManagers()).map(w => {
                                                 const disabledReason = getWorkerDisabledReason(w.id);
                                                 return (
@@ -914,26 +949,29 @@ export default function RosterManagementPage() {
                                         <div className="text-[10px] md:text-xs text-slate-500 mb-1.5 md:mb-2 font-medium uppercase tracking-wider">{pos}</div>
                                         <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
                                             {getWorkersInSlot(team.name, pos).map(assignment => {
-                                                // Use company name for color, even for managers
-                                                const companyName = assignment.user.company?.name;
-                                                const style = getCompanyStyle(companyName);
+                                                const isDailyWorker = !assignment.userId;
+                                                const name = isDailyWorker ? assignment.tempWorkerName : assignment.user?.name;
+                                                const companyName = isDailyWorker ? '일용직' : assignment.user?.company?.name;
+                                                const style = isDailyWorker 
+                                                    ? { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' }
+                                                    : getCompanyStyle(companyName);
                                                 return (
                                                     <div
-                                                        key={assignment.userId}
+                                                        key={assignment.userId || assignment.tempWorkerName || ''}
                                                         className={`group relative flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border ${style.bg} ${style.border}`}
                                                     >
                                                         <div className="flex flex-col min-w-0">
                                                             <span className={`text-xs md:text-sm font-medium ${style.text} truncate max-w-[60px] md:max-w-none`}>
-                                                                {assignment.user.name}
+                                                                {name}
                                                             </span>
                                                             <span className={`text-[9px] md:text-[10px] ${style.subtext} leading-none truncate max-w-[60px] md:max-w-none`}>
-                                                                {assignment.user.role === 'MANAGER' ? '관리자' : (companyName || '소속없음')}
+                                                                {isDailyWorker ? '일용직' : (assignment.user?.role === 'MANAGER' ? '관리자' : (companyName || '소속없음'))}
                                                             </span>
                                                         </div>
 
                                                         {isManager && (
                                                             <button
-                                                                onClick={() => removeWorkerFromSlot(team.name, pos, assignment.userId)}
+                                                                onClick={() => removeWorkerFromSlot(team.name, pos, assignment.userId, assignment.tempWorkerName)}
                                                                 className="text-slate-400 hover:text-red-500 transition-colors ml-0.5 md:ml-1 flex-shrink-0"
                                                                 title="제거"
                                                             >
@@ -948,13 +986,20 @@ export default function RosterManagementPage() {
                                                 <select
                                                     className="bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 px-1.5 md:px-2 py-1 md:py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 w-full"
                                                     onChange={(e) => {
-                                                        if (e.target.value) {
+                                                        if (e.target.value === '__custom__') {
+                                                            const name = prompt('일용직 근무자 이름을 입력하세요:');
+                                                            if (name && name.trim()) {
+                                                                addDailyWorkerToSlot(team.name, pos, name.trim());
+                                                            }
+                                                            e.target.value = '';
+                                                        } else if (e.target.value) {
                                                             addWorkerToSlot(team.name, pos, e.target.value);
                                                             e.target.value = '';
                                                         }
                                                     }}
                                                 >
                                                     <option value="">+ 추가</option>
+                                                    <option value="__custom__" className="font-semibold text-blue-600">+ 직접 입력 (일용직)...</option>
                                                     {getUnassignedWorkers().map(w => {
                                                         const disabledReason = getWorkerDisabledReason(w.id);
                                                         return (

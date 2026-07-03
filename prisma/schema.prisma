@@ -82,14 +82,15 @@ model Roster {
 }
 
 model RosterAssignment {
-  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  rosterId String @db.Uuid
-  userId   String @db.Uuid
-  position String
-  team     String
-  order    Int    @default(0)
-  roster   Roster @relation(fields: [rosterId], references: [id])
-  user     User   @relation(fields: [userId], references: [id])
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rosterId       String   @db.Uuid
+  userId         String?  @db.Uuid
+  tempWorkerName String?
+  position       String
+  team           String
+  order          Int      @default(0)
+  roster         Roster   @relation(fields: [rosterId], references: [id])
+  user           User?    @relation(fields: [userId], references: [id])
 }
 
 model DailyLog {

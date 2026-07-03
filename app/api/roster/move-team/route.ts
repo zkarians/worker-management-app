@@ -36,8 +36,6 @@ export async function POST(request: Request) {
                 throw new Error('Roster not found for this date');
             }
 
-            // 1. Unassign existing workers in target team
-            // Find existing assignments for target team to handle attendance
             const targetAssignments = await tx.rosterAssignment.findMany({
                 where: {
                     rosterId: roster.id,
@@ -46,7 +44,7 @@ export async function POST(request: Request) {
                 select: { userId: true }
             });
 
-            const targetUserIds = targetAssignments.map(a => a.userId);
+            const targetUserIds = targetAssignments.map((a: any) => a.userId).filter(Boolean);
 
             // Delete existing assignments for target team
             await tx.rosterAssignment.deleteMany({
