@@ -724,24 +724,48 @@ export default function RosterManagementPage() {
 
                                         <select
                                             value={cleaningTeamId}
-                                            onChange={(e) => setCleaningTeamId(e.target.value)}
+                                            onChange={(e) => {
+                                                if (e.target.value === 'random') {
+                                                    if (teams.length > 0) {
+                                                        const randomIndex = Math.floor(Math.random() * teams.length);
+                                                        const randomTeam = teams[randomIndex];
+                                                        setCleaningTeamId(randomTeam.id);
+                                                        alert(`🎲 청소(잔바리) 조로 [${randomTeam.name}]가 추첨되었습니다!`);
+                                                    }
+                                                } else {
+                                                    setCleaningTeamId(e.target.value);
+                                                }
+                                            }}
                                             className="bg-white border border-purple-200 rounded-lg text-xs text-slate-600 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500"
                                         >
                                             <option value="">청소 (잔바리)</option>
                                             {teams.map(team => (
                                                 <option key={team.id} value={team.id}>{team.name}</option>
                                             ))}
+                                            <option value="random">🎲 추첨 (랜덤)</option>
                                         </select>
 
                                         <select
                                             value={paletteTeamId}
-                                            onChange={(e) => setPaletteTeamId(e.target.value)}
+                                            onChange={(e) => {
+                                                if (e.target.value === 'random') {
+                                                    if (teams.length > 0) {
+                                                        const randomIndex = Math.floor(Math.random() * teams.length);
+                                                        const randomTeam = teams[randomIndex];
+                                                        setPaletteTeamId(randomTeam.id);
+                                                        alert(`🎲 파레트 정리 조로 [${randomTeam.name}]가 추첨되었습니다!`);
+                                                    }
+                                                } else {
+                                                    setPaletteTeamId(e.target.value);
+                                                }
+                                            }}
                                             className="bg-white border border-purple-200 rounded-lg text-xs text-slate-600 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-purple-500"
                                         >
                                             <option value="">파레트 정리</option>
                                             {teams.map(team => (
                                                 <option key={team.id} value={team.id}>{team.name}</option>
                                             ))}
+                                            <option value="random">🎲 추첨 (랜덤)</option>
                                         </select>
 
                                         <button
