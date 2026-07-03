@@ -135,7 +135,7 @@ export async function POST(request: Request) {
                     where: { rosterId: r.id },
                     select: { userId: true }
                 });
-                const previousUserIds = new Set<string>(previousAssignments.map((a: any) => a.userId as string));
+                const previousUserIds = new Set<string>(previousAssignments.map((a: any) => a.userId as string).filter(Boolean));
 
                 // Delete existing assignments
                 await tx.rosterAssignment.deleteMany({ where: { rosterId: r.id } });
