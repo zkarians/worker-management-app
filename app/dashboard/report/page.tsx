@@ -272,6 +272,7 @@ export default function ReportPage() {
         if (companyName.includes('신항만')) return COMPANY_STYLES[2]; // Emerald
         if (companyName.includes('보람')) return COMPANY_STYLES[0]; // Indigo (Blue-ish)
         if (companyName.includes('건우')) return COMPANY_STYLES[4]; // Cyan
+        if (companyName.includes('일용직')) return { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' };
 
         let hash = 0;
         for (let i = 0; i < companyName.length; i++) {

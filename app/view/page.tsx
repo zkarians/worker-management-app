@@ -239,6 +239,7 @@ export default function ViewPage() {
         if (normalized === '디티에스') return COMPANY_STYLES[2];
         if (normalized === '신항만건기') return COMPANY_STYLES[1];
         if (normalized === '건우') return COMPANY_STYLES[4];
+        if (normalized === '일용직') return { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' };
 
         let hash = 0;
         for (let i = 0; i < normalized.length; i++) {
