@@ -160,40 +160,43 @@ export async function POST(request: Request) {
                 const removedUserIds: string[] = Array.from(previousUserIds).filter((userId) => !newUserIds.has(userId));
 
                 if (removedUserIds.length > 0) {
-                    // Update existing attendance for removed users
-                    await tx.attendance.updateMany({
+                    // Fetch existing attendance records for the removed users
+                    const existingAttendances = await tx.attendance.findMany({
                         where: {
                             userId: { in: removedUserIds },
                             date: currentDate
-                        },
-                        data: {
-                            workHours: 0,
-                            overtimeHours: 0,
-                            status: ''
                         }
                     });
 
-                    // Create attendance for removed users if it doesn't exist (edge case)
-                    const existingRemovedAttendance = await tx.attendance.findMany({
-                        where: {
-                            userId: { in: removedUserIds },
-                            date: currentDate
-                        },
-                        select: { userId: true }
+                    const attMap = new Map<string, string>();
+                    existingAttendances.forEach((att: any) => {
+                        attMap.set(att.userId, att.status);
                     });
-                    const existingRemovedUserIds = new Set(existingRemovedAttendance.map((a: any) => a.userId));
-                    const missingRemovedUserIds = removedUserIds.filter(id => !existingRemovedUserIds.has(id));
 
-                    if (missingRemovedUserIds.length > 0) {
-                        await tx.attendance.createMany({
-                            data: missingRemovedUserIds.map(id => ({
-                                userId: id,
+                    for (const userId of removedUserIds) {
+                        const currentStatus = attMap.get(userId) || '';
+                        const keepStatus = ['ABSENT', 'LEAVE_OF_ABSENCE', 'VACATION', 'OFF_DAY'].includes(currentStatus);
+                        const targetStatus = keepStatus ? currentStatus : '';
+
+                        await tx.attendance.upsert({
+                            where: {
+                                userId_date: {
+                                    userId: userId,
+                                    date: currentDate
+                                }
+                            },
+                            update: {
+                                workHours: 0,
+                                overtimeHours: 0,
+                                status: targetStatus
+                            },
+                            create: {
+                                userId: userId,
                                 date: currentDate,
-                                status: '',
+                                status: targetStatus,
                                 workHours: 0,
                                 overtimeHours: 0
-                            })),
-                            skipDuplicates: true
+                            }
                         });
                     }
                 }

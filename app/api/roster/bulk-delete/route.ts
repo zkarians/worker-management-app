@@ -56,13 +56,15 @@ export async function POST(request: Request) {
             });
 
             // 4. Reset attendance to UNASSIGNED and 0 hours
-            // We need to find all attendance records for these dates
+            // Only reset status for records that are PRESENT, SCHEDULED or already empty,
+            // preserving manually set statuses like ABSENT, LEAVE_OF_ABSENCE, VACATION, OFF_DAY.
             const updateAttendance = await tx.attendance.updateMany({
                 where: {
                     date: {
                         gte: start,
                         lte: end
-                    }
+                    },
+                    status: { in: ['PRESENT', 'SCHEDULED', ''] }
                 },
                 data: {
                     status: '', // Reset to default

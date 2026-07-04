@@ -56,6 +56,19 @@ export async function POST(request: Request) {
 
             // Update attendance for unassigned target users (set workHours to 0)
             for (const userId of targetUserIds) {
+                const existingAttendance = await tx.attendance.findUnique({
+                    where: {
+                        userId_date: {
+                            userId: userId,
+                            date: date,
+                        }
+                    }
+                });
+
+                const currentStatus = existingAttendance?.status || '';
+                const keepStatus = ['ABSENT', 'LEAVE_OF_ABSENCE', 'VACATION', 'OFF_DAY'].includes(currentStatus);
+                const targetStatus = keepStatus ? currentStatus : '';
+
                 await tx.attendance.upsert({
                     where: {
                         userId_date: {
@@ -66,12 +79,12 @@ export async function POST(request: Request) {
                     update: {
                         workHours: 0,
                         overtimeHours: 0,
-                        status: '' // Reset to default 
+                        status: targetStatus
                     },
                     create: {
                         userId: userId,
                         date: date,
-                        status: '',
+                        status: targetStatus,
                         workHours: 0,
                         overtimeHours: 0,
                     }
