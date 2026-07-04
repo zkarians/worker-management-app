@@ -202,11 +202,15 @@ export default function DashboardPage() {
                     return true;
                 });
 
-                const assignedWorkerIds = rosterData.roster?.assignments
-                    ? new Set(rosterData.roster.assignments.map((a: any) => a.userId))
-                    : new Set();
-
-                const workingCount = assignedWorkerIds.size;
+                const assignments = rosterData.roster?.assignments || [];
+                const registeredWorkerIds = new Set(
+                    assignments.map((a: any) => a.userId).filter(Boolean)
+                );
+                const dailyWorkerNames = new Set(
+                    assignments.filter((a: any) => !a.userId && a.tempWorkerName).map((a: any) => a.tempWorkerName)
+                );
+                const workingCount = registeredWorkerIds.size + dailyWorkerNames.size;
+                const registeredWorkingCount = registeredWorkerIds.size;
 
                 const vacationOrLeaveCount = attendanceDataRes.attendance
                     ? attendanceDataRes.attendance.filter((a: any) => a.status === 'VACATION' || a.status === 'LEAVE_OF_ABSENCE').length
@@ -219,7 +223,7 @@ export default function DashboardPage() {
                     total: totalUsers,
                     present: workingCount,
                     leave: vacationOrLeaveCount,
-                    absent: Math.max(0, totalUsers - workingCount - vacationOrLeaveCount)
+                    absent: Math.max(0, totalUsers - registeredWorkingCount - vacationOrLeaveCount)
                 });
             } else {
                 // If users data is not available, set default stats

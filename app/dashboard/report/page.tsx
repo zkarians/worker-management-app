@@ -94,11 +94,16 @@ export default function ReportPage() {
                 const allWorkers = usersData.users.filter((u: any) => u.role === 'WORKER' && u.isApproved);
                 const allManagers = usersData.users.filter((u: any) => u.role === 'MANAGER' && u.isApproved);
 
-                const assignedWorkerIds = rosterData.roster?.assignments
-                    ? new Set(rosterData.roster.assignments.map((a: any) => a.userId))
-                    : new Set();
-
-                const workingCount = assignedWorkerIds.size;
+                const assignments = rosterData.roster?.assignments || [];
+                const registeredWorkerIds = new Set(
+                    assignments.map((a: any) => a.userId).filter(Boolean)
+                );
+                const dailyWorkerNames = new Set(
+                    assignments.filter((a: any) => !a.userId && a.tempWorkerName).map((a: any) => a.tempWorkerName)
+                );
+                const workingCount = registeredWorkerIds.size + dailyWorkerNames.size;
+                const registeredWorkingCount = registeredWorkerIds.size;
+                const assignedWorkerIds = registeredWorkerIds;
 
                 const vacationOrLeaveUserIds = new Set(
                     (attData.attendance || [])
@@ -115,7 +120,7 @@ export default function ReportPage() {
                     total: totalUsers,
                     present: workingCount,
                     leave: vacationOrLeaveCount,
-                    absent: Math.max(0, totalUsers - workingCount - vacationOrLeaveCount)
+                    absent: Math.max(0, totalUsers - registeredWorkingCount - vacationOrLeaveCount)
                 });
 
                 // Calculate company statistics
