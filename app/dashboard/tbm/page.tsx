@@ -63,6 +63,24 @@ async function getRosterData(requestedDate?: string) {
         }
     });
 
+    if (roster && roster.assignments) {
+        roster.assignments = roster.assignments.map((assignment: any) => {
+            if (!assignment.userId && assignment.tempWorkerName) {
+                return {
+                    ...assignment,
+                    user: {
+                        id: null,
+                        name: assignment.tempWorkerName,
+                        role: 'DAILY_WORKER',
+                        company: { name: '일용직' },
+                        resignationDate: null
+                    }
+                };
+            }
+            return assignment;
+        });
+    }
+
     const allWorkers = await prisma.user.findMany({
         where: {
             isApproved: true,
@@ -102,7 +120,7 @@ export default async function TbmPage({ searchParams }: { searchParams: Promise<
         };
 
         roster.assignments.forEach((a: any) => {
-            if (a.user.role === 'MANAGER' || a.position === '관리') return;
+            if (!a.user || a.user.role === 'MANAGER' || a.position === '관리') return;
             let affilName = a.user.company?.name || '';
             affilName = affilName.replace(/\(주\)/g, '').trim();
             if (affilName === '신항만건기') affilName = '신항만 건기';
@@ -119,7 +137,7 @@ export default async function TbmPage({ searchParams }: { searchParams: Promise<
 
         const userPositionCount: Record<string, number> = {};
         roster.assignments.forEach((a: any) => {
-            if (a.user.role === 'MANAGER' || a.position === '관리') return;
+            if (!a.user || a.user.role === 'MANAGER' || a.position === '관리') return;
             const key = String(a.user.id || a.user.name);
             userPositionCount[key] = (userPositionCount[key] || 0) + 1;
         });
