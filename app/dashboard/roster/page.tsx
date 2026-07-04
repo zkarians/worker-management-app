@@ -928,7 +928,7 @@ export default function RosterManagementPage() {
                     </GlassCard>
 
                     {/* Teams Section */}
-                    {teams.map(team => (
+                    {teams.filter(t => t.name !== '추첨(랜덤)').map(team => (
                         <GlassCard key={team.id} className="overflow-hidden bg-white border-slate-200">
                             <div className="bg-slate-50 p-3 border-b border-slate-200 flex justify-between items-center">
                                 <h3 className="font-bold text-slate-900 flex items-center gap-2">

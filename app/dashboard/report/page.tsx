@@ -501,7 +501,7 @@ export default function ReportPage() {
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {teams.map((team, teamIndex) => {
+                                                {teams.filter(t => t.name !== '추첨(랜덤)').map((team, teamIndex) => {
                                                     const teamNumber = parseInt(team.name) || 0;
                                                     const isTeam1 = teamNumber === 1;
                                                     const teamNameColor = isTeam1 ? 'text-blue-700' : 'text-red-700';

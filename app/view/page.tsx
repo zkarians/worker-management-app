@@ -359,7 +359,7 @@ export default function ViewPage() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-200">
-                                        {teams.map(team => {
+                                        {teams.filter(t => t.name !== '추첨(랜덤)').map(team => {
                                             const isBNI = team.name.includes('BNI');
                                             const teamNameBg = isBNI
                                                 ? 'bg-gradient-to-r from-blue-50 to-sky-50'
@@ -564,14 +564,14 @@ export default function ViewPage() {
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                                             <span className="text-sm font-medium text-slate-600">파레트 정리조:</span>
-                                            <span className="text-sm font-semibold text-slate-900">{paletteTeam.name}</span>
+                                            <span className="text-sm font-semibold text-slate-900">{paletteTeam.name === '추첨(랜덤)' ? '추첨' : paletteTeam.name}</span>
                                         </div>
                                     )}
                                     {cleaningTeam && (
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                                             <span className="text-sm font-medium text-slate-600">청소조:</span>
-                                            <span className="text-sm font-semibold text-slate-900">{cleaningTeam.name}</span>
+                                            <span className="text-sm font-semibold text-slate-900">{cleaningTeam.name === '추첨(랜덤)' ? '추첨' : cleaningTeam.name}</span>
                                         </div>
                                     )}
                                 </div>

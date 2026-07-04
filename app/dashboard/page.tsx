@@ -541,7 +541,7 @@ export default function DashboardPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y-2 divide-slate-300">
-                                    {teams.map((team, index) => {
+                                    {teams.filter(t => t.name !== '추첨(랜덤)').map((team, index) => {
                                         const isBNI = team.name.includes('BNI');
 
                                         // 모던하고 세련된 색상 팔레트
@@ -598,7 +598,7 @@ export default function DashboardPage() {
 
                     {/* Mobile Roster View */}
                     <div className="md:hidden space-y-4 pt-4">
-                        {teams.map((team) => {
+                        {teams.filter(t => t.name !== '추첨(랜덤)').map((team) => {
                             const isBNI = team.name.includes('BNI');
                             const teamHeaderBg = isBNI ? 'bg-blue-50' : 'bg-rose-50';
                             const teamHeaderText = isBNI ? 'text-blue-700' : 'text-rose-700';
@@ -946,14 +946,14 @@ export default function DashboardPage() {
                                     <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
                                         <span className="text-xs font-medium text-slate-600">청소(잔바리):</span>
-                                        <span className="text-xs font-bold text-slate-900">{cleaningTeam.name}</span>
+                                        <span className="text-xs font-bold text-slate-900">{cleaningTeam.name === '추첨(랜덤)' ? '추첨' : cleaningTeam.name}</span>
                                     </div>
                                 )}
                                 {paletteTeam && (
                                     <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
                                         <span className="text-xs font-medium text-slate-600">파레트 정리:</span>
-                                        <span className="text-xs font-bold text-slate-900">{paletteTeam.name}</span>
+                                        <span className="text-xs font-bold text-slate-900">{paletteTeam.name === '추첨(랜덤)' ? '추첨' : paletteTeam.name}</span>
                                     </div>
                                 )}
                             </div>

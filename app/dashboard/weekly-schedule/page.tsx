@@ -305,7 +305,7 @@ export default function WeeklySchedulePage() {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {teams.map(team => {
+                                        {teams.filter(t => t.name !== '추첨(랜덤)').map(team => {
                                             const teamNum = getTeamNumber(team.name);
                                             const teamColors = getTeamColors(teamNum);
 

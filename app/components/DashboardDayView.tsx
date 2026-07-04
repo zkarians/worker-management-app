@@ -248,7 +248,7 @@ export function DashboardDayView({ date, isManager, compact = false, className =
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y-2 divide-slate-300">
-                                    {teams.map((team, index) => {
+                                    {teams.filter(t => t.name !== '추첨(랜덤)').map((team, index) => {
                                         const isBNI = team.name.includes('BNI');
                                         const teamNameBg = isBNI ? 'bg-gradient-to-r from-blue-50 to-sky-50' : 'bg-gradient-to-r from-rose-50 to-pink-50';
                                         const teamNameText = isBNI ? 'text-blue-700' : 'text-rose-700';
@@ -481,13 +481,13 @@ export function DashboardDayView({ date, isManager, compact = false, className =
                                 {cleaningTeam && (
                                     <div className="flex items-center gap-1">
                                         <span className="text-xs font-medium text-slate-600">청소(잔바리):</span>
-                                        <span className="text-xs font-bold text-slate-900">{cleaningTeam.name}</span>
+                                        <span className="text-xs font-bold text-slate-900">{cleaningTeam.name === '추첨(랜덤)' ? '추첨' : cleaningTeam.name}</span>
                                     </div>
                                 )}
                                 {paletteTeam && (
                                     <div className="flex items-center gap-1">
                                         <span className="text-xs font-medium text-slate-600">파레트:</span>
-                                        <span className="text-xs font-bold text-slate-900">{paletteTeam.name}</span>
+                                        <span className="text-xs font-bold text-slate-900">{paletteTeam.name === '추첨(랜덤)' ? '추첨' : paletteTeam.name}</span>
                                     </div>
                                 )}
                             </div>
