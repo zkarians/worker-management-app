@@ -102,30 +102,54 @@ export default function AttendanceReportPage() {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
 
-            // Process attendance data
-            const processedData: AttendanceRecord[] = attendanceRecords.map((record: any) => {
-                const dateStr = record.date.split('T')[0];
-                const [year, month, day] = dateStr.split('-').map(Number);
-                const targetDate = new Date(year, month - 1, day);
-                targetDate.setHours(0, 0, 0, 0);
-
-                let status = record.status;
-                let workHours = record.workHours || 0;
-
-                if (status === 'SCHEDULED' && (targetDate < today || (targetDate.getTime() === today.getTime() && now.getHours() >= 19))) {
-                    status = 'PRESENT';
-                    if (workHours === 0) workHours = 8;
+            // Calculate date range first
+            let dateRange: string[] = [];
+            if (viewMode === 'month') {
+                const start = new Date(selectedYear, selectedMonth - 1, 1);
+                const end = new Date(selectedYear, selectedMonth, 0);
+                const current = new Date(start);
+                while (current <= end) {
+                    dateRange.push(getLocalDateString(current));
+                    current.setDate(current.getDate() + 1);
                 }
+            } else {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                const current = new Date(start);
+                while (current <= end) {
+                    dateRange.push(getLocalDateString(current));
+                    current.setDate(current.getDate() + 1);
+                }
+            }
 
-                return {
-                    userId: record.userId,
-                    date: dateStr,
-                    status,
-                    overtimeHours: record.overtimeHours || 0,
-                    workHours,
-                    user: record.user
-                };
-            });
+            const targetDateSet = new Set(dateRange);
+
+            // Process and filter attendance data
+            const processedData: AttendanceRecord[] = attendanceRecords
+                .map((record: any) => {
+                    const dateStr = record.date.split('T')[0];
+                    const [year, month, day] = dateStr.split('-').map(Number);
+                    const targetDate = new Date(year, month - 1, day);
+                    targetDate.setHours(0, 0, 0, 0);
+
+                    let status = record.status;
+                    let workHours = record.workHours || 0;
+
+                    if (status === 'SCHEDULED' && (targetDate < today || (targetDate.getTime() === today.getTime() && now.getHours() >= 19))) {
+                        status = 'PRESENT';
+                        if (workHours === 0) workHours = 8;
+                    }
+
+                    return {
+                        userId: record.userId,
+                        date: dateStr,
+                        status,
+                        overtimeHours: record.overtimeHours || 0,
+                        workHours,
+                        user: record.user
+                    };
+                })
+                .filter((record: any) => targetDateSet.has(record.date));
 
             setAttendanceData(processedData);
 
@@ -151,26 +175,6 @@ export default function AttendanceReportPage() {
                     totalOvertimeHours: 0
                 });
             });
-
-            // Calculate date range
-            let dateRange: string[] = [];
-            if (viewMode === 'month') {
-                const start = new Date(selectedYear, selectedMonth - 1, 1);
-                const end = new Date(selectedYear, selectedMonth, 0);
-                const current = new Date(start);
-                while (current <= end) {
-                    dateRange.push(getLocalDateString(current));
-                    current.setDate(current.getDate() + 1);
-                }
-            } else {
-                const start = new Date(startDate);
-                const end = new Date(endDate);
-                const current = new Date(start);
-                while (current <= end) {
-                    dateRange.push(getLocalDateString(current));
-                    current.setDate(current.getDate() + 1);
-                }
-            }
 
             // Process attendance records
             processedData.forEach(record => {
