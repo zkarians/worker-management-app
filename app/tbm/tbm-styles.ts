@@ -44,7 +44,7 @@ export const tbmStyles = `@media print {
   td {
       height: auto !important;
   }
-} @media screen { .no-print { font-family:"맑은 고딕", sans-serif; } } td { empty-cells: show !important; white-space: nowrap; overflow: hidden; } .absent-cell { overflow: visible !important; white-space: normal !important; word-wrap: break-word !important; }
+} @media screen { .no-print { font-family:"맑은 고딕", sans-serif; } } td { empty-cells: show !important; white-space: nowrap; overflow: hidden; } .absent-cell { overflow: visible !important; white-space: normal !important; word-wrap: break-word !important; } .tbm-indent-left { text-align: left !important; padding-left: 8px !important; white-space: normal !important; word-break: keep-all !important; vertical-align: middle !important; } .tbm-center { text-align: center !important; vertical-align: middle !important; white-space: normal !important; word-break: keep-all !important; }
 
 v\:* {behavior:url(#default#VML);}
 o\:* {behavior:url(#default#VML);}
