@@ -510,7 +510,7 @@ export function SpecialNotesCalendar({
                                                                 title={log.content}
                                                             >
                                                                 <span className="flex-1 whitespace-normal break-words leading-tight">{log.content}</span>
-                                                                {isManager && onDeleteNote && (
+                                                                {isManager && onDeleteNote && !log.id.startsWith('hire-') && (
                                                                     <button
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();

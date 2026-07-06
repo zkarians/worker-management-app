@@ -12,6 +12,8 @@ export async function GET(request: Request) {
         const endDateStr = searchParams.get('endDate');
 
         let where: any = {};
+        let startPeriod: Date | undefined;
+        let endPeriod: Date | undefined;
 
         if (startDateStr && endDateStr) {
             // Filter by date range
@@ -23,6 +25,8 @@ export async function GET(request: Request) {
                 gte: start,
                 lte: end
             };
+            startPeriod = start;
+            endPeriod = end;
         } else if (dateStr) {
             // Filter by specific date (ignoring time)
             const date = new Date(dateStr);
@@ -33,6 +37,8 @@ export async function GET(request: Request) {
                 gte: date,
                 lt: nextDate
             };
+            startPeriod = date;
+            endPeriod = nextDate;
         } else if (monthStr && yearStr) {
             const month = parseInt(monthStr);
             const year = parseInt(yearStr);
@@ -44,6 +50,8 @@ export async function GET(request: Request) {
                 gte: startDate,
                 lte: endDate
             };
+            startPeriod = startDate;
+            endPeriod = endDate;
         } else {
             // Default: Fetch recent history (e.g., last 50 items)
             const logs = await prisma.dailyLog.findMany({
@@ -51,16 +59,80 @@ export async function GET(request: Request) {
                 orderBy: { date: 'desc' },
                 include: { author: { select: { name: true } } }
             });
-            return NextResponse.json({ logs });
+
+            const recentJoined = await prisma.user.findMany({
+                where: {
+                    role: 'WORKER',
+                    isApproved: true,
+                    hireDate: { not: null }
+                },
+                orderBy: { hireDate: 'desc' },
+                take: 20,
+                include: { company: true }
+            });
+
+            const virtualLogs = recentJoined.map((u: any) => ({
+                id: `hire-${u.id}`,
+                date: u.hireDate,
+                content: `[입사] ${u.name}${u.company ? ` (${u.company.name})` : ''}`,
+                authorId: null,
+                author: { name: '시스템' },
+                createdAt: u.createdAt,
+                updatedAt: u.updatedAt
+            }));
+
+            const combined = [...logs, ...virtualLogs]
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .slice(0, 50);
+
+            return NextResponse.json({ logs: combined });
         }
 
         const logs = await prisma.dailyLog.findMany({
             where,
             include: { author: { select: { name: true } } },
-            orderBy: { date: 'desc' } // Changed to desc for history view
+            orderBy: { date: 'desc' }
         });
 
-        return NextResponse.json({ logs });
+        // Fetch virtual logs for join events (hireDate)
+        const virtualLogs: any[] = [];
+        if (startPeriod && endPeriod) {
+            const joinedUsers = await prisma.user.findMany({
+                where: {
+                    role: 'WORKER',
+                    isApproved: true,
+                    hireDate: {
+                        gte: startPeriod,
+                        lte: endPeriod
+                    }
+                },
+                include: {
+                    company: true
+                }
+            });
+
+            joinedUsers.forEach((u: any) => {
+                if (u.hireDate) {
+                    virtualLogs.push({
+                        id: `hire-${u.id}`,
+                        date: u.hireDate,
+                        content: `[입사] ${u.name}${u.company ? ` (${u.company.name})` : ''}`,
+                        authorId: null,
+                        author: { name: '시스템' },
+                        createdAt: u.createdAt,
+                        updatedAt: u.updatedAt
+                    });
+                }
+            });
+        }
+
+        const combinedLogs = [...logs, ...virtualLogs].sort((a, b) => {
+            const dateA = new Date(a.date).getTime();
+            const dateB = new Date(b.date).getTime();
+            return dateB - dateA;
+        });
+
+        return NextResponse.json({ logs: combinedLogs });
     } catch (error) {
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }

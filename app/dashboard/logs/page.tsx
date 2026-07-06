@@ -105,8 +105,11 @@ export default function LogsPage() {
         try {
             // Check if log exists for this date to decide POST or PUT
             let logId = editingLog?.id;
+            if (logId?.startsWith('hire-')) {
+                logId = undefined;
+            }
             if (!logId) {
-                const existingLog = logs.find(l => l.date.split('T')[0] === date);
+                const existingLog = logs.find(l => l.date.split('T')[0] === date && !l.id.startsWith('hire-'));
                 if (existingLog) logId = existingLog.id;
             }
 
@@ -139,7 +142,7 @@ export default function LogsPage() {
 
     const handleDateClick = (date: string) => {
         setSelectedDate(date);
-        const existingLog = logs.find(l => l.date.split('T')[0] === date);
+        const existingLog = logs.find(l => l.date.split('T')[0] === date && !l.id.startsWith('hire-'));
         setEditingLog(existingLog || null);
         setIsModalOpen(true);
     };
