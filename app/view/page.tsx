@@ -111,7 +111,7 @@ export default function ViewPage() {
 
             const rosterData = await rosterRes.json();
             const teamsData = await teamsRes.json();
-            const usersData = await usersRes.ok ? await usersRes.json() : { users: [] };
+            const usersData = usersRes.ok ? await usersRes.json() : { users: [] };
             const logsData = await logsRes.json();
             const attendanceDataRes = await attendanceRes.json();
 
