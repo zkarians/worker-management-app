@@ -115,16 +115,19 @@ export async function checkAndConsolidateOffDayLogs(date: Date, authorId: string
 
     if (totalUsers === 0) return;
 
-    // 2. Count how many are OFF_DAY
-    const offDayCount = await prisma.attendance.count({
+    const activeUserIds = users.map(u => u.id);
+
+    // 2. Count how many active workers are OFF_DAY, LEAVE_OF_ABSENCE, or VACATION
+    const offOrLeaveCount = await prisma.attendance.count({
         where: {
             date: { gte: startOfDay, lte: endOfDay },
-            status: 'OFF_DAY'
+            userId: { in: activeUserIds },
+            status: { in: ['OFF_DAY', 'LEAVE_OF_ABSENCE', 'VACATION'] }
         }
     });
 
-    // 3. Check if ALL are OFF_DAY
-    const isCompanyWideOffDay = offDayCount === totalUsers;
+    // 3. Check if ALL active users are OFF_DAY, LEAVE_OF_ABSENCE, or VACATION
+    const isCompanyWideOffDay = offOrLeaveCount === totalUsers;
 
     if (isCompanyWideOffDay) {
         // Delete all individual [휴무] logs
@@ -161,13 +164,11 @@ export async function checkAndConsolidateOffDayLogs(date: Date, authorId: string
             }
         });
 
-        // Ensure individual logs exist for OFF_DAY users
-        // This is a bit expensive but ensures consistency. 
-        // Since this runs after batch update, we can optimize by only checking if we just deleted "웅동 휴무".
-        // But to be safe, let's iterate OFF_DAY users.
+        // Ensure individual logs exist for OFF_DAY users (only for active users)
         const offDayUsers = await prisma.attendance.findMany({
             where: {
                 date: { gte: startOfDay, lte: endOfDay },
+                userId: { in: activeUserIds },
                 status: 'OFF_DAY'
             },
             include: { user: true }

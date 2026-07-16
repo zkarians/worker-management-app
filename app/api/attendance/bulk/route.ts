@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/app/lib/prisma';
 import { getSession } from '@/app/lib/auth';
+import { checkAndConsolidateOffDayLogs } from '@/app/lib/log-utils';
 
 export const dynamic = 'force-dynamic';
 
@@ -41,83 +42,8 @@ export async function POST(request: Request) {
 
             // After updating all users, handle special OFF_DAY logic
             if (status === 'OFF_DAY') {
-                // Count how many users are set to OFF_DAY for this date
-                const offDayCount = await prisma.attendance.count({
-                    where: {
-                        date: date,
-                        status: 'OFF_DAY'
-                    }
-                });
-
-                const startOfDay = new Date(date);
-                startOfDay.setHours(0, 0, 0, 0);
-                const endOfDay = new Date(date);
-                endOfDay.setHours(23, 59, 59, 999);
-
-                // Check if ALL users are off (company-wide holiday)
-                const isCompanyWideOffDay = offDayCount === totalUsers;
-
-                if (isCompanyWideOffDay) {
-                    // Delete all individual [휴무] logs
-                    await prisma.dailyLog.deleteMany({
-                        where: {
-                            date: { gte: startOfDay, lte: endOfDay },
-                            content: { contains: '[휴무]' }
-                        }
-                    });
-
-                    // Create single "웅동 휴무" log
-                    const existingCompanyLog = await prisma.dailyLog.findFirst({
-                        where: {
-                            date: { gte: startOfDay, lte: endOfDay },
-                            content: '웅동 휴무'
-                        }
-                    });
-
-                    if (!existingCompanyLog) {
-                        await prisma.dailyLog.create({
-                            data: {
-                                date: new Date(date),
-                                content: '웅동 휴무',
-                                authorId: session.userId as string,
-                            }
-                        });
-                    }
-                } else {
-                    // Partial off-day: create/keep individual logs
-                    for (const user of users) {
-                        const userAtt = await prisma.attendance.findUnique({
-                            where: { userId_date: { userId: user.id, date } }
-                        });
-
-                        if (userAtt?.status === 'OFF_DAY') {
-                            const existingLog = await prisma.dailyLog.findFirst({
-                                where: {
-                                    date: { gte: startOfDay, lte: endOfDay },
-                                    content: `[휴무] ${user.name}`
-                                }
-                            });
-
-                            if (!existingLog) {
-                                await prisma.dailyLog.create({
-                                    data: {
-                                        date: new Date(date),
-                                        content: `[휴무] ${user.name}`,
-                                        authorId: session.userId as string,
-                                    }
-                                });
-                            }
-                        }
-                    }
-
-                    // Delete "웅동 휴무" if it exists (no longer company-wide)
-                    await prisma.dailyLog.deleteMany({
-                        where: {
-                            date: { gte: startOfDay, lte: endOfDay },
-                            content: '웅동 휴무'
-                        }
-                    });
-                }
+                // Consolidate logs and create "웅동 휴무" if all users are off/leave/vacation
+                await checkAndConsolidateOffDayLogs(date, session.userId as string);
 
                 // Remove OFF_DAY, ABSENT, LEAVE_OF_ABSENCE, or VACATION users from Roster
                 const roster = await prisma.roster.findUnique({ where: { date } });
@@ -191,13 +117,8 @@ export async function POST(request: Request) {
                     }
                 }
 
-                // Also delete company-wide log if exists
-                await prisma.dailyLog.deleteMany({
-                    where: {
-                        date: { gte: startOfDay, lte: endOfDay },
-                        content: '웅동 휴무'
-                    }
-                });
+                // Also recalculate and consolidate logs (e.g. delete "웅동 휴무" or adjust individual logs)
+                await checkAndConsolidateOffDayLogs(date, session.userId as string);
             }
         }
 

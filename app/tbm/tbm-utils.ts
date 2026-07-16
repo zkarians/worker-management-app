@@ -55,8 +55,19 @@ export async function getRosterData(requestedDate?: string) {
         }
     });
 
-    // Normalize unregistered daily workers to prevent TypeError/crashes
     if (roster && roster.assignments) {
+        // Filter out users who have resigned on or before this roster date
+        roster.assignments = roster.assignments.filter((assignment: any) => {
+            if (!assignment.user) return true; // Daily workers have no original user or are already synthesized
+            if (!assignment.user.resignationDate) return true;
+            const resignDate = new Date(assignment.user.resignationDate);
+            resignDate.setUTCHours(0, 0, 0, 0);
+
+            // If resignation date is after targetDate, they are still working
+            return resignDate.getTime() > targetDate.getTime();
+        });
+
+        // Normalize unregistered daily workers to prevent TypeError/crashes
         roster.assignments = roster.assignments.map((assignment: any) => {
             if (!assignment.userId && assignment.tempWorkerName) {
                 return {

@@ -160,6 +160,53 @@ export async function PUT(request: Request) {
                 },
             });
 
+            // Clean up RosterAssignments and Attendance for resigned user
+            if (body.resignationDate) {
+                const resignDate = new Date(body.resignationDate);
+                resignDate.setUTCHours(0, 0, 0, 0);
+
+                // 1. Find all affected dates where this user had attendance to recalculate logs later
+                const affectedAttendances = await prisma.attendance.findMany({
+                    where: {
+                        userId: userId,
+                        date: { gte: resignDate }
+                    },
+                    select: { date: true }
+                });
+
+                // 2. Delete roster assignments on or after resignation date
+                const rostersOnOrAfter = await prisma.roster.findMany({
+                    where: { date: { gte: resignDate } }
+                });
+                
+                if (rostersOnOrAfter.length > 0) {
+                    await prisma.rosterAssignment.deleteMany({
+                        where: {
+                            userId: userId,
+                            rosterId: { in: rostersOnOrAfter.map((r: any) => r.id) }
+                        }
+                    });
+                }
+
+                // 3. Delete attendance records on or after resignation date
+                await prisma.attendance.deleteMany({
+                    where: {
+                        userId: userId,
+                        date: { gte: resignDate }
+                    }
+                });
+
+                // 4. Consolidate logs for all affected dates to recalculate "웅동 휴무"
+                const { checkAndConsolidateOffDayLogs, removeStatusLog } = await import('@/app/lib/log-utils');
+                for (const att of affectedAttendances) {
+                    const statusTypes = ['결근', '지각', '조퇴', '휴무'];
+                    for (const type of statusTypes) {
+                        await removeStatusLog(userId, att.date, type);
+                    }
+                    await checkAndConsolidateOffDayLogs(att.date, session.userId as string);
+                }
+            }
+
             return NextResponse.json({ message: 'User updated', user: updatedUser });
         } else {
             // No userId means user is updating their own profile

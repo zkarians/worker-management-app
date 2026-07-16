@@ -403,6 +403,18 @@ export default function AttendancePage() {
         }
 
         const isOffOrAbsentOrLeaveOrVacation = bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT' || bulkStatus === 'LEAVE_OF_ABSENCE' || bulkStatus === 'VACATION';
+        
+        const hasLeaveOfAbsence = filteredData.some(item => item.status === 'LEAVE_OF_ABSENCE');
+        let skipLeaveOfAbsence = false;
+        if (hasLeaveOfAbsence && bulkStatus !== 'LEAVE_OF_ABSENCE') {
+            const changeLeaveToHoliday = confirm(
+                "목록에 '휴직' 상태의 근무자가 포함되어 있습니다. 휴직 상태인 근무자도 일괄 적용 상태로 변경하시겠습니까?\n\n('취소'를 누르시면 휴직 상태인 근무자는 제외하고 나머지 인원만 변경됩니다.)"
+            );
+            if (!changeLeaveToHoliday) {
+                skipLeaveOfAbsence = true;
+            }
+        }
+
         let confirmMsg = `현재 검색된 목록(${filteredData.length}명)의 출근 상태를 일괄 적용하시겠습니까? (기존 근무/잔업 시간은 보존됩니다.)`;
         if (isOffOrAbsentOrLeaveOrVacation && bulkReason) {
             confirmMsg = `현재 검색된 목록(${filteredData.length}명)의 출근 상태와 사유("${bulkReason}")를 일괄 적용하시겠습니까?`;
@@ -417,6 +429,9 @@ export default function AttendancePage() {
 
             // Only update status if it matches filters (is visible)
             if (matchesName && matchesStatus) {
+                if (item.status === 'LEAVE_OF_ABSENCE' && skipLeaveOfAbsence) {
+                    return item;
+                }
                 return {
                     ...item,
                     status: bulkStatus,
