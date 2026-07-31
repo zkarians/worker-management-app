@@ -354,6 +354,14 @@ export default function AttendancePage() {
     };
 
     const handleChange = (userId: string, date: string, field: string, value: any) => {
+        if (field === 'status') {
+            const currentItem = attendanceData.find(item => item.userId === userId && item.date === date);
+            if (currentItem && (currentItem.status === 'LEAVE_OF_ABSENCE' || currentItem.status === 'VACATION') && (value === 'OFF_DAY' || value === 'ABSENT')) {
+                alert('휴직 또는 휴가 상태인 근무자는 휴무 또는 결근으로 상태를 변경할 수 없습니다.');
+                return;
+            }
+        }
+
         setAttendanceData(prev => prev.map(item => {
             if (item.userId === userId && item.date === date) {
                 const updates: any = { [field]: value };
@@ -406,7 +414,8 @@ export default function AttendancePage() {
         
         const hasLeaveOfAbsence = filteredData.some(item => item.status === 'LEAVE_OF_ABSENCE');
         let skipLeaveOfAbsence = false;
-        if (hasLeaveOfAbsence && bulkStatus !== 'LEAVE_OF_ABSENCE') {
+        // If bulkStatus is OFF_DAY or ABSENT, LEAVE_OF_ABSENCE will be skipped unconditionally anyway.
+        if (hasLeaveOfAbsence && bulkStatus !== 'LEAVE_OF_ABSENCE' && bulkStatus !== 'OFF_DAY' && bulkStatus !== 'ABSENT') {
             const changeLeaveToHoliday = confirm(
                 "목록에 '휴직' 상태의 근무자가 포함되어 있습니다. 휴직 상태인 근무자도 일괄 적용 상태로 변경하시겠습니까?\n\n('취소'를 누르시면 휴직 상태인 근무자는 제외하고 나머지 인원만 변경됩니다.)"
             );
@@ -429,6 +438,12 @@ export default function AttendancePage() {
 
             // Only update status if it matches filters (is visible)
             if (matchesName && matchesStatus) {
+                // 휴직 또는 휴가 상태인 근무자는 휴무 또는 결근으로 상태 변경 차단
+                if ((bulkStatus === 'OFF_DAY' || bulkStatus === 'ABSENT') && 
+                    (item.status === 'LEAVE_OF_ABSENCE' || item.status === 'VACATION')) {
+                    return item;
+                }
+
                 if (item.status === 'LEAVE_OF_ABSENCE' && skipLeaveOfAbsence) {
                     return item;
                 }
