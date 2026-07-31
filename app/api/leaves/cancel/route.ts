@@ -78,6 +78,15 @@ export async function PATCH(request: Request) {
 
                 current.setDate(current.getDate() + 1);
             }
+
+            // Recalculate checkAndConsolidateOffDayLogs for all dates in range
+            const { checkAndConsolidateOffDayLogs } = await import('@/app/lib/log-utils');
+            const recalcCurrent = new Date(leave.startDate);
+            const recalcEnd = new Date(leave.endDate);
+            while (recalcCurrent <= recalcEnd) {
+                await checkAndConsolidateOffDayLogs(new Date(recalcCurrent), session.userId as string);
+                recalcCurrent.setDate(recalcCurrent.getDate() + 1);
+            }
         }
         // 1일 이내면 관리자 승인 필요
         else {

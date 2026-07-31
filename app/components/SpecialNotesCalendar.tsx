@@ -364,26 +364,30 @@ export function SpecialNotesCalendar({
                                             }
 
                                             const dayLeavePeriods: { type: 'START' | 'END' | 'SINGLE'; userName: string; reason?: string | null }[] = [];
-                                            leavePeriods.forEach(p => {
-                                                if (p.startDate === dateStr && p.endDate === dateStr) {
-                                                    dayLeavePeriods.push({ type: 'SINGLE', userName: p.userName, reason: p.reason });
-                                                } else if (p.startDate === dateStr) {
-                                                    dayLeavePeriods.push({ type: 'START', userName: p.userName, reason: p.reason });
-                                                } else if (p.endDate === dateStr) {
-                                                    dayLeavePeriods.push({ type: 'END', userName: p.userName });
-                                                }
-                                            });
+                                            if (!hasFullHoliday) {
+                                                leavePeriods.forEach(p => {
+                                                    if (p.startDate === dateStr && p.endDate === dateStr) {
+                                                        dayLeavePeriods.push({ type: 'SINGLE', userName: p.userName, reason: p.reason });
+                                                    } else if (p.startDate === dateStr) {
+                                                        dayLeavePeriods.push({ type: 'START', userName: p.userName, reason: p.reason });
+                                                    } else if (p.endDate === dateStr) {
+                                                        dayLeavePeriods.push({ type: 'END', userName: p.userName });
+                                                    }
+                                                });
+                                            }
 
                                             const dayVacationPeriods: { type: 'START' | 'END' | 'SINGLE'; userName: string; reason?: string | null }[] = [];
-                                            vacationPeriods.forEach(p => {
-                                                if (p.startDate === dateStr && p.endDate === dateStr) {
-                                                    dayVacationPeriods.push({ type: 'SINGLE', userName: p.userName, reason: p.reason });
-                                                } else if (p.startDate === dateStr) {
-                                                    dayVacationPeriods.push({ type: 'START', userName: p.userName, reason: p.reason });
-                                                } else if (p.endDate === dateStr) {
-                                                    dayVacationPeriods.push({ type: 'END', userName: p.userName });
-                                                }
-                                            });
+                                            if (!hasFullHoliday) {
+                                                vacationPeriods.forEach(p => {
+                                                    if (p.startDate === dateStr && p.endDate === dateStr) {
+                                                        dayVacationPeriods.push({ type: 'SINGLE', userName: p.userName, reason: p.reason });
+                                                    } else if (p.startDate === dateStr) {
+                                                        dayVacationPeriods.push({ type: 'START', userName: p.userName, reason: p.reason });
+                                                    } else if (p.endDate === dateStr) {
+                                                        dayVacationPeriods.push({ type: 'END', userName: p.userName });
+                                                    }
+                                                });
+                                            }
 
                                             return (
                                                 <>

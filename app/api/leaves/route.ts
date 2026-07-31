@@ -138,6 +138,14 @@ export async function POST(request: Request) {
 
                 current.setDate(current.getDate() + 1);
             }
+
+            // Recalculate checkAndConsolidateOffDayLogs for all dates in range
+            const { checkAndConsolidateOffDayLogs } = await import('@/app/lib/log-utils');
+            const recalcCurrent = new Date(start);
+            while (recalcCurrent <= end) {
+                await checkAndConsolidateOffDayLogs(new Date(recalcCurrent), session.userId as string);
+                recalcCurrent.setDate(recalcCurrent.getDate() + 1);
+            }
         }
 
         return NextResponse.json({ leave });
@@ -268,9 +276,16 @@ export async function PUT(request: Request) {
             }
         }
 
-        // If rejecting a cancellation request (CANCELLATION_PENDING -> APPROVED), keep the leave
-        if (status === 'APPROVED' && previousLeave?.status === 'CANCELLATION_PENDING') {
-            // Leave stays approved, no need to change attendance (already ABSENT)
+        // If status changed to APPROVED, CANCELLED, or REJECTED, recalculate
+        if (status === 'APPROVED' || (status === 'CANCELLED' && previousLeave?.status === 'CANCELLATION_PENDING') || (status === 'REJECTED' && previousLeave?.status === 'APPROVED')) {
+            const start = new Date(leave.startDate);
+            const end = new Date(leave.endDate);
+            const recalcCurrent = new Date(start);
+            const { checkAndConsolidateOffDayLogs } = await import('@/app/lib/log-utils');
+            while (recalcCurrent <= end) {
+                await checkAndConsolidateOffDayLogs(new Date(recalcCurrent), session.userId as string);
+                recalcCurrent.setDate(recalcCurrent.getDate() + 1);
+            }
         }
 
         return NextResponse.json({ leave });
@@ -336,6 +351,14 @@ export async function DELETE(request: Request) {
                 await removeStatusLog(leave.userId, current, '결근');
 
                 current.setDate(current.getDate() + 1);
+            }
+
+            // Recalculate checkAndConsolidateOffDayLogs for all dates in range
+            const { checkAndConsolidateOffDayLogs } = await import('@/app/lib/log-utils');
+            const recalcCurrent = new Date(start);
+            while (recalcCurrent <= end) {
+                await checkAndConsolidateOffDayLogs(new Date(recalcCurrent), session.userId as string);
+                recalcCurrent.setDate(recalcCurrent.getDate() + 1);
             }
         }
 
