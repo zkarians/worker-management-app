@@ -397,7 +397,7 @@ export default function AttendancePage() {
     };
 
     const handleBulkStatusApply = () => {
-        if (!bulkStatus) {
+        if (bulkStatus === undefined || bulkStatus === null) {
             alert('상태를 선택해주세요.');
             return;
         }
