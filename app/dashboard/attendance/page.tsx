@@ -454,6 +454,12 @@ export default function AttendancePage() {
 
             // Only update hours if it matches filters (is visible)
             if (matchesName && matchesStatus) {
+                // 결근, 휴가, 휴직, 휴무, 조퇴인 근무자는 시간 일괄 적용에서 제외
+                const excludedStatuses = ['ABSENT', 'VACATION', 'LEAVE_OF_ABSENCE', 'OFF_DAY', 'EARLY_LEAVE'];
+                if (excludedStatuses.includes(item.status)) {
+                    return item;
+                }
+
                 return {
                     ...item,
                     workHours: bulkWorkHours,
