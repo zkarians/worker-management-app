@@ -669,73 +669,75 @@ export default function DashboardPage() {
 
                 {/* Side Panel (Management, OP & Notes) */}
                 <div className="space-y-2 order-1 lg:order-2 lg:col-span-1 mb-2 lg:mb-0">
-                    {/* Management Section - Displayed above OP (only if management workers are assigned) */}
-                    {getManagementWorkers().length > 0 && (
-                        <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-blue-500">
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-2 py-1.5 border-b-2 border-blue-200">
-                                <h3 className="text-[15px] font-bold text-blue-800 flex items-center gap-2">
-                                    <div className="w-1.5 h-3.5 bg-blue-600 rounded-full"></div>
-                                    {MANAGEMENT_POSITION}
-                                </h3>
-                            </div>
-                            <div className="p-2">
-                                <div className="flex flex-wrap gap-1.5">
-                                    {getManagementWorkers().map((assignment, idx) => {
-                                        // Use company name for color, even for managers
-                                        const companyName = assignment.user.company?.name;
-                                        const style = getCompanyStyle(companyName);
-                                        return (
-                                            <div
-                                                key={idx}
-                                                className={`flex flex-col items-center px-2 py-0.5 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
-                                            >
-                                                <span className={`text-xs font-medium text-slate-900`}>
-                                                    {assignment.user.name}
-                                                </span>
-                                                <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
-                                                    {companyName || '소속없음'}
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
+                    <div className="flex flex-row lg:flex-col gap-2">
+                        {/* Management Section - Displayed above OP (only if management workers are assigned) */}
+                        {getManagementWorkers().length > 0 && (
+                            <GlassCard className="flex-1 overflow-hidden p-0 shadow-lg border-l-4 border-blue-500">
+                                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-2 py-1.5 border-b-2 border-blue-200">
+                                    <h3 className="text-[15px] font-bold text-blue-800 flex items-center gap-2">
+                                        <div className="w-1.5 h-3.5 bg-blue-600 rounded-full"></div>
+                                        {MANAGEMENT_POSITION}
+                                    </h3>
                                 </div>
-                            </div>
-                        </GlassCard>
-                    )}
+                                <div className="p-2">
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {getManagementWorkers().map((assignment, idx) => {
+                                            // Use company name for color, even for managers
+                                            const companyName = assignment.user.company?.name;
+                                            const style = getCompanyStyle(companyName);
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className={`flex flex-col items-center px-2 py-0.5 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
+                                                >
+                                                    <span className={`text-xs font-medium text-slate-900`}>
+                                                        {assignment.user.name}
+                                                    </span>
+                                                    <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
+                                                        {companyName || '소속없음'}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        )}
 
-                    {/* OP Section - Displayed above special notes (only if OP workers are assigned) */}
-                    {getOPWorkers().length > 0 && (
-                        <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-purple-500">
-                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-2 py-1.5 border-b-2 border-purple-200">
-                                <h3 className="text-[15px] font-bold text-purple-800 flex items-center gap-2">
-                                    <div className="w-1.5 h-3.5 bg-purple-600 rounded-full"></div>
-                                    {OP_POSITION}
-                                </h3>
-                            </div>
-                            <div className="p-2">
-                                <div className="flex flex-wrap gap-1.5">
-                                    {getOPWorkers().map((assignment, idx) => {
-                                        // Use company name for color, even for managers
-                                        const companyName = assignment.user.company?.name;
-                                        const style = getCompanyStyle(companyName);
-                                        return (
-                                            <div
-                                                key={idx}
-                                                className={`flex flex-col items-center px-2 py-0.5 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
-                                            >
-                                                <span className={`text-xs font-medium text-slate-900`}>
-                                                    {assignment.user.name}
-                                                </span>
-                                                <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
-                                                    {companyName || '소속없음'}
-                                                </span>
-                                            </div>
-                                        );
-                                    })}
+                        {/* OP Section - Displayed above special notes (only if OP workers are assigned) */}
+                        {getOPWorkers().length > 0 && (
+                            <GlassCard className="flex-1 overflow-hidden p-0 shadow-lg border-l-4 border-purple-500">
+                                <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-2 py-1.5 border-b-2 border-purple-200">
+                                    <h3 className="text-[15px] font-bold text-purple-800 flex items-center gap-2">
+                                        <div className="w-1.5 h-3.5 bg-purple-600 rounded-full"></div>
+                                        {OP_POSITION}
+                                    </h3>
                                 </div>
-                            </div>
-                        </GlassCard>
-                    )}
+                                <div className="p-2">
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {getOPWorkers().map((assignment, idx) => {
+                                            // Use company name for color, even for managers
+                                            const companyName = assignment.user.company?.name;
+                                            const style = getCompanyStyle(companyName);
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className={`flex flex-col items-center px-2 py-0.5 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
+                                                >
+                                                    <span className={`text-xs font-medium text-slate-900`}>
+                                                        {assignment.user.name}
+                                                    </span>
+                                                    <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
+                                                        {companyName || '소속없음'}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        )}
+                    </div>
 
                     {/* Attendance Status Section */}
                     {(() => {
