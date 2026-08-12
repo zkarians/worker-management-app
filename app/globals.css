@@ -27,20 +27,40 @@
   /* Slate 200 */
   --input: #ffffff;
 
-  /* Glassmorphism Variables - Adapted for Light Mode */
+  /* Glassmorphism Variables */
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(226, 232, 240, 0.8);
   --glass-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
+:root, [data-theme="modern-light"] {
+  --theme-bg: linear-gradient(135deg, #eef2ff 0%, #faf5ff 50%, #f0f9ff 100%);
+  --theme-bg-image:
+    radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 50%);
+  --theme-glass-card-bg: rgba(255, 255, 255, 0.45);
+  --theme-glass-card-border: rgba(255, 255, 255, 0.7);
+  --theme-glass-card-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+  --theme-header-bg: rgba(255, 255, 255, 0.6);
+  --theme-box-bg: rgba(255, 255, 255, 0.4);
+  --theme-border: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="classic"] {
+  --theme-bg: #f8fafc;
+  --theme-bg-image: none;
+  --theme-glass-card-bg: #ffffff;
+  --theme-glass-card-border: #e2e8f0;
+  --theme-glass-card-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --theme-header-bg: #f8fafc;
+  --theme-box-bg: #f8fafc;
+  --theme-border: #e2e8f0;
+}
+
 body {
   color: var(--foreground);
-  /* Premium modern light theme background */
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  background-image:
-    radial-gradient(circle at 0% 0%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 100% 0%, rgba(14, 165, 233, 0.06) 0%, transparent 40%),
-    radial-gradient(circle at 50% 100%, rgba(236, 72, 153, 0.04) 0%, transparent 50%);
+  background: var(--theme-bg);
+  background-image: var(--theme-bg-image);
   background-attachment: fixed;
   font-family: "Nanum Gothic", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
   min-height: 100vh;
@@ -49,8 +69,22 @@ body {
 
 @layer components {
   .glass-card {
-    @apply backdrop-blur-xl bg-white/60 border border-slate-200/50 rounded-2xl;
-    box-shadow: 0 10px 40px -10px rgba(79, 70, 229, 0.08), 0 4px 6px -1px rgba(0, 0, 0, 0.02);
+    @apply backdrop-blur-xl rounded-2xl;
+    background-color: var(--theme-glass-card-bg);
+    border: 1px solid var(--theme-glass-card-border);
+    box-shadow: var(--theme-glass-card-shadow);
+  }
+  
+  .theme-border {
+    border-color: var(--theme-border);
+  }
+  
+  .theme-header {
+    background-color: var(--theme-header-bg);
+  }
+  
+  .theme-box {
+    background-color: var(--theme-box-bg);
   }
 
   .glass-input {

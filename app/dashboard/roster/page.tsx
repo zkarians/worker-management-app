@@ -686,8 +686,8 @@ export default function RosterManagementPage() {
                 <div className="lg:col-span-3 space-y-6">
                     {/* Cleaning Duty Assignment Section */}
                     {isManager && (
-                        <GlassCard className="overflow-hidden border-slate-200/50">
-                            <div className="bg-indigo-50/30 p-3 border-b border-slate-200/50 flex justify-between items-center">
+                        <GlassCard className="overflow-hidden theme-border">
+                            <div className="theme-header p-3 border-b theme-border flex justify-between items-center">
                                 <h3 className="font-bold text-slate-900 flex items-center gap-2">
                                     <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
                                     청소담당 지정 (자동 배정 설정)
@@ -758,15 +758,15 @@ export default function RosterManagementPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Management Section - Displayed before OP */}
-                        <GlassCard className="overflow-hidden border-slate-200/50">
-                            <div className="bg-indigo-50/30 px-3 py-2 border-b border-slate-200/50 flex justify-between items-center">
+                        <GlassCard className="overflow-hidden theme-border">
+                            <div className="theme-header px-3 py-2 border-b theme-border flex justify-between items-center">
                                 <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
                                     <div className="w-1 h-3.5 bg-blue-500 rounded-full"></div>
                                     {MANAGEMENT_POSITION}
                                 </h3>
                             </div>
                             <div className="p-2.5 md:p-3 space-y-3">
-                                <div className="bg-indigo-50/20 rounded-xl p-2 md:p-2.5 border border-slate-200/50">
+                                <div className="theme-box rounded-xl p-2 md:p-2.5 border theme-border">
                                     <div className="text-[10px] md:text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">{MANAGEMENT_POSITION}</div>
                                     <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
                                         {getWorkersInSlot('', MANAGEMENT_POSITION).map(assignment => {
@@ -842,15 +842,15 @@ export default function RosterManagementPage() {
                         </GlassCard>
 
                         {/* OP Section - Displayed before all teams */}
-                        <GlassCard className="overflow-hidden border-slate-200/50">
-                            <div className="bg-indigo-50/30 px-3 py-2 border-b border-slate-200/50 flex justify-between items-center">
+                        <GlassCard className="overflow-hidden theme-border">
+                            <div className="theme-header px-3 py-2 border-b theme-border flex justify-between items-center">
                                 <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
                                     <div className="w-1 h-3.5 bg-purple-500 rounded-full"></div>
                                     {OP_POSITION}
                                 </h3>
                             </div>
                             <div className="p-2.5 md:p-3 space-y-3">
-                                <div className="bg-indigo-50/20 rounded-xl p-2 md:p-2.5 border border-slate-200/50">
+                                <div className="theme-box rounded-xl p-2 md:p-2.5 border theme-border">
                                     <div className="text-[10px] md:text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">{OP_POSITION}</div>
                                     <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
                                         {getWorkersInSlot('', OP_POSITION).map(assignment => {
@@ -931,8 +931,8 @@ export default function RosterManagementPage() {
 
                     {/* Teams Section */}
                     {teams.filter(t => t.name !== '추첨(랜덤)').map(team => (
-                        <GlassCard key={team.id} className="overflow-hidden border-slate-200/50">
-                            <div className="bg-indigo-50/30 px-3 py-2 border-b border-slate-200/50 flex justify-between items-center">
+                        <GlassCard key={team.id} className="overflow-hidden theme-border">
+                            <div className="theme-header px-3 py-2 border-b theme-border flex justify-between items-center">
                                 <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
                                     <div className={`w-1 h-3.5 rounded-full ${team.name.includes('1조') || team.name.includes('BNI') ? 'bg-blue-500' : 'bg-red-500'}`}></div>
                                     {team.name}
@@ -943,7 +943,7 @@ export default function RosterManagementPage() {
                                             setSelectedSourceTeam(team);
                                             setIsMoveModalOpen(true);
                                         }}
-                                        className="text-xs px-2 py-1 bg-white/50 border border-slate-200/50 text-slate-600 rounded hover:bg-slate-50 hover:text-blue-600 transition-colors flex items-center gap-1"
+                                        className="text-xs px-2 py-1 bg-white/50 border theme-border text-slate-600 rounded hover:bg-slate-50 hover:text-blue-600 transition-colors flex items-center gap-1"
                                     >
                                         <ArrowRight size={12} />
                                         이동
@@ -952,7 +952,7 @@ export default function RosterManagementPage() {
                             </div>
                             <div className="p-2 md:p-2.5 grid grid-cols-2 gap-2 md:gap-3">
                                 {POSITIONS.map(pos => (
-                                    <div key={pos} className="bg-indigo-50/20 rounded-xl p-2 md:p-2 border border-slate-200/50">
+                                    <div key={pos} className="theme-box rounded-xl p-2 md:p-2 border theme-border">
                                         <div className="text-[10px] md:text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">{pos}</div>
                                         <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
                                             {getWorkersInSlot(team.name, pos).map(assignment => {

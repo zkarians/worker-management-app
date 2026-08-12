@@ -7,6 +7,7 @@ import { Settings, Lock, Building, Trash2, Plus, Users as UsersIcon, Monitor, Se
 import { useSettings } from '@/app/components/SettingsContext';
 import * as XLSX from 'xlsx';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 
 interface UserProfile {
     id: string;
@@ -191,6 +192,7 @@ export default function SettingsPage() {
         mainFontSize, setMainFontSize,
         fontFamily, setFontFamily
     } = useSettings();
+    const { theme, setTheme } = useTheme();
 
     if (!mounted) return null;
 
@@ -319,6 +321,32 @@ export default function SettingsPage() {
                         <Monitor size={18} /> 화면 설정
                     </h2>
                     <div className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-500 mb-2">화면 테마 설정</label>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setTheme('classic')}
+                                    className={`flex-1 py-3 rounded-lg border transition-all flex flex-col items-center justify-center gap-1 ${theme === 'classic'
+                                        ? 'bg-slate-100 border-slate-400 text-slate-800 font-bold shadow-inner'
+                                        : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    <span>클래식 테마</span>
+                                    <span className="text-[10px] font-normal opacity-70">단순한 회색 단색 디자인</span>
+                                </button>
+                                <button
+                                    onClick={() => setTheme('modern-light')}
+                                    className={`flex-1 py-3 rounded-lg border transition-all flex flex-col items-center justify-center gap-1 ${theme === 'modern-light'
+                                        ? 'bg-indigo-50 border-indigo-400 text-indigo-700 font-bold shadow-inner'
+                                        : 'bg-white border-slate-200 text-slate-500 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    <span>모던 라이트 테마</span>
+                                    <span className="text-[10px] font-normal opacity-70">파스텔톤 및 반투명 효과</span>
+                                </button>
+                            </div>
+                        </div>
+
                         <div>
                             <label className="block text-sm font-medium text-slate-500 mb-2">좌측 메뉴 글자 크기</label>
                             <div className="flex gap-2">

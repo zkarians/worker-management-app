@@ -484,27 +484,27 @@ export default function DashboardPage() {
 
             {/* Summary Cards - Mobile First */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4">
-                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center theme-border shadow-sm hover:-translate-y-0.5 transition-transform">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">총원</span>
                     <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">{stats.total}</span>
                 </GlassCard>
-                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center theme-border shadow-sm hover:-translate-y-0.5 transition-transform">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">결근/휴무</span>
                     <span className="text-xl sm:text-2xl font-bold text-red-500 mt-0.5">{stats.absent}</span>
                 </GlassCard>
-                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center theme-border shadow-sm hover:-translate-y-0.5 transition-transform">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">휴가/휴직</span>
                     <span className="text-xl sm:text-2xl font-bold text-purple-600 mt-0.5">{stats.leave}</span>
                 </GlassCard>
-                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center theme-border shadow-sm hover:-translate-y-0.5 transition-transform">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">근무</span>
                     <span className="text-xl sm:text-2xl font-bold text-emerald-600 mt-0.5">{stats.present}</span>
                 </GlassCard>
             </div >
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6">
                 {/* Main Roster Table */}
-                <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+                <div className="lg:col-span-3 space-y-4 lg:space-y-6 order-2 lg:order-1">
                     {/* Notice Board Area */}
                     {popups.length > 0 && (
                         <div className="flex flex-col gap-3">
@@ -665,20 +665,10 @@ export default function DashboardPage() {
                         })}
                     </div>
                     
-                    {/* Monthly Calendar Widget */}
-                    <div className="mt-4 lg:mt-6">
-                        <MonthlyCalendarWidget
-                            onDateClick={handleDateClick}
-                            lastUpdate={lastUpdate}
-                            onDeleteNote={handleDeleteNote}
-                            isManager={isManager}
-                            selectedDate={date}
-                        />
-                    </div>
                 </div>
 
                 {/* Side Panel (Management, OP & Notes) */}
-                <div className="space-y-2">
+                <div className="space-y-2 order-1 lg:order-2 lg:col-span-1 mb-2 lg:mb-0">
                     {/* Management Section - Displayed above OP (only if management workers are assigned) */}
                     {getManagementWorkers().length > 0 && (
                         <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-blue-500">
@@ -971,6 +961,17 @@ export default function DashboardPage() {
                         </GlassCard>
                     )}
 
+                </div>
+
+                {/* Monthly Calendar Widget */}
+                <div className="mt-4 lg:mt-0 lg:col-span-3 order-3">
+                    <MonthlyCalendarWidget
+                        onDateClick={handleDateClick}
+                        lastUpdate={lastUpdate}
+                        onDeleteNote={handleDeleteNote}
+                        isManager={isManager}
+                        selectedDate={date}
+                    />
                 </div>
             </div>
 
