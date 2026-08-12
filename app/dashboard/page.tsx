@@ -502,9 +502,9 @@ export default function DashboardPage() {
                 </GlassCard>
             </div >
 
-            <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
                 {/* Main Roster Table */}
-                <div className="lg:col-span-3 space-y-4 lg:space-y-6 order-2 lg:order-1">
+                <div className="lg:col-start-1 lg:col-span-3 lg:row-start-1 space-y-4 lg:space-y-6 order-2 lg:order-none">
                     {/* Notice Board Area */}
                     {popups.length > 0 && (
                         <div className="flex flex-col gap-3">
@@ -668,7 +668,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Side Panel (Management, OP & Notes) */}
-                <div className="space-y-2 order-1 lg:order-2 lg:col-span-1 mb-2 lg:mb-0">
+                <div className="space-y-2 lg:col-start-4 lg:row-start-1 lg:row-span-2 order-1 lg:order-none mb-2 lg:mb-0">
                     <div className="flex flex-row lg:flex-col gap-2">
                         {/* Management Section - Displayed above OP (only if management workers are assigned) */}
                         {getManagementWorkers().length > 0 && (
@@ -966,7 +966,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Monthly Calendar Widget */}
-                <div className="mt-4 lg:mt-0 lg:col-span-3 order-3">
+                <div className="lg:col-start-1 lg:col-span-3 lg:row-start-2 mt-4 lg:mt-6 order-3 lg:order-none">
                     <MonthlyCalendarWidget
                         onDateClick={handleDateClick}
                         lastUpdate={lastUpdate}
