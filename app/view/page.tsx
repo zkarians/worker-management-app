@@ -409,6 +409,11 @@ export default function ViewPage() {
                                 </table>
                             </div>
                         </GlassCard>
+
+                        {/* Monthly Calendar Widget */}
+                        <div className="mt-6">
+                            <MonthlyCalendarWidget selectedDate={date} />
+                        </div>
                     </div>
 
                     {/* Side Panel */}
@@ -577,41 +582,6 @@ export default function ViewPage() {
                                 </div>
                             </GlassCard>
                         )}
-                    </div>
-                </div>
-
-                {/* Monthly Calendar & Special Notes Section */}
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                    {/* Monthly Calendar - Left Side */}
-                    <div className="lg:col-span-3">
-                        <MonthlyCalendarWidget selectedDate={date} />
-                    </div>
-
-                    {/* Special Notes - Right Side */}
-                    <div className="lg:col-span-1">
-                        <GlassCard className="flex flex-col shadow-md h-full">
-                            <div className="flex justify-between items-center mb-3 border-b border-slate-200 pb-2">
-                                <h3 className="text-slate-900 font-bold flex items-center gap-2">
-                                    <AlertCircle size={18} className="text-rose-500" /> 특이사항
-                                </h3>
-                            </div>
-                            <div className="flex-1 min-h-[150px] space-y-2 overflow-y-auto max-h-[600px]">
-                                {logs.length > 0 ? (
-                                    logs.slice(0, 20).map(log => (
-                                        <div key={log.id} className="p-3 rounded-lg bg-slate-50 border border-slate-200 text-sm">
-                                            <span className="text-xs text-indigo-600 font-medium block mb-1">
-                                                {new Date(log.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}
-                                            </span>
-                                            <p className="text-slate-700 whitespace-pre-wrap">{log.content}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <div className="text-center py-8 text-slate-400 text-sm">
-                                        등록된 특이사항이 없습니다.
-                                    </div>
-                                )}
-                            </div>
-                        </GlassCard>
                     </div>
                 </div>
             </div>

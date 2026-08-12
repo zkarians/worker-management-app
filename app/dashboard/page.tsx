@@ -664,6 +664,17 @@ export default function DashboardPage() {
                             );
                         })}
                     </div>
+                    
+                    {/* Monthly Calendar Widget */}
+                    <div className="mt-4 lg:mt-6">
+                        <MonthlyCalendarWidget
+                            onDateClick={handleDateClick}
+                            lastUpdate={lastUpdate}
+                            onDeleteNote={handleDeleteNote}
+                            isManager={isManager}
+                            selectedDate={date}
+                        />
+                    </div>
                 </div>
 
                 {/* Side Panel (Management, OP & Notes) */}
@@ -960,96 +971,6 @@ export default function DashboardPage() {
                         </GlassCard>
                     )}
 
-
-                </div>
-            </div>
-
-            {/* Bottom Section: Calendar & Notes List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-                <div className="lg:col-span-3">
-                    <MonthlyCalendarWidget
-                        onDateClick={handleDateClick}
-                        lastUpdate={lastUpdate}
-                        onDeleteNote={handleDeleteNote}
-                        isManager={isManager}
-                        selectedDate={date}
-                    />
-                </div>
-                <div className="flex flex-col">
-                    <GlassCard className="flex flex-col h-full">
-                        <div className="flex justify-between items-center mb-3 border-b border-slate-200 pb-2">
-                            <h3 className="text-slate-900 font-bold flex items-center gap-2">
-                                <AlertCircle size={18} className="text-rose-500" /> 특이사항
-                            </h3>
-                            {isManager && (
-                                <div className="flex gap-2">
-                                    <Link
-                                        href="/dashboard/logs"
-                                        className="p-1 hover:bg-slate-100 rounded text-slate-400 hover:text-slate-900 transition-colors"
-                                        title="히스토리"
-                                    >
-                                        <History size={18} />
-                                    </Link>
-                                    <button
-                                        onClick={() => setIsNoteModalOpen(true)}
-                                        className="p-1 hover:bg-slate-100 rounded text-indigo-600 hover:text-indigo-700 transition-colors"
-                                        title="추가"
-                                    >
-                                        <Plus size={18} />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="flex-1 min-h-[150px] space-y-3 overflow-y-auto max-h-[500px] custom-scrollbar pr-2">
-                            {logs.length > 0 ? (
-                                logs.map(log => (
-                                    <div
-                                        key={log.id}
-                                        onClick={() => handleDateClick(log.date.split('T')[0])}
-                                        className="group relative p-3 sm:p-4 rounded-xl bg-gradient-to-br from-white to-slate-50 border border-slate-200 hover:border-indigo-300 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer overflow-hidden"
-                                    >
-                                        {/* Hover effect overlay */}
-                                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/0 to-indigo-100/0 group-hover:from-indigo-50/50 group-hover:to-indigo-100/20 transition-all duration-200 pointer-events-none"></div>
-
-                                        <div className="relative z-10">
-                                            <div className="flex justify-between items-start gap-2 mb-2">
-                                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                    <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 sm:py-1 bg-indigo-100 rounded-full">
-                                                        <CalendarIcon size={12} className="text-indigo-600 flex-shrink-0" />
-                                                        <span className="text-[10px] sm:text-xs text-indigo-700 font-semibold whitespace-nowrap">
-                                                            {new Date(log.date).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2 flex-shrink-0">
-                                                    {isManager && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDeleteNote(log.id);
-                                                            }}
-                                                            className="p-1 sm:p-1.5 text-slate-400 hover:text-white hover:bg-rose-500 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-sm"
-                                                        >
-                                                            <Trash2 size={14} />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed whitespace-pre-wrap font-medium break-words">
-                                                {log.content}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="text-center py-8 sm:py-12 text-slate-400 text-sm">
-                                    <AlertCircle size={28} className="mx-auto mb-2 opacity-20 sm:w-8 sm:h-8" />
-                                    <p className="text-xs sm:text-sm">등록된 특이사항이 없습니다.</p>
-                                </div>
-                            )}
-                        </div>
-                    </GlassCard>
                 </div>
             </div>
 
