@@ -323,20 +323,20 @@ export default function ViewPage() {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-3 sm:space-y-4">
                 {/* Summary Cards */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
-                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
-                        <span className="text-slate-600 text-xs sm:text-sm font-semibold tracking-wider">총원</span>
+                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                        <span className="text-slate-500 text-xs sm:text-sm font-medium">총원</span>
                         <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">{stats.total}</span>
                     </GlassCard>
-                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
-                        <span className="text-slate-600 text-xs sm:text-sm font-semibold tracking-wider">결근/휴무</span>
+                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                        <span className="text-slate-500 text-xs sm:text-sm font-medium">결근/휴무</span>
                         <span className="text-xl sm:text-2xl font-bold text-red-500 mt-0.5">{stats.absent}</span>
                     </GlassCard>
-                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
-                        <span className="text-slate-600 text-xs sm:text-sm font-semibold tracking-wider">휴가/휴직</span>
+                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                        <span className="text-slate-500 text-xs sm:text-sm font-medium">휴가/휴직</span>
                         <span className="text-xl sm:text-2xl font-bold text-purple-600 mt-0.5">{stats.leave}</span>
                     </GlassCard>
-                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
-                        <span className="text-slate-600 text-xs sm:text-sm font-semibold tracking-wider">근무</span>
+                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                        <span className="text-slate-500 text-xs sm:text-sm font-medium">근무</span>
                         <span className="text-xl sm:text-2xl font-bold text-emerald-600 mt-0.5">{stats.present}</span>
                     </GlassCard>
                 </div>
@@ -348,7 +348,7 @@ export default function ViewPage() {
                             <div className="overflow-x-auto">
                                 <table className="w-full text-center border-collapse">
                                     <thead>
-                                        <tr className="bg-indigo-50/30 text-slate-600 border-b border-slate-200">
+                                        <tr className="bg-slate-50 text-slate-600 border-b border-slate-200">
                                             <th className="p-3 border-r border-slate-200 w-20 text-xs sm:text-sm font-semibold">구분</th>
                                             {POSITIONS.map(pos => {
                                                 const headerColor = getPositionHeaderColor(pos);
@@ -420,8 +420,8 @@ export default function ViewPage() {
                     <div className="space-y-3 lg:space-y-4">
                         {/* Management Section */}
                         {getManagementWorkers().length > 0 && (
-                            <GlassCard className="overflow-hidden p-0 border-slate-200/50 shadow-sm">
-                                <div className="bg-indigo-50/30 px-3 py-2 border-b border-slate-200/50">
+                            <GlassCard className="overflow-hidden p-0 shadow-md">
+                                <div className="bg-blue-50 px-3 py-2 border-b border-blue-200">
                                     <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
                                         <div className="w-1 h-3.5 bg-blue-500 rounded-full"></div>
                                         {MANAGEMENT_POSITION}
@@ -453,8 +453,8 @@ export default function ViewPage() {
 
                         {/* OP Section */}
                         {getOPWorkers().length > 0 && (
-                            <GlassCard className="overflow-hidden p-0 border-slate-200/50 shadow-sm">
-                                <div className="bg-indigo-50/30 px-3 py-2 border-b border-slate-200/50">
+                            <GlassCard className="overflow-hidden p-0 shadow-md">
+                                <div className="bg-purple-50 px-3 py-2 border-b border-purple-200">
                                     <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
                                         <div className="w-1 h-3.5 bg-purple-500 rounded-full"></div>
                                         {OP_POSITION}
@@ -521,8 +521,8 @@ export default function ViewPage() {
                             };
 
                             return (
-                                <GlassCard className="overflow-hidden p-0 border-slate-200/50 shadow-sm">
-                                    <div className="bg-indigo-50/30 px-3 py-2 border-b border-slate-200/50">
+                                <GlassCard className="overflow-hidden p-0 shadow-md">
+                                    <div className="bg-teal-50 px-3 py-2 border-b border-teal-200">
                                         <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
                                             <div className="w-1 h-3.5 bg-teal-500 rounded-full"></div>
                                             근태 현황
@@ -560,8 +560,8 @@ export default function ViewPage() {
 
                         {/* Special Teams */}
                         {(paletteTeam || cleaningTeam) && (
-                            <GlassCard className="bg-indigo-50/10 border-slate-200/50 shadow-sm p-3">
-                                <h3 className="text-[15px] text-slate-700 font-bold mb-2 flex items-center gap-2 border-b border-slate-200/50 pb-1.5">
+                            <GlassCard className="bg-slate-50 border-slate-200 shadow-md p-3">
+                                <h3 className="text-[15px] text-slate-700 font-bold mb-2 flex items-center gap-2 border-b border-slate-200 pb-1.5">
                                     정리담당
                                 </h3>
                                 <div className="space-y-2">

@@ -484,19 +484,19 @@ export default function DashboardPage() {
 
             {/* Summary Cards - Mobile First */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4">
-                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">총원</span>
                     <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">{stats.total}</span>
                 </GlassCard>
-                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">결근/휴무</span>
                     <span className="text-xl sm:text-2xl font-bold text-red-500 mt-0.5">{stats.absent}</span>
                 </GlassCard>
-                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">휴가/휴직</span>
                     <span className="text-xl sm:text-2xl font-bold text-purple-600 mt-0.5">{stats.leave}</span>
                 </GlassCard>
-                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center border-slate-200/50 shadow-sm hover:-translate-y-0.5 transition-transform">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">근무</span>
                     <span className="text-xl sm:text-2xl font-bold text-emerald-600 mt-0.5">{stats.present}</span>
                 </GlassCard>
