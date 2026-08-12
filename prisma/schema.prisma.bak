@@ -1,0 +1,176 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String               @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username            String               @unique
+  email               String?              @unique
+  password            String
+  role                String               @default("WORKER")
+  name                String
+  companyId           String?              @db.Uuid
+  hireDate            DateTime?
+  carNumber           String?
+  isApproved          Boolean              @default(false)
+  resignationDate     DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  announcements       Announcement[]
+  attendances         Attendance[]
+  dailyLogs           DailyLog[]
+  leaveRequests       LeaveRequest[]
+  passwordResetTokens PasswordResetToken[]
+  products            Product[]
+  rosterAssignments   RosterAssignment[]
+  company             Company?             @relation(fields: [companyId], references: [id])
+}
+
+model Company {
+  id    String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name  String @unique
+  users User[]
+}
+
+model Team {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String   @unique
+  order           Int      @default(0)
+  cleaningRosters Roster[] @relation("CleaningTeam")
+  paletteRosters  Roster[] @relation("PaletteTeam")
+}
+
+model Attendance {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId        String   @db.Uuid
+  date          DateTime
+  status        String
+  overtimeHours Float    @default(0.0)
+  workHours     Float    @default(8.0)
+  reason        String?
+  user          User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}
+
+model LeaveRequest {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @db.Uuid
+  startDate DateTime
+  endDate   DateTime
+  type      String
+  reason    String?
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Roster {
+  id             String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date           DateTime           @unique
+  paletteTeamId  String?            @db.Uuid
+  cleaningTeamId String?            @db.Uuid
+  cleaningTeam   Team?              @relation("CleaningTeam", fields: [cleaningTeamId], references: [id])
+  paletteTeam    Team?              @relation("PaletteTeam", fields: [paletteTeamId], references: [id])
+  assignments    RosterAssignment[]
+}
+
+model RosterAssignment {
+  id       String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rosterId String @db.Uuid
+  userId   String @db.Uuid
+  position String
+  team     String
+  order    Int    @default(0)
+  roster   Roster @relation(fields: [rosterId], references: [id])
+  user     User   @relation(fields: [userId], references: [id])
+}
+
+model DailyLog {
+  id       String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  date     DateTime
+  content  String
+  authorId String   @db.Uuid
+  author   User     @relation(fields: [authorId], references: [id])
+}
+
+model Announcement {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String
+  content   String
+  createdAt DateTime @default(now())
+  authorId  String   @db.Uuid
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Category {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String
+  width      Float
+  depth      Float
+  height     Float
+  weight     Float?
+  cbm        Float?
+  division   String?
+  notes      String?
+  categoryId String?   @db.Uuid
+  authorId   String?   @db.Uuid
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  author     User?     @relation(fields: [authorId], references: [id])
+  category   Category? @relation(fields: [categoryId], references: [id])
+}
+
+model Schedule {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  description String?
+  imageUrl    String?
+  type        String
+  startDate   DateTime
+  endDate     DateTime?
+  time        String?
+  dayOfWeek   Int[]
+  dayOfMonth  Int?
+  weekOfMonth Int?
+  isPopup     Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  token     String   @unique
+  expiresAt DateTime
+  userId    String   @db.Uuid
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SystemConfig {
+  key   String @id
+  value String
+}
+
+model SafetyEducation {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  content   String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

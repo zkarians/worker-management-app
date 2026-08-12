@@ -461,9 +461,9 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
+        <div className="space-y-3 sm:space-y-4 p-4 sm:p-0">
             {/* Header & Stats */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
                         <ClipboardList className="text-indigo-600 w-5 h-5 sm:w-6 sm:h-6" />
@@ -483,22 +483,22 @@ export default function DashboardPage() {
 
 
             {/* Summary Cards - Mobile First */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
-                <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">총원</span>
-                    <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{stats.total}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">{stats.total}</span>
                 </GlassCard>
-                <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">결근/휴무</span>
-                    <span className="text-xl sm:text-2xl font-bold text-red-500 mt-1">{stats.absent}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-red-500 mt-0.5">{stats.absent}</span>
                 </GlassCard>
-                <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">휴가/휴직</span>
-                    <span className="text-xl sm:text-2xl font-bold text-purple-600 mt-1">{stats.leave}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-purple-600 mt-0.5">{stats.leave}</span>
                 </GlassCard>
-                <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
+                <GlassCard className="p-2 sm:py-2.5 sm:px-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">근무</span>
-                    <span className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">{stats.present}</span>
+                    <span className="text-xl sm:text-2xl font-bold text-emerald-600 mt-0.5">{stats.present}</span>
                 </GlassCard>
             </div >
 
@@ -678,17 +678,17 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Side Panel (Management, OP & Notes) */}
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {/* Management Section - Displayed above OP (only if management workers are assigned) */}
                     {getManagementWorkers().length > 0 && (
                         <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-blue-500">
-                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-2.5 border-b-2 border-blue-200">
-                                <h3 className="text-base font-bold text-blue-800 flex items-center gap-2">
-                                    <div className="w-1.5 h-4 bg-blue-600 rounded-full"></div>
+                            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-2 py-1.5 border-b-2 border-blue-200">
+                                <h3 className="text-[15px] font-bold text-blue-800 flex items-center gap-2">
+                                    <div className="w-1.5 h-3.5 bg-blue-600 rounded-full"></div>
                                     {MANAGEMENT_POSITION}
                                 </h3>
                             </div>
-                            <div className="p-2.5">
+                            <div className="p-2">
                                 <div className="flex flex-wrap gap-1.5">
                                     {getManagementWorkers().map((assignment, idx) => {
                                         // Use company name for color, even for managers
@@ -697,7 +697,7 @@ export default function DashboardPage() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
+                                                className={`flex flex-col items-center px-2 py-0.5 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
                                             >
                                                 <span className={`text-xs font-medium text-slate-900`}>
                                                     {assignment.user.name}
@@ -716,13 +716,13 @@ export default function DashboardPage() {
                     {/* OP Section - Displayed above special notes (only if OP workers are assigned) */}
                     {getOPWorkers().length > 0 && (
                         <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-purple-500">
-                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-2.5 border-b-2 border-purple-200">
-                                <h3 className="text-base font-bold text-purple-800 flex items-center gap-2">
-                                    <div className="w-1.5 h-4 bg-purple-600 rounded-full"></div>
+                            <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-2 py-1.5 border-b-2 border-purple-200">
+                                <h3 className="text-[15px] font-bold text-purple-800 flex items-center gap-2">
+                                    <div className="w-1.5 h-3.5 bg-purple-600 rounded-full"></div>
                                     {OP_POSITION}
                                 </h3>
                             </div>
-                            <div className="p-2.5">
+                            <div className="p-2">
                                 <div className="flex flex-wrap gap-1.5">
                                     {getOPWorkers().map((assignment, idx) => {
                                         // Use company name for color, even for managers
@@ -731,7 +731,7 @@ export default function DashboardPage() {
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`flex flex-col items-center px-2.5 py-1 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
+                                                className={`flex flex-col items-center px-2 py-0.5 rounded-lg border-2 shadow-md hover:shadow-lg transition-all duration-200 ${style.bg} ${style.border}`}
                                             >
                                                 <span className={`text-xs font-medium text-slate-900`}>
                                                     {assignment.user.name}
@@ -762,13 +762,13 @@ export default function DashboardPage() {
 
                         return (
                             <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-teal-500">
-                                <div className="bg-gradient-to-r from-teal-50 to-cyan-50 p-2.5 border-b-2 border-teal-200">
-                                    <h3 className="text-base font-bold text-teal-800 flex items-center gap-2">
-                                        <div className="w-1.5 h-4 bg-teal-600 rounded-full"></div>
+                                <div className="bg-gradient-to-r from-teal-50 to-cyan-50 px-2 py-1.5 border-b-2 border-teal-200">
+                                    <h3 className="text-[15px] font-bold text-teal-800 flex items-center gap-2">
+                                        <div className="w-1.5 h-3.5 bg-teal-600 rounded-full"></div>
                                         근태 현황
                                     </h3>
                                 </div>
-                                <div className="p-2.5 space-y-2.5">
+                                <div className="p-2 space-y-2">
                                     {leaveOfAbsenceWorkers.length > 0 && (
                                         <div>
                                             <div className="flex items-center gap-1.5 mb-1.5">
@@ -946,13 +946,13 @@ export default function DashboardPage() {
                     {/* 정리 팀 섹션 */}
                     {(paletteTeam || cleaningTeam) && (
                         <GlassCard className="overflow-hidden p-0 shadow-lg border-l-4 border-amber-500">
-                            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 p-2.5 border-b-2 border-amber-200">
-                                <h3 className="text-base font-bold text-amber-800 flex items-center gap-2">
-                                    <div className="w-1.5 h-4 bg-amber-600 rounded-full"></div>
+                            <div className="bg-gradient-to-r from-amber-50 to-yellow-50 px-2 py-1.5 border-b-2 border-amber-200">
+                                <h3 className="text-[15px] font-bold text-amber-800 flex items-center gap-2">
+                                    <div className="w-1.5 h-3.5 bg-amber-600 rounded-full"></div>
                                     정리담당
                                 </h3>
                             </div>
-                            <div className="p-2.5 space-y-2">
+                            <div className="p-2 space-y-1.5">
                                 {cleaningTeam && (
                                     <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>

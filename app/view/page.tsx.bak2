@@ -1,0 +1,592 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { GlassCard } from '@/app/components/GlassCard';
+import { ClipboardList, AlertCircle, Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MonthlyCalendarWidget } from '@/app/components/MonthlyCalendarWidget';
+
+interface Assignment {
+    userId: string;
+    position: string;
+    team: string;
+    user: {
+        name: string;
+        role: string;
+        company?: { name: string };
+    };
+}
+
+interface Team {
+    id: string;
+    name: string;
+}
+
+interface DailyLog {
+    id: string;
+    date: string;
+    content: string;
+    author: { name: string };
+}
+
+interface AttendanceRecord {
+    id: string;
+    userId: string;
+    status: string;
+    user?: {
+        name: string;
+        company?: { name: string };
+    };
+}
+
+const POSITIONS = ['검수', '포크', '클램프', '상하역'];
+const OP_POSITION = 'OP';
+const MANAGEMENT_POSITION = '관리';
+
+// Position header colors
+const POSITION_HEADER_COLORS: { [key: string]: string } = {
+    '검수': 'text-blue-600',
+    '포크': 'text-green-600',
+    '클램프': 'text-purple-600',
+    '상하역': 'text-pink-600',
+};
+
+// Company styles
+const COMPANY_STYLES = [
+    { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200', subtext: 'text-indigo-500' },
+    { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', subtext: 'text-emerald-500' },
+    { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', subtext: 'text-amber-500' },
+    { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', subtext: 'text-rose-500' },
+    { bg: 'bg-cyan-50', text: 'text-cyan-700', border: 'border-cyan-200', subtext: 'text-cyan-500' },
+    { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200', subtext: 'text-violet-500' },
+    { bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-teal-200', subtext: 'text-teal-500' },
+    { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', subtext: 'text-orange-500' },
+];
+
+export default function ViewPage() {
+    const [date, setDate] = useState(() => {
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        return new Date(now.getTime() - offset).toISOString().split('T')[0];
+    });
+    const [assignments, setAssignments] = useState<Assignment[]>([]);
+    const [teams, setTeams] = useState<Team[]>([]);
+    const [logs, setLogs] = useState<DailyLog[]>([]);
+    const [attendanceData, setAttendanceData] = useState<AttendanceRecord[]>([]);
+    const [stats, setStats] = useState({ total: 0, present: 0, absent: 0, leave: 0 });
+    const [loading, setLoading] = useState(true);
+    const [paletteTeam, setPaletteTeam] = useState<{ id: string; name: string } | null>(null);
+    const [cleaningTeam, setCleaningTeam] = useState<{ id: string; name: string } | null>(null);
+
+    // Get today and tomorrow dates
+    const today = (() => {
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        return new Date(now.getTime() - offset).toISOString().split('T')[0];
+    })();
+
+    const tomorrow = (() => {
+        const now = new Date();
+        now.setDate(now.getDate() + 1);
+        const offset = now.getTimezoneOffset() * 60000;
+        return new Date(now.getTime() - offset).toISOString().split('T')[0];
+    })();
+
+    const isToday = date === today;
+    const isTomorrow = date === tomorrow;
+
+    useEffect(() => {
+        fetchData();
+    }, [date]);
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const [rosterRes, teamsRes, usersRes, logsRes, attendanceRes] = await Promise.all([
+                fetch(`/api/public/roster?date=${date}`),
+                fetch('/api/public/teams'),
+                fetch('/api/public/users'),
+                fetch(`/api/public/logs`),
+                fetch(`/api/public/attendance?date=${date}`)
+            ]);
+
+            const rosterData = await rosterRes.json();
+            const teamsData = await teamsRes.json();
+            const usersData = usersRes.ok ? await usersRes.json() : { users: [] };
+            const logsData = await logsRes.json();
+            const attendanceDataRes = await attendanceRes.json();
+
+            if (attendanceDataRes.attendance) {
+                setAttendanceData(attendanceDataRes.attendance);
+            } else {
+                setAttendanceData([]);
+            }
+
+            if (rosterData.roster?.assignments) {
+                setAssignments(rosterData.roster.assignments);
+            } else {
+                setAssignments([]);
+            }
+
+            if (rosterData.roster?.paletteTeam) {
+                setPaletteTeam(rosterData.roster.paletteTeam);
+            } else {
+                setPaletteTeam(null);
+            }
+            if (rosterData.roster?.cleaningTeam) {
+                setCleaningTeam(rosterData.roster.cleaningTeam);
+            } else {
+                setCleaningTeam(null);
+            }
+
+            if (teamsData.teams) setTeams(teamsData.teams);
+
+            if (usersData.users && Array.isArray(usersData.users)) {
+                const allWorkers = usersData.users.filter((u: any) => {
+                    if (u.role !== 'WORKER') return false;
+                    if (u.resignationDate) {
+                        try {
+                            const resignDate = new Date(u.resignationDate);
+                            const viewDate = new Date(date);
+
+                            resignDate.setUTCHours(0, 0, 0, 0);
+                            viewDate.setUTCHours(0, 0, 0, 0);
+
+                            return viewDate.getTime() < resignDate.getTime();
+                        } catch (e) {
+                            return true;
+                        }
+                    }
+                    return true;
+                });
+                const allManagers = usersData.users.filter((u: any) => {
+                    if (u.role !== 'MANAGER') return false;
+                    if (u.resignationDate) {
+                        try {
+                            const resignDate = new Date(u.resignationDate);
+                            const viewDate = new Date(date);
+
+                            resignDate.setUTCHours(0, 0, 0, 0);
+                            viewDate.setUTCHours(0, 0, 0, 0);
+
+                            return viewDate.getTime() < resignDate.getTime();
+                        } catch (e) {
+                            return true;
+                        }
+                    }
+                    return true;
+                });
+
+                const assignments = rosterData.roster?.assignments || [];
+                const registeredWorkerIds = new Set(
+                    assignments.map((a: any) => a.userId).filter(Boolean)
+                );
+                const dailyWorkerNames = new Set(
+                    assignments.filter((a: any) => !a.userId && a.tempWorkerName).map((a: any) => a.tempWorkerName)
+                );
+                const workingCount = registeredWorkerIds.size + dailyWorkerNames.size;
+                const registeredWorkingCount = registeredWorkerIds.size;
+                const totalUsers = allWorkers.length + allManagers.length;
+
+                const vacationOrLeaveCount = attendanceDataRes.attendance
+                    ? attendanceDataRes.attendance.filter((a: any) => a.status === 'VACATION' || a.status === 'LEAVE_OF_ABSENCE').length
+                    : 0;
+
+                setStats({
+                    total: totalUsers,
+                    present: workingCount,
+                    leave: vacationOrLeaveCount,
+                    absent: Math.max(0, totalUsers - registeredWorkingCount - vacationOrLeaveCount)
+                });
+            } else {
+                setStats({ total: 0, present: 0, absent: 0, leave: 0 });
+            }
+
+            if (logsData.logs) {
+                setLogs(logsData.logs);
+            } else {
+                setLogs([]);
+            }
+
+        } catch (error) {
+            console.error('Failed to fetch data', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getWorkersFor = (teamName: string, position: string) => {
+        const positionMap: { [key: string]: string[] } = {
+            '포크': ['포크', '지게차'],
+            '검수': ['검수'],
+            '클램프': ['클램프'],
+            '상하역': ['상하역', '상하차']
+        };
+        const validPositions = positionMap[position] || [position];
+        return assignments.filter(a => a.team === teamName && validPositions.includes(a.position));
+    };
+
+    const getOPWorkers = () => {
+        return assignments.filter(a => a.position === OP_POSITION);
+    };
+
+    const getManagementWorkers = () => {
+        return assignments.filter(a => a.position === MANAGEMENT_POSITION);
+    };
+
+    const getCompanyStyle = (companyName: string = '') => {
+        if (!companyName) return COMPANY_STYLES[0];
+
+        // (주) 등의 접두사를 제외하고 매칭
+        const normalized = companyName.replace(/\(주\)|\(유\)|\(재\)|\(사\)/g, '').trim();
+
+        if (normalized === '보람관리') return COMPANY_STYLES[0];
+        if (normalized === '디티에스') return COMPANY_STYLES[2];
+        if (normalized === '신항만건기') return COMPANY_STYLES[1];
+        if (normalized === '건우') return COMPANY_STYLES[4];
+        if (normalized === '일용직') return { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' };
+
+        let hash = 0;
+        for (let i = 0; i < normalized.length; i++) {
+            hash = normalized.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        const index = Math.abs(hash) % COMPANY_STYLES.length;
+        return COMPANY_STYLES[index];
+    };
+
+    const getPositionHeaderColor = (position: string) => {
+        return POSITION_HEADER_COLORS[position] || 'text-slate-600';
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                    <p className="text-slate-600">데이터를 불러오는 중...</p>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+            {/* Header with App Info */}
+            <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center gap-3">
+                                <ClipboardList className="text-indigo-600 w-7 h-7 sm:w-8 sm:h-8" />
+                                웅동야간출하 근무현황
+                            </h1>
+                            <p className="text-sm text-slate-500 mt-1">실시간 근무 배치 현황 (읽기 전용)</p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            {/* Date Toggle Buttons */}
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setDate(today)}
+                                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${isToday
+                                        ? 'bg-indigo-600 text-white shadow-md'
+                                        : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    오늘
+                                </button>
+                                <button
+                                    onClick={() => setDate(tomorrow)}
+                                    className={`px-4 py-2 rounded-lg font-semibold text-sm transition-all ${isTomorrow
+                                        ? 'bg-indigo-600 text-white shadow-md'
+                                        : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-50'
+                                        }`}
+                                >
+                                    내일
+                                </button>
+                            </div>
+                            {/* Date Display */}
+                            <div className="flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-lg border border-indigo-200">
+                                <CalendarIcon size={16} className="text-indigo-600" />
+                                <span className="text-xs sm:text-sm font-semibold text-indigo-900">
+                                    {new Date(date).toLocaleDateString('ko-KR', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        weekday: 'long'
+                                    })}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+                {/* Summary Cards */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                    <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                        <span className="text-slate-500 text-xs sm:text-sm font-medium">총원</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">{stats.total}</span>
+                    </GlassCard>
+                    <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                        <span className="text-slate-500 text-xs sm:text-sm font-medium">결근/휴무</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-red-500 mt-2">{stats.absent}</span>
+                    </GlassCard>
+                    <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                        <span className="text-slate-500 text-xs sm:text-sm font-medium">휴가/휴직</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-purple-600 mt-2">{stats.leave}</span>
+                    </GlassCard>
+                    <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                        <span className="text-slate-500 text-xs sm:text-sm font-medium">근무</span>
+                        <span className="text-2xl sm:text-3xl font-bold text-emerald-600 mt-2">{stats.present}</span>
+                    </GlassCard>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    {/* Main Roster Table */}
+                    <div className="lg:col-span-3 space-y-6">
+                        <GlassCard className="overflow-hidden p-0 shadow-md">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-center border-collapse">
+                                    <thead>
+                                        <tr className="bg-slate-50 text-slate-600 border-b border-slate-200">
+                                            <th className="p-3 border-r border-slate-200 w-20 text-xs sm:text-sm font-semibold">구분</th>
+                                            {POSITIONS.map(pos => {
+                                                const headerColor = getPositionHeaderColor(pos);
+                                                return (
+                                                    <th key={pos} className={`p-3 border-r border-slate-200 last:border-r-0 text-xs sm:text-sm font-semibold ${headerColor}`}>{pos}</th>
+                                                );
+                                            })}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-200">
+                                        {teams.filter(t => t.name !== '추첨(랜덤)').map(team => {
+                                            const isBNI = team.name.includes('BNI');
+                                            const teamNameBg = isBNI
+                                                ? 'bg-gradient-to-r from-blue-50 to-sky-50'
+                                                : 'bg-gradient-to-r from-rose-50 to-pink-50';
+                                            const teamNameText = isBNI ? 'text-blue-700' : 'text-rose-700';
+                                            const teamNameBorder = isBNI ? 'border-l-4 border-blue-500' : 'border-l-4 border-rose-500';
+
+                                            return (
+                                                <tr key={team.id} className="hover:bg-slate-50 transition-colors">
+                                                    <td className={`p-3 font-bold ${teamNameBg} ${teamNameText} ${teamNameBorder} border-r border-slate-200 text-sm`}>
+                                                        {team.name}
+                                                    </td>
+                                                    {POSITIONS.map(pos => {
+                                                        const workers = getWorkersFor(team.name, pos);
+                                                        return (
+                                                            <td key={pos} className="p-2 border-r border-slate-200 last:border-r-0 align-middle">
+                                                                <div className="flex flex-wrap items-center gap-2 justify-center min-h-[60px]">
+                                                                    {workers.length > 0 ? (
+                                                                        workers.map((assignment, idx) => {
+                                                                            const companyName = assignment.user.company?.name;
+                                                                            const companyStyle = getCompanyStyle(companyName);
+                                                                            return (
+                                                                                <div
+                                                                                    key={idx}
+                                                                                    className={`flex flex-col justify-center items-center px-2 py-1.5 min-w-[72px] min-h-[54px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${companyStyle.bg} ${companyStyle.border}`}
+                                                                                >
+                                                                                    <span className={`text-xs font-medium ${companyStyle.text}`}>
+                                                                                        {assignment.user.name}
+                                                                                    </span>
+                                                                                    <span className={`text-[9px] ${companyStyle.subtext} leading-none mt-0.5`}>
+                                                                                        {companyName || '소속없음'}
+                                                                                    </span>
+                                                                                </div>
+                                                                            );
+                                                                        })
+                                                                    ) : (
+                                                                        <span className="text-slate-300 text-sm">-</span>
+                                                                    )}
+                                                                </div>
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </GlassCard>
+
+                        {/* Monthly Calendar Widget */}
+                        <div className="mt-6">
+                            <MonthlyCalendarWidget selectedDate={date} />
+                        </div>
+                    </div>
+
+                    {/* Side Panel */}
+                    <div className="space-y-6">
+                        {/* Management Section */}
+                        {getManagementWorkers().length > 0 && (
+                            <GlassCard className="overflow-hidden p-0 shadow-md">
+                                <div className="bg-blue-50 p-3 border-b border-blue-200">
+                                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                        <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                                        {MANAGEMENT_POSITION}
+                                    </h3>
+                                </div>
+                                <div className="p-4">
+                                    <div className="flex flex-wrap items-center gap-2 min-h-[40px]">
+                                        {getManagementWorkers().map((assignment, idx) => {
+                                            const companyName = assignment.user.company?.name;
+                                            const style = getCompanyStyle(companyName);
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className={`flex flex-col justify-center items-center px-2 py-1.5 min-w-[72px] min-h-[54px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${style.bg} ${style.border}`}
+                                                >
+                                                    <span className={`text-xs font-medium ${style.text}`}>
+                                                        {assignment.user.name}
+                                                    </span>
+                                                    <span className={`text-[9px] ${style.subtext} leading-none mt-0.5`}>
+                                                        {companyName || '소속없음'}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        )}
+
+                        {/* OP Section */}
+                        {getOPWorkers().length > 0 && (
+                            <GlassCard className="overflow-hidden p-0 shadow-md">
+                                <div className="bg-purple-50 p-3 border-b border-purple-200">
+                                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                        <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                                        {OP_POSITION}
+                                    </h3>
+                                </div>
+                                <div className="p-4">
+                                    <div className="flex flex-wrap items-center gap-2 min-h-[40px]">
+                                        {getOPWorkers().map((assignment, idx) => {
+                                            const companyName = assignment.user.company?.name;
+                                            const style = getCompanyStyle(companyName);
+                                            return (
+                                                <div
+                                                    key={idx}
+                                                    className={`flex flex-col justify-center items-center px-2 py-1.5 min-w-[72px] min-h-[54px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${style.bg} ${style.border}`}
+                                                >
+                                                    <span className={`text-xs font-medium ${style.text}`}>
+                                                        {assignment.user.name}
+                                                    </span>
+                                                    <span className={`text-[9px] ${style.subtext} leading-none mt-0.5`}>
+                                                        {companyName || '소속없음'}
+                                                    </span>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </GlassCard>
+                        )}
+
+                        {/* Attendance Status Section */}
+                        {(() => {
+                            const allAttendance = attendanceData.filter(a =>
+                                a.status === 'OFF_DAY' || a.status === 'ABSENT' || a.status === 'LATE' || a.status === 'EARLY_LEAVE' || a.status === 'LEAVE_OF_ABSENCE' || a.status === 'VACATION'
+                            );
+
+                            if (allAttendance.length === 0) return null;
+
+                            const getStatusLabel = (worker: any) => {
+                                if (worker.status === 'LEAVE_OF_ABSENCE') {
+                                    return worker.reason ? `휴직 (${worker.reason})` : '휴직';
+                                }
+                                if (worker.status === 'VACATION') {
+                                    return worker.reason ? `휴가 (${worker.reason})` : '휴가';
+                                }
+                                switch (worker.status) {
+                                    case 'OFF_DAY': return '휴무';
+                                    case 'ABSENT': return '결근';
+                                    case 'LATE': return '지각';
+                                    case 'EARLY_LEAVE': return '조퇴';
+                                    default: return '';
+                                }
+                            };
+
+                            const getStatusStyle = (status: string) => {
+                                switch (status) {
+                                    case 'OFF_DAY': return 'bg-purple-100 text-purple-700 border-purple-300';
+                                    case 'ABSENT': return 'bg-red-100 text-red-700 border-red-300';
+                                    case 'LEAVE_OF_ABSENCE': return 'bg-indigo-100 text-indigo-700 border-indigo-300';
+                                    case 'VACATION': return 'bg-teal-100 text-teal-700 border-teal-300';
+                                    case 'LATE': return 'bg-orange-100 text-orange-700 border-orange-300';
+                                    case 'EARLY_LEAVE': return 'bg-yellow-100 text-yellow-700 border-yellow-300';
+                                    default: return 'bg-gray-100 text-gray-700 border-gray-300';
+                                }
+                            };
+
+                            return (
+                                <GlassCard className="overflow-hidden p-0 shadow-md">
+                                    <div className="bg-teal-50 p-3 border-b border-teal-200">
+                                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                            <div className="w-1 h-4 bg-teal-500 rounded-full"></div>
+                                            근태 현황
+                                        </h3>
+                                    </div>
+                                    <div className="p-4">
+                                        <div className="flex flex-wrap items-center gap-2 min-h-[40px]">
+                                            {allAttendance.map((worker, idx) => {
+                                                const companyName = worker.user?.company?.name;
+                                                const style = getCompanyStyle(companyName);
+                                                const statusLabel = getStatusLabel(worker);
+                                                const statusStyle = getStatusStyle(worker.status);
+                                                return (
+                                                    <div
+                                                        key={idx}
+                                                        className={`relative flex flex-col justify-center items-center px-2 py-1.5 min-w-[72px] min-h-[54px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${style.bg} ${style.border}`}
+                                                    >
+                                                        <span className={`absolute -top-1.5 -right-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded-full border ${statusStyle}`}>
+                                                            {statusLabel}
+                                                        </span>
+                                                        <span className={`text-xs font-medium ${style.text}`}>
+                                                            {worker.user?.name}
+                                                        </span>
+                                                        <span className={`text-[9px] ${style.subtext} leading-none mt-0.5`}>
+                                                            {companyName || '소속없음'}
+                                                        </span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                </GlassCard>
+                            );
+                        })()}
+
+                        {/* Special Teams */}
+                        {(paletteTeam || cleaningTeam) && (
+                            <GlassCard className="bg-slate-50 border-slate-200 shadow-md">
+                                <h3 className="text-slate-700 font-bold mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
+                                    정리담당
+                                </h3>
+                                <div className="space-y-3">
+                                    {paletteTeam && (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                                            <span className="text-sm font-medium text-slate-600">파레트 정리조:</span>
+                                            <span className="text-sm font-semibold text-slate-900">{paletteTeam.name === '추첨(랜덤)' ? '추첨' : paletteTeam.name}</span>
+                                        </div>
+                                    )}
+                                    {cleaningTeam && (
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                            <span className="text-sm font-medium text-slate-600">청소조:</span>
+                                            <span className="text-sm font-semibold text-slate-900">{cleaningTeam.name === '추첨(랜덤)' ? '추첨' : cleaningTeam.name}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </GlassCard>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+

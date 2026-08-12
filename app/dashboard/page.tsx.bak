@@ -72,37 +72,49 @@ export default function DashboardPage() {
     const user = useUser();
     const isManager = user?.role === 'MANAGER';
 
+    const [hasMounted, setHasMounted] = useState(false);
     const [date, setDate] = useState(() => {
-        const now = new Date();
-        const offset = now.getTimezoneOffset() * 60000;
-        return new Date(now.getTime() - offset).toISOString().split('T')[0];
+        // Use a deterministic date for SSR and first render
+        return new Date().toISOString().split('T')[0];
     });
     const [assignments, setAssignments] = useState<Assignment[]>([]);
     const [teams, setTeams] = useState<Team[]>([]);
     const [logs, setLogs] = useState<DailyLog[]>([]);
     const [leaves, setLeaves] = useState<LeaveRequest[]>([]);
-    const [stats, setStats] = useState({ total: 0, present: 0, absent: 0 });
+    const [stats, setStats] = useState({ total: 0, present: 0, absent: 0, leave: 0 });
     const [loading, setLoading] = useState(true);
     const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
-    const [lastUpdate, setLastUpdate] = useState(Date.now()); // Added for refreshing calendar
+    const [lastUpdate, setLastUpdate] = useState(0); // Initialize with 0 for hydration stability
     const [paletteTeam, setPaletteTeam] = useState<{ id: string; name: string } | null>(null);
     const [cleaningTeam, setCleaningTeam] = useState<{ id: string; name: string } | null>(null);
     const [attendanceData, setAttendanceData] = useState<any[]>([]);
+    const [popups, setPopups] = useState<any[]>([]);
 
     useEffect(() => {
-        fetchData();
-    }, [date]);
+        setHasMounted(true);
+        // Correct date to KST after mount if needed, or just keep the current date
+        const now = new Date();
+        const kstDate = new Date(now.getTime() + (9 * 60 * 60 * 1000));
+        setDate(kstDate.toISOString().split('T')[0]);
+    }, []);
+
+    useEffect(() => {
+        if (hasMounted) {
+            fetchData();
+        }
+    }, [date, hasMounted]);
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [rosterRes, teamsRes, usersRes, logsRes, leavesRes, attendanceRes] = await Promise.all([
+            const [rosterRes, teamsRes, usersRes, logsRes, leavesRes, attendanceRes, popupsRes] = await Promise.all([
                 fetch(`/api/roster?date=${date}`),
                 fetch('/api/teams'),
                 fetch('/api/users?includeResigned=true'),
                 fetch(`/api/logs`), // Fetch recent history
                 fetch(`/api/leaves`),
-                fetch(`/api/attendance?date=${date}`)
+                fetch(`/api/attendance?date=${date}`),
+                fetch(`/api/schedules/active-popups?date=${date}`)
             ]);
 
             const rosterData = await rosterRes.json();
@@ -111,6 +123,13 @@ export default function DashboardPage() {
             const logsData = await logsRes.json();
             const leavesData = await leavesRes.json();
             const attendanceDataRes = await attendanceRes.json();
+
+            if (popupsRes.ok) {
+                const popupsData = await popupsRes.json();
+                setPopups(popupsData);
+            } else {
+                setPopups([]);
+            }
 
             if (leavesData.leaves) {
                 setLeaves(leavesData.leaves);
@@ -183,11 +202,19 @@ export default function DashboardPage() {
                     return true;
                 });
 
-                const assignedWorkerIds = rosterData.roster?.assignments
-                    ? new Set(rosterData.roster.assignments.map((a: any) => a.userId))
-                    : new Set();
+                const assignments = rosterData.roster?.assignments || [];
+                const registeredWorkerIds = new Set(
+                    assignments.map((a: any) => a.userId).filter(Boolean)
+                );
+                const dailyWorkerNames = new Set(
+                    assignments.filter((a: any) => !a.userId && a.tempWorkerName).map((a: any) => a.tempWorkerName)
+                );
+                const workingCount = registeredWorkerIds.size + dailyWorkerNames.size;
+                const registeredWorkingCount = registeredWorkerIds.size;
 
-                const workingCount = assignedWorkerIds.size;
+                const vacationOrLeaveCount = attendanceDataRes.attendance
+                    ? attendanceDataRes.attendance.filter((a: any) => a.status === 'VACATION' || a.status === 'LEAVE_OF_ABSENCE').length
+                    : 0;
 
                 // Total includes both workers and managers
                 const totalUsers = allWorkers.length + allManagers.length;
@@ -195,11 +222,12 @@ export default function DashboardPage() {
                 setStats({
                     total: totalUsers,
                     present: workingCount,
-                    absent: Math.max(0, totalUsers - workingCount)
+                    leave: vacationOrLeaveCount,
+                    absent: Math.max(0, totalUsers - registeredWorkingCount - vacationOrLeaveCount)
                 });
             } else {
                 // If users data is not available, set default stats
-                setStats({ total: 0, present: 0, absent: 0 });
+                setStats({ total: 0, present: 0, absent: 0, leave: 0 });
             }
 
             if (logsData.logs) {
@@ -400,15 +428,20 @@ export default function DashboardPage() {
     const getCompanyStyle = (companyName: string = '') => {
         if (!companyName) return COMPANY_STYLES[0];
 
+        // (주) 등의 접두사를 제외하고 매칭
+        const normalized = companyName.replace(/\(주\)|\(유\)|\(재\)|\(사\)/g, '').trim();
+
         // Explicit mapping for known companies to ensure distinction
-        if (companyName === '보람관리') return COMPANY_STYLES[0]; // Indigo
-        if (companyName === '디티에스') return COMPANY_STYLES[2]; // Amber (changed from Emerald to ensure distinction)
-        if (companyName === '신항만건기') return COMPANY_STYLES[1]; // Emerald
+        if (normalized === '보람관리') return COMPANY_STYLES[0]; // Indigo
+        if (normalized === '디티에스') return COMPANY_STYLES[2]; // Amber
+        if (normalized === '신항만건기') return COMPANY_STYLES[1]; // Emerald
+        if (normalized === '건우') return COMPANY_STYLES[4]; // Cyan
+        if (normalized === '일용직') return { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' };
 
         // Fallback hash for others
         let hash = 0;
-        for (let i = 0; i < companyName.length; i++) {
-            hash = companyName.charCodeAt(i) + ((hash << 5) - hash);
+        for (let i = 0; i < normalized.length; i++) {
+            hash = normalized.charCodeAt(i) + ((hash << 5) - hash);
         }
         const index = Math.abs(hash) % COMPANY_STYLES.length;
         return COMPANY_STYLES[index];
@@ -423,6 +456,10 @@ export default function DashboardPage() {
         setIsNoteModalOpen(true);
     };
 
+    if (!hasMounted) {
+        return <DashboardSkeleton />;
+    }
+
     return (
         <div className="space-y-4 sm:space-y-6 p-4 sm:p-0">
             {/* Header & Stats */}
@@ -436,8 +473,17 @@ export default function DashboardPage() {
                 </div>
             </div>
 
+            {/* Date Navigator */}
+            <DateNavigator
+                currentDate={date}
+                onDateChange={setDate}
+                className="bg-white p-2 rounded-xl border border-slate-200 shadow-sm"
+                fontSizeClass="text-sm lg:text-base"
+            />
+
+
             {/* Summary Cards - Mobile First */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 md:gap-6 mb-4 sm:mb-6">
                 <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">총원</span>
                     <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-1">{stats.total}</span>
@@ -447,6 +493,10 @@ export default function DashboardPage() {
                     <span className="text-xl sm:text-2xl font-bold text-red-500 mt-1">{stats.absent}</span>
                 </GlassCard>
                 <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
+                    <span className="text-slate-600 text-xs sm:text-sm font-semibold">휴가/휴직</span>
+                    <span className="text-xl sm:text-2xl font-bold text-purple-600 mt-1">{stats.leave}</span>
+                </GlassCard>
+                <GlassCard className="p-3 sm:p-4 flex flex-col items-center justify-center bg-white border-slate-200 shadow-sm">
                     <span className="text-slate-600 text-xs sm:text-sm font-semibold">근무</span>
                     <span className="text-xl sm:text-2xl font-bold text-emerald-600 mt-1">{stats.present}</span>
                 </GlassCard>
@@ -454,7 +504,28 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
                 {/* Main Roster Table */}
-                <div className="lg:col-span-3">
+                <div className="lg:col-span-3 space-y-4 lg:space-y-6">
+                    {/* Notice Board Area */}
+                    {popups.length > 0 && (
+                        <div className="flex flex-col gap-3">
+                            {popups.map((popup) => (
+                                <GlassCard key={popup.id} className="p-4 sm:p-5 border-l-4 border-indigo-500 bg-gradient-to-r from-indigo-50/80 to-white shadow-sm hover:shadow transition-shadow">
+                                    <div className="flex items-start gap-3 sm:gap-4">
+                                        <div className="mt-0.5 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 shrink-0">
+                                            <span className="text-sm">📢</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h3 className="text-[15px] sm:text-base font-bold text-slate-800 leading-snug tracking-tight">{popup.title}</h3>
+                                            {popup.description && (
+                                                <p className="text-[13px] sm:text-sm text-slate-600 mt-1.5 whitespace-pre-wrap leading-relaxed">{popup.description}</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </GlassCard>
+                            ))}
+                        </div>
+                    )}
+
                     <GlassCard className="hidden md:block overflow-hidden p-0 shadow-md">
                         <div className="overflow-x-auto">
                             <table className="w-full text-center border-collapse">
@@ -470,7 +541,7 @@ export default function DashboardPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y-2 divide-slate-300">
-                                    {teams.map((team, index) => {
+                                    {teams.filter(t => t.name !== '추첨(랜덤)').map((team, index) => {
                                         const isBNI = team.name.includes('BNI');
 
                                         // 모던하고 세련된 색상 팔레트
@@ -527,7 +598,7 @@ export default function DashboardPage() {
 
                     {/* Mobile Roster View */}
                     <div className="md:hidden space-y-4 pt-4">
-                        {teams.map((team) => {
+                        {teams.filter(t => t.name !== '추첨(랜덤)').map((team) => {
                             const isBNI = team.name.includes('BNI');
                             const teamHeaderBg = isBNI ? 'bg-blue-50' : 'bg-rose-50';
                             const teamHeaderText = isBNI ? 'text-blue-700' : 'text-rose-700';
@@ -671,8 +742,10 @@ export default function DashboardPage() {
                         const absentWorkers = attendanceData.filter(a => a.status === 'ABSENT');
                         const lateWorkers = attendanceData.filter(a => a.status === 'LATE');
                         const earlyLeaveWorkers = attendanceData.filter(a => a.status === 'EARLY_LEAVE');
+                        const leaveOfAbsenceWorkers = attendanceData.filter(a => a.status === 'LEAVE_OF_ABSENCE');
+                        const vacationWorkers = attendanceData.filter(a => a.status === 'VACATION');
 
-                        const hasAnyStatus = offDayWorkers.length > 0 || absentWorkers.length > 0 || lateWorkers.length > 0 || earlyLeaveWorkers.length > 0;
+                        const hasAnyStatus = offDayWorkers.length > 0 || absentWorkers.length > 0 || lateWorkers.length > 0 || earlyLeaveWorkers.length > 0 || leaveOfAbsenceWorkers.length > 0 || vacationWorkers.length > 0;
 
                         if (!hasAnyStatus) return null;
 
@@ -685,6 +758,64 @@ export default function DashboardPage() {
                                     </h3>
                                 </div>
                                 <div className="p-2.5 space-y-2.5">
+                                    {leaveOfAbsenceWorkers.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center gap-1.5 mb-1.5">
+                                                <span className="text-xs font-semibold text-purple-800">휴직</span>
+                                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-100 text-purple-700">{leaveOfAbsenceWorkers.length}</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {leaveOfAbsenceWorkers.map((worker, idx) => {
+                                                    const companyName = worker.user?.company?.name;
+                                                    const style = getCompanyStyle(companyName);
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            className={`flex flex-col items-center px-2 py-1 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 ${style.bg} ${style.border}`}
+                                                            title={worker.reason || undefined}
+                                                        >
+                                                            <span className="text-xs font-medium text-slate-900">
+                                                                {worker.user?.name}{worker.reason ? ` (${worker.reason})` : ''}
+                                                            </span>
+                                                            <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
+                                                                {companyName || '소속없음'}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {vacationWorkers.length > 0 && (
+                                        <div>
+                                            <div className="flex items-center gap-1.5 mb-1.5">
+                                                <span className="text-xs font-semibold text-teal-800">휴가</span>
+                                                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-700">{vacationWorkers.length}</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {vacationWorkers.map((worker, idx) => {
+                                                    const companyName = worker.user?.company?.name;
+                                                    const style = getCompanyStyle(companyName);
+                                                    return (
+                                                        <div
+                                                            key={idx}
+                                                            className={`flex flex-col items-center px-2 py-1 rounded-lg border-2 shadow-sm hover:shadow-md transition-all duration-200 ${style.bg} ${style.border}`}
+                                                            title={worker.reason || undefined}
+                                                        >
+                                                            <span className="text-xs font-medium text-slate-900">
+                                                                {worker.user?.name}{worker.reason ? ` (${worker.reason})` : ''}
+                                                            </span>
+                                                            <span className={`text-[9px] font-medium ${style.subtext} leading-none mt-0.5`}>
+                                                                {companyName || '소속없음'}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {offDayWorkers.length > 0 && (
                                         <div>
                                             <div className="flex items-center gap-1.5 mb-1.5">
@@ -811,18 +942,18 @@ export default function DashboardPage() {
                                 </h3>
                             </div>
                             <div className="p-2.5 space-y-2">
-                                {paletteTeam && (
-                                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
-                                        <span className="text-xs font-medium text-slate-600">잔바리:</span>
-                                        <span className="text-xs font-bold text-slate-900">{paletteTeam.name}</span>
-                                    </div>
-                                )}
                                 {cleaningTeam && (
                                     <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                                        <span className="text-xs font-medium text-slate-600">청소(잔바리):</span>
+                                        <span className="text-xs font-bold text-slate-900">{cleaningTeam.name === '추첨(랜덤)' ? '추첨' : cleaningTeam.name}</span>
+                                    </div>
+                                )}
+                                {paletteTeam && (
+                                    <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-3 py-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-                                        <span className="text-xs font-medium text-slate-600">파레트:</span>
-                                        <span className="text-xs font-bold text-slate-900">{cleaningTeam.name}</span>
+                                        <span className="text-xs font-medium text-slate-600">파레트 정리:</span>
+                                        <span className="text-xs font-bold text-slate-900">{paletteTeam.name === '추첨(랜덤)' ? '추첨' : paletteTeam.name}</span>
                                     </div>
                                 )}
                             </div>

@@ -756,38 +756,39 @@ export default function RosterManagementPage() {
                         </GlassCard>
                     )}
 
-                    {/* Management Section - Displayed before OP */}
-                    <GlassCard className="overflow-hidden bg-white border-slate-200">
-                        <div className="bg-slate-50 p-3 border-b border-slate-200 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
-                                {MANAGEMENT_POSITION}
-                            </h3>
-                        </div>
-                        <div className="p-4 space-y-4">
-                            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                                <div className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wider">{MANAGEMENT_POSITION}</div>
-                                <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
-                                    {getWorkersInSlot('', MANAGEMENT_POSITION).map(assignment => {
-                                        const isDailyWorker = !assignment.userId;
-                                        const name = isDailyWorker ? assignment.tempWorkerName : assignment.user?.name;
-                                        const companyName = isDailyWorker ? '일용직' : assignment.user?.company?.name;
-                                        const style = isDailyWorker 
-                                            ? { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' }
-                                            : getCompanyStyle(companyName);
-                                        return (
-                                            <div
-                                                key={assignment.userId || assignment.tempWorkerName || ''}
-                                                className={`group relative flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border ${style.bg} ${style.border}`}
-                                            >
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className={`text-xs md:text-sm font-medium ${style.text} truncate max-w-[80px] md:max-w-none`}>
-                                                        {name}
-                                                    </span>
-                                                    <span className={`text-[9px] md:text-[10px] ${style.subtext} leading-none truncate max-w-[80px] md:max-w-none`}>
-                                                        {isDailyWorker ? '일용직' : (assignment.user?.role === 'MANAGER' ? '관리자' : (companyName || '소속없음'))}
-                                                    </span>
-                                                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Management Section - Displayed before OP */}
+                        <GlassCard className="overflow-hidden bg-white border-slate-200">
+                            <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 flex justify-between items-center">
+                                <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+                                    <div className="w-1 h-3.5 bg-blue-500 rounded-full"></div>
+                                    {MANAGEMENT_POSITION}
+                                </h3>
+                            </div>
+                            <div className="p-2.5 md:p-3 space-y-3">
+                                <div className="bg-slate-50 rounded-xl p-2 md:p-2.5 border border-slate-200">
+                                    <div className="text-[10px] md:text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">{MANAGEMENT_POSITION}</div>
+                                    <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
+                                        {getWorkersInSlot('', MANAGEMENT_POSITION).map(assignment => {
+                                            const isDailyWorker = !assignment.userId;
+                                            const name = isDailyWorker ? assignment.tempWorkerName : assignment.user?.name;
+                                            const companyName = isDailyWorker ? '일용직' : assignment.user?.company?.name;
+                                            const style = isDailyWorker 
+                                                ? { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' }
+                                                : getCompanyStyle(companyName);
+                                            return (
+                                                <div
+                                                    key={assignment.userId || assignment.tempWorkerName || ''}
+                                                    className={`group relative flex items-center gap-1.5 md:gap-2 px-2 md:px-2.5 py-1 md:py-1 rounded-lg border ${style.bg} ${style.border}`}
+                                                >
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className={`text-xs md:text-sm font-medium ${style.text} truncate max-w-[80px] md:max-w-none`}>
+                                                            {name}
+                                                        </span>
+                                                        <span className={`text-[9px] md:text-[10px] ${style.subtext} leading-none truncate max-w-[80px] md:max-w-none`}>
+                                                            {isDailyWorker ? '일용직' : (assignment.user?.role === 'MANAGER' ? '관리자' : (companyName || '소속없음'))}
+                                                        </span>
+                                                    </div>
 
                                                 {isManager && (
                                                     <button
@@ -804,7 +805,7 @@ export default function RosterManagementPage() {
 
                                     {isManager && (
                                         <select
-                                            className="bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 px-1.5 md:px-2 py-1 md:py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 w-auto"
+                                            className="bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 px-1.5 md:px-2 py-1 md:py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 w-auto"
                                             onChange={(e) => {
                                                 if (e.target.value === '__custom__') {
                                                     const name = prompt('일용직 근무자 이름을 입력하세요:');
@@ -838,40 +839,40 @@ export default function RosterManagementPage() {
                                 </div>
                             </div>
                         </div>
-                    </GlassCard>
+                        </GlassCard>
 
-                    {/* OP Section - Displayed before all teams */}
-                    <GlassCard className="overflow-hidden bg-white border-slate-200">
-                        <div className="bg-slate-50 p-3 border-b border-slate-200 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
-                                {OP_POSITION}
-                            </h3>
-                        </div>
-                        <div className="p-4 space-y-4">
-                            <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
-                                <div className="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wider">{OP_POSITION}</div>
-                                <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
-                                    {getWorkersInSlot('', OP_POSITION).map(assignment => {
-                                        const isDailyWorker = !assignment.userId;
-                                        const name = isDailyWorker ? assignment.tempWorkerName : assignment.user?.name;
-                                        const companyName = isDailyWorker ? '일용직' : assignment.user?.company?.name;
-                                        const style = isDailyWorker 
-                                            ? { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' }
-                                            : getCompanyStyle(companyName);
-                                        return (
-                                            <div
-                                                key={assignment.userId || assignment.tempWorkerName || ''}
-                                                className={`group relative flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border ${style.bg} ${style.border}`}
-                                            >
-                                                <div className="flex flex-col min-w-0">
-                                                    <span className={`text-xs md:text-sm font-medium ${style.text} truncate max-w-[80px] md:max-w-none`}>
-                                                        {name}
-                                                    </span>
-                                                    <span className={`text-[9px] md:text-[10px] ${style.subtext} leading-none truncate max-w-[80px] md:max-w-none`}>
-                                                        {isDailyWorker ? '일용직' : (assignment.user?.role === 'MANAGER' ? '관리자' : (companyName || '소속없음'))}
-                                                    </span>
-                                                </div>
+                        {/* OP Section - Displayed before all teams */}
+                        <GlassCard className="overflow-hidden bg-white border-slate-200">
+                            <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 flex justify-between items-center">
+                                <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+                                    <div className="w-1 h-3.5 bg-purple-500 rounded-full"></div>
+                                    {OP_POSITION}
+                                </h3>
+                            </div>
+                            <div className="p-2.5 md:p-3 space-y-3">
+                                <div className="bg-slate-50 rounded-xl p-2 md:p-2.5 border border-slate-200">
+                                    <div className="text-[10px] md:text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">{OP_POSITION}</div>
+                                    <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
+                                        {getWorkersInSlot('', OP_POSITION).map(assignment => {
+                                            const isDailyWorker = !assignment.userId;
+                                            const name = isDailyWorker ? assignment.tempWorkerName : assignment.user?.name;
+                                            const companyName = isDailyWorker ? '일용직' : assignment.user?.company?.name;
+                                            const style = isDailyWorker 
+                                                ? { bg: 'bg-slate-100', text: 'text-slate-700', border: 'border-slate-300', subtext: 'text-slate-500' }
+                                                : getCompanyStyle(companyName);
+                                            return (
+                                                <div
+                                                    key={assignment.userId || assignment.tempWorkerName || ''}
+                                                    className={`group relative flex items-center gap-1.5 md:gap-2 px-2 md:px-2.5 py-1 md:py-1 rounded-lg border ${style.bg} ${style.border}`}
+                                                >
+                                                    <div className="flex flex-col min-w-0">
+                                                        <span className={`text-xs md:text-sm font-medium ${style.text} truncate max-w-[80px] md:max-w-none`}>
+                                                            {name}
+                                                        </span>
+                                                        <span className={`text-[9px] md:text-[10px] ${style.subtext} leading-none truncate max-w-[80px] md:max-w-none`}>
+                                                            {isDailyWorker ? '일용직' : (assignment.user?.role === 'MANAGER' ? '관리자' : (companyName || '소속없음'))}
+                                                        </span>
+                                                    </div>
 
                                                 {isManager && (
                                                     <button
@@ -888,7 +889,7 @@ export default function RosterManagementPage() {
 
                                     {isManager && (
                                         <select
-                                            className="bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 px-1.5 md:px-2 py-1 md:py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 w-auto"
+                                            className="bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 px-1.5 md:px-2 py-1 md:py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 w-auto"
                                             onChange={(e) => {
                                                 if (e.target.value === '__custom__') {
                                                     const name = prompt('일용직 근무자 이름을 입력하세요:');
@@ -924,15 +925,16 @@ export default function RosterManagementPage() {
 
                             {/* Cleaning Duty Assignment (Compact) */}
 
-                        </div>
-                    </GlassCard>
+                            </div>
+                        </GlassCard>
+                    </div>
 
                     {/* Teams Section */}
                     {teams.filter(t => t.name !== '추첨(랜덤)').map(team => (
                         <GlassCard key={team.id} className="overflow-hidden bg-white border-slate-200">
-                            <div className="bg-slate-50 p-3 border-b border-slate-200 flex justify-between items-center">
-                                <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                    <div className={`w-1 h-4 rounded-full ${team.name.includes('1조') || team.name.includes('BNI') ? 'bg-blue-500' : 'bg-red-500'}`}></div>
+                            <div className="bg-slate-50 px-3 py-2 border-b border-slate-200 flex justify-between items-center">
+                                <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+                                    <div className={`w-1 h-3.5 rounded-full ${team.name.includes('1조') || team.name.includes('BNI') ? 'bg-blue-500' : 'bg-red-500'}`}></div>
                                     {team.name}
                                 </h3>
                                 {isManager && (
@@ -948,10 +950,10 @@ export default function RosterManagementPage() {
                                     </button>
                                 )}
                             </div>
-                            <div className="p-2 md:p-4 grid grid-cols-2 md:grid-cols-2 gap-2 md:gap-4">
+                            <div className="p-2 md:p-2.5 grid grid-cols-2 gap-2 md:gap-3">
                                 {POSITIONS.map(pos => (
-                                    <div key={pos} className="bg-slate-50 rounded-xl p-2 md:p-3 border border-slate-200">
-                                        <div className="text-[10px] md:text-xs text-slate-500 mb-1.5 md:mb-2 font-medium uppercase tracking-wider">{pos}</div>
+                                    <div key={pos} className="bg-slate-50 rounded-xl p-2 md:p-2 border border-slate-200">
+                                        <div className="text-[10px] md:text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wider">{pos}</div>
                                         <div className="flex flex-wrap gap-1.5 md:gap-2 min-h-[30px] md:min-h-[40px]">
                                             {getWorkersInSlot(team.name, pos).map(assignment => {
                                                 const isDailyWorker = !assignment.userId;
@@ -963,7 +965,7 @@ export default function RosterManagementPage() {
                                                 return (
                                                     <div
                                                         key={assignment.userId || assignment.tempWorkerName || ''}
-                                                        className={`group relative flex items-center gap-1.5 md:gap-2 px-2 md:px-3 py-1 md:py-1.5 rounded-lg border ${style.bg} ${style.border}`}
+                                                        className={`group relative flex items-center gap-1.5 md:gap-2 px-2 md:px-2.5 py-1 md:py-1 rounded-lg border ${style.bg} ${style.border}`}
                                                     >
                                                         <div className="flex flex-col min-w-0">
                                                             <span className={`text-xs md:text-sm font-medium ${style.text} truncate max-w-[60px] md:max-w-none`}>
@@ -989,7 +991,7 @@ export default function RosterManagementPage() {
 
                                             {isManager && (
                                                 <select
-                                                    className="bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 px-1.5 md:px-2 py-1 md:py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500 w-full"
+                                                    className="bg-white border border-slate-200 rounded-lg text-xs md:text-sm text-slate-600 px-1.5 md:px-2 py-1 md:py-1 focus:outline-none focus:ring-1 focus:ring-blue-500 w-full"
                                                     onChange={(e) => {
                                                         if (e.target.value === '__custom__') {
                                                             const name = prompt('일용직 근무자 이름을 입력하세요:');

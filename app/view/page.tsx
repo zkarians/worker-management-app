@@ -320,28 +320,28 @@ export default function ViewPage() {
                 </div>
             </div>
 
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-3 sm:space-y-4">
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-                    <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
+                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
                         <span className="text-slate-500 text-xs sm:text-sm font-medium">총원</span>
-                        <span className="text-2xl sm:text-3xl font-bold text-slate-900 mt-2">{stats.total}</span>
+                        <span className="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5">{stats.total}</span>
                     </GlassCard>
-                    <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
                         <span className="text-slate-500 text-xs sm:text-sm font-medium">결근/휴무</span>
-                        <span className="text-2xl sm:text-3xl font-bold text-red-500 mt-2">{stats.absent}</span>
+                        <span className="text-xl sm:text-2xl font-bold text-red-500 mt-0.5">{stats.absent}</span>
                     </GlassCard>
-                    <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
                         <span className="text-slate-500 text-xs sm:text-sm font-medium">휴가/휴직</span>
-                        <span className="text-2xl sm:text-3xl font-bold text-purple-600 mt-2">{stats.leave}</span>
+                        <span className="text-xl sm:text-2xl font-bold text-purple-600 mt-0.5">{stats.leave}</span>
                     </GlassCard>
-                    <GlassCard className="p-4 sm:p-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
+                    <GlassCard className="p-3 sm:py-3 sm:px-6 flex flex-col items-center justify-center bg-white border-slate-200 shadow-md">
                         <span className="text-slate-500 text-xs sm:text-sm font-medium">근무</span>
-                        <span className="text-2xl sm:text-3xl font-bold text-emerald-600 mt-2">{stats.present}</span>
+                        <span className="text-xl sm:text-2xl font-bold text-emerald-600 mt-0.5">{stats.present}</span>
                     </GlassCard>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:gap-6">
                     {/* Main Roster Table */}
                     <div className="lg:col-span-3 space-y-6">
                         <GlassCard className="overflow-hidden p-0 shadow-md">
@@ -417,25 +417,25 @@ export default function ViewPage() {
                     </div>
 
                     {/* Side Panel */}
-                    <div className="space-y-6">
+                    <div className="space-y-3 lg:space-y-4">
                         {/* Management Section */}
                         {getManagementWorkers().length > 0 && (
                             <GlassCard className="overflow-hidden p-0 shadow-md">
-                                <div className="bg-blue-50 p-3 border-b border-blue-200">
-                                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                        <div className="w-1 h-4 bg-blue-500 rounded-full"></div>
+                                <div className="bg-blue-50 px-3 py-2 border-b border-blue-200">
+                                    <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+                                        <div className="w-1 h-3.5 bg-blue-500 rounded-full"></div>
                                         {MANAGEMENT_POSITION}
                                     </h3>
                                 </div>
-                                <div className="p-4">
-                                    <div className="flex flex-wrap items-center gap-2 min-h-[40px]">
+                                <div className="p-3">
+                                    <div className="flex flex-wrap items-center gap-2 min-h-[30px]">
                                         {getManagementWorkers().map((assignment, idx) => {
                                             const companyName = assignment.user.company?.name;
                                             const style = getCompanyStyle(companyName);
                                             return (
                                                 <div
                                                     key={idx}
-                                                    className={`flex flex-col justify-center items-center px-2 py-1.5 min-w-[72px] min-h-[54px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${style.bg} ${style.border}`}
+                                                    className={`flex flex-col justify-center items-center px-2 py-1 min-w-[64px] min-h-[48px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${style.bg} ${style.border}`}
                                                 >
                                                     <span className={`text-xs font-medium ${style.text}`}>
                                                         {assignment.user.name}
@@ -454,21 +454,21 @@ export default function ViewPage() {
                         {/* OP Section */}
                         {getOPWorkers().length > 0 && (
                             <GlassCard className="overflow-hidden p-0 shadow-md">
-                                <div className="bg-purple-50 p-3 border-b border-purple-200">
-                                    <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                        <div className="w-1 h-4 bg-purple-500 rounded-full"></div>
+                                <div className="bg-purple-50 px-3 py-2 border-b border-purple-200">
+                                    <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+                                        <div className="w-1 h-3.5 bg-purple-500 rounded-full"></div>
                                         {OP_POSITION}
                                     </h3>
                                 </div>
-                                <div className="p-4">
-                                    <div className="flex flex-wrap items-center gap-2 min-h-[40px]">
+                                <div className="p-3">
+                                    <div className="flex flex-wrap items-center gap-2 min-h-[30px]">
                                         {getOPWorkers().map((assignment, idx) => {
                                             const companyName = assignment.user.company?.name;
                                             const style = getCompanyStyle(companyName);
                                             return (
                                                 <div
                                                     key={idx}
-                                                    className={`flex flex-col justify-center items-center px-2 py-1.5 min-w-[72px] min-h-[54px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${style.bg} ${style.border}`}
+                                                    className={`flex flex-col justify-center items-center px-2 py-1 min-w-[64px] min-h-[48px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${style.bg} ${style.border}`}
                                                 >
                                                     <span className={`text-xs font-medium ${style.text}`}>
                                                         {assignment.user.name}
@@ -522,14 +522,14 @@ export default function ViewPage() {
 
                             return (
                                 <GlassCard className="overflow-hidden p-0 shadow-md">
-                                    <div className="bg-teal-50 p-3 border-b border-teal-200">
-                                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                            <div className="w-1 h-4 bg-teal-500 rounded-full"></div>
+                                    <div className="bg-teal-50 px-3 py-2 border-b border-teal-200">
+                                        <h3 className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+                                            <div className="w-1 h-3.5 bg-teal-500 rounded-full"></div>
                                             근태 현황
                                         </h3>
                                     </div>
-                                    <div className="p-4">
-                                        <div className="flex flex-wrap items-center gap-2 min-h-[40px]">
+                                    <div className="p-3">
+                                        <div className="flex flex-wrap items-center gap-2 min-h-[30px]">
                                             {allAttendance.map((worker, idx) => {
                                                 const companyName = worker.user?.company?.name;
                                                 const style = getCompanyStyle(companyName);
@@ -538,7 +538,7 @@ export default function ViewPage() {
                                                 return (
                                                     <div
                                                         key={idx}
-                                                        className={`relative flex flex-col justify-center items-center px-2 py-1.5 min-w-[72px] min-h-[54px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${style.bg} ${style.border}`}
+                                                        className={`relative flex flex-col justify-center items-center px-2 py-1 min-w-[64px] min-h-[48px] w-full sm:w-auto rounded-lg border shadow-sm text-center ${style.bg} ${style.border}`}
                                                     >
                                                         <span className={`absolute -top-1.5 -right-1.5 text-[8px] font-bold px-1.5 py-0.5 rounded-full border ${statusStyle}`}>
                                                             {statusLabel}
@@ -560,11 +560,11 @@ export default function ViewPage() {
 
                         {/* Special Teams */}
                         {(paletteTeam || cleaningTeam) && (
-                            <GlassCard className="bg-slate-50 border-slate-200 shadow-md">
-                                <h3 className="text-slate-700 font-bold mb-3 flex items-center gap-2 border-b border-slate-200 pb-2">
+                            <GlassCard className="bg-slate-50 border-slate-200 shadow-md p-3">
+                                <h3 className="text-[15px] text-slate-700 font-bold mb-2 flex items-center gap-2 border-b border-slate-200 pb-1.5">
                                     정리담당
                                 </h3>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                     {paletteTeam && (
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
