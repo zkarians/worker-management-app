@@ -33,14 +33,14 @@ const TbmWorkDetails: React.FC<TbmWorkDetailsProps> = ({ safetyEducation }) => {
                     <tr style={{ height: '24.95pt' }}>
                         <td rowSpan={2} height={66} className="xl268 tbm-center" style={{ borderBottom: '1.0pt solid black', height: '49.9pt' }}>출하</td>
                         <td className="xl135 tbm-center" style={{ borderLeft: 'none' }}>20FT</td>
-                        <td colSpan={3} className="xl207 tbm-indent-left" style={{ borderLeft: 'none' }}>냉장고,식기,컴프레샤</td>
-                        <td colSpan={4} className="xl259 tbm-indent-left" width={236} style={{ borderLeft: 'none', width: '176pt' }}>팔레트 적출 및<br />컨테이너 반입작업</td>
+                        <td colSpan={3} className="xl207 tbm-indent-left tbm-shrink-fit" style={{ borderLeft: 'none' }}>냉장고,식기,컴프레샤</td>
+                        <td colSpan={4} className="xl259 tbm-indent-left tbm-shrink-fit" width={236} style={{ borderLeft: 'none', width: '176pt' }}>팔레트 적출 및 컨테이너 반입작업</td>
                         <td colSpan={10} className="xl254 tbm-indent-left tbm-shrink-fit" style={{ borderRight: '1.0pt solid black' }}>{safetyEducation[0]}</td>
                     </tr>
                     <tr style={{ height: '24.95pt' }}>
                         <td height={33} className="xl133 tbm-center" style={{ height: '24.95pt', borderTop: 'none', borderLeft: 'none' }}>40FT</td>
-                        <td colSpan={3} className="xl286 tbm-indent-left" style={{ borderLeft: 'none' }}>냉장고,식기,컴프레샤</td>
-                        <td colSpan={4} className="xl261 tbm-indent-left" width={236} style={{ borderLeft: 'none', width: '176pt' }}>팔레트 적출 및<br />컨테이너 반입작업</td>
+                        <td colSpan={3} className="xl286 tbm-indent-left tbm-shrink-fit" style={{ borderLeft: 'none' }}>냉장고,식기,컴프레샤</td>
+                        <td colSpan={4} className="xl261 tbm-indent-left tbm-shrink-fit" width={236} style={{ borderLeft: 'none', width: '176pt' }}>팔레트 적출 및 컨테이너 반입작업</td>
                         <td colSpan={10} className="xl254 tbm-indent-left tbm-shrink-fit" style={{ borderRight: '1.0pt solid black' }}>{safetyEducation[1]}</td>
                     </tr>
                     <tr style={{ height: '24.95pt' }}>
