@@ -59,12 +59,16 @@
 
 body {
   color: var(--foreground);
+  /* Premium modern light theme background */
   background: var(--theme-bg);
   background-image: var(--theme-bg-image);
-  background-attachment: fixed;
-  font-family: "Nanum Gothic", -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+  /* Removed background-attachment: fixed to fix iOS/Android WebView rendering bugs */
+  background-size: cover;
+  background-repeat: no-repeat;
   min-height: 100vh;
+  font-family: var(--font-family, 'Nanum Gothic'), -apple-system, BlinkMacSystemFont, system-ui, Roboto, "Helvetica Neue", "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer components {
