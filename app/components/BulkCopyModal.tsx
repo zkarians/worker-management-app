@@ -14,7 +14,7 @@ export function BulkCopyModal({ isOpen, onClose, onSuccess }: BulkCopyModalProps
     const [sourceDate, setSourceDate] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [excludeHolidays, setExcludeHolidays] = useState(true);
+    const [excludeHolidays, setExcludeHolidays] = useState(false);
     const [autoAssignCleaning, setAutoAssignCleaning] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -114,7 +114,6 @@ export function BulkCopyModal({ isOpen, onClose, onSuccess }: BulkCopyModalProps
                             className="w-4 h-4 rounded border-slate-300 bg-white text-blue-600 focus:ring-blue-500"
                         />
                         <label htmlFor="excludeHolidays" className="text-sm text-slate-600">
-                            주말 및 공휴일 제외
                             주말 및 공휴일 제외
                         </label>
                     </div>
