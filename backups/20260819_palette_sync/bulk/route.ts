@@ -319,7 +319,7 @@ export async function POST(request: Request) {
                     const targetName = config.cleaningSequence[tempIndex];
 
                     // Check if this worker is present in THIS roster (on this date)
-                    const assignment = roster.assignments.find((a: any) => a.user?.name === targetName);
+                    const assignment = roster.assignments.find((a: any) => a.user.name === targetName);
 
                     if (assignment) {
                         const teamId = teamIdByName.get(assignment.team) || null;
@@ -336,10 +336,8 @@ export async function POST(request: Request) {
                 // Determine Palette Team
                 let nextPaletteTeamId = null;
                 const paletteWorkerName = config.paletteWorker;
-                if (paletteWorkerName === 'SYNC_WITH_CLEANING') {
-                    nextPaletteTeamId = nextCleaningTeamId;
-                } else if (paletteWorkerName) {
-                    const assignment = roster.assignments.find((a: any) => a.user?.name === paletteWorkerName);
+                if (paletteWorkerName) {
+                    const assignment = roster.assignments.find((a: any) => a.user.name === paletteWorkerName);
                     if (assignment) {
                         const teamId = teamIdByName.get(assignment.team) || null;
                         if (teamId) {

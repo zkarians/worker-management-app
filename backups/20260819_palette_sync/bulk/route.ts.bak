@@ -84,23 +84,20 @@ export async function POST(request: Request) {
             const offOrAbsentUserIds = new Set(offOrAbsent.map((a: any) => a.userId as string));
 
             const validAssignments = assignmentsToCopy.filter((a: any) => {
-                // If it is a daily worker (no userId but has tempWorkerName), it is always valid to copy!
-                if (!a.userId && a.tempWorkerName) return true;
-
                 const user = userMap.get(a.userId);
                 if (!user) return false;
- 
+
                 // Check resignation date
                 if (user.resignationDate) {
                     // Compare dates: if currentDate is on or after resignationDate, exclude
                     // Ensure we compare just the date parts
                     const resignDate = new Date(user.resignationDate);
                     const current = new Date(currentDate);
- 
+
                     // Reset times to 00:00:00 for accurate date comparison
                     resignDate.setHours(0, 0, 0, 0);
                     current.setHours(0, 0, 0, 0);
- 
+
                     if (current >= resignDate) return false;
                 }
                 if (onLeaveUserIds.has(a.userId)) return false;
@@ -135,7 +132,7 @@ export async function POST(request: Request) {
                     where: { rosterId: r.id },
                     select: { userId: true }
                 });
-                const previousUserIds = new Set<string>(previousAssignments.map((a: any) => a.userId as string).filter(Boolean));
+                const previousUserIds = new Set<string>(previousAssignments.map((a: any) => a.userId as string));
 
                 // Delete existing assignments
                 await tx.rosterAssignment.deleteMany({ where: { rosterId: r.id } });
@@ -145,8 +142,7 @@ export async function POST(request: Request) {
                     await tx.rosterAssignment.createMany({
                         data: validAssignments.map((a: any) => ({
                             rosterId: r.id,
-                            userId: a.userId || null,
-                            tempWorkerName: a.tempWorkerName || null,
+                            userId: a.userId,
                             position: a.position,
                             team: a.team,
                             order: a.order ?? 0
@@ -156,55 +152,52 @@ export async function POST(request: Request) {
 
                 // Attendance adjustments:
                 // 1) For users removed from roster, set workHours/overtimeHours to 0
-                const newUserIds = new Set<string>(validAssignments.map((a: any) => a.userId).filter(Boolean));
+                const newUserIds = new Set<string>(validAssignments.map((a: any) => a.userId as string));
                 const removedUserIds: string[] = Array.from(previousUserIds).filter((userId) => !newUserIds.has(userId));
 
                 if (removedUserIds.length > 0) {
-                    // Fetch existing attendance records for the removed users
-                    const existingAttendances = await tx.attendance.findMany({
+                    // Update existing attendance for removed users
+                    await tx.attendance.updateMany({
                         where: {
                             userId: { in: removedUserIds },
                             date: currentDate
+                        },
+                        data: {
+                            workHours: 0,
+                            overtimeHours: 0,
+                            status: ''
                         }
                     });
 
-                    const attMap = new Map<string, string>();
-                    existingAttendances.forEach((att: any) => {
-                        attMap.set(att.userId, att.status);
+                    // Create attendance for removed users if it doesn't exist (edge case)
+                    const existingRemovedAttendance = await tx.attendance.findMany({
+                        where: {
+                            userId: { in: removedUserIds },
+                            date: currentDate
+                        },
+                        select: { userId: true }
                     });
+                    const existingRemovedUserIds = new Set(existingRemovedAttendance.map((a: any) => a.userId));
+                    const missingRemovedUserIds = removedUserIds.filter(id => !existingRemovedUserIds.has(id));
 
-                    for (const userId of removedUserIds) {
-                        const currentStatus = attMap.get(userId) || '';
-                        const keepStatus = ['ABSENT', 'LEAVE_OF_ABSENCE', 'VACATION', 'OFF_DAY'].includes(currentStatus);
-                        const targetStatus = keepStatus ? currentStatus : '';
-
-                        await tx.attendance.upsert({
-                            where: {
-                                userId_date: {
-                                    userId: userId,
-                                    date: currentDate
-                                }
-                            },
-                            update: {
-                                workHours: 0,
-                                overtimeHours: 0,
-                                status: targetStatus
-                            },
-                            create: {
-                                userId: userId,
+                    if (missingRemovedUserIds.length > 0) {
+                        await tx.attendance.createMany({
+                            data: missingRemovedUserIds.map(id => ({
+                                userId: id,
                                 date: currentDate,
-                                status: targetStatus,
+                                status: '',
                                 workHours: 0,
                                 overtimeHours: 0
-                            }
+                            })),
+                            skipDuplicates: true
                         });
                     }
                 }
 
-                // 2) Auto-create attendance for newly assigned workers (only for registered users)
-                const assignedUserIds = validAssignments.map((a: any) => a.userId).filter(Boolean);
+                // 2) Auto-create attendance for newly assigned workers
+                if (validAssignments.length > 0) {
+                    const assignedUserIds = validAssignments.map((a: any) => a.userId);
 
-                if (assignedUserIds.length > 0) {
                     const existingAttendances = await tx.attendance.findMany({
                         where: {
                             userId: { in: assignedUserIds },
@@ -214,7 +207,7 @@ export async function POST(request: Request) {
                     });
 
                     const existingAttendanceUserIds = new Set(existingAttendances.map((a: any) => a.userId));
-                    const usersNeedingAttendance = validAssignments.filter((a: any) => a.userId && !existingAttendanceUserIds.has(a.userId));
+                    const usersNeedingAttendance = validAssignments.filter((a: any) => !existingAttendanceUserIds.has(a.userId));
 
                     const today = new Date();
                     today.setHours(0, 0, 0, 0);
@@ -319,7 +312,7 @@ export async function POST(request: Request) {
                     const targetName = config.cleaningSequence[tempIndex];
 
                     // Check if this worker is present in THIS roster (on this date)
-                    const assignment = roster.assignments.find((a: any) => a.user?.name === targetName);
+                    const assignment = roster.assignments.find((a: any) => a.user.name === targetName);
 
                     if (assignment) {
                         const teamId = teamIdByName.get(assignment.team) || null;
@@ -336,10 +329,8 @@ export async function POST(request: Request) {
                 // Determine Palette Team
                 let nextPaletteTeamId = null;
                 const paletteWorkerName = config.paletteWorker;
-                if (paletteWorkerName === 'SYNC_WITH_CLEANING') {
-                    nextPaletteTeamId = nextCleaningTeamId;
-                } else if (paletteWorkerName) {
-                    const assignment = roster.assignments.find((a: any) => a.user?.name === paletteWorkerName);
+                if (paletteWorkerName) {
+                    const assignment = roster.assignments.find((a: any) => a.user.name === paletteWorkerName);
                     if (assignment) {
                         const teamId = teamIdByName.get(assignment.team) || null;
                         if (teamId) {

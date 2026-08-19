@@ -1154,7 +1154,7 @@ export default function RosterManagementPage() {
                                         <option value="">이름 선택</option>
                                         {workers
                                             // Optional: only show WORKER or sort
-                                            .filter(w => (w.role === 'WORKER' || w.role === 'MANAGER') && (!w.resignationDate || new Date(w.resignationDate) > new Date()))
+                                            .filter(w => w.role === 'WORKER' || w.role === 'MANAGER')
                                             .sort((a, b) => a.name.localeCompare(b.name))
                                             .map(w => (
                                                 <option key={w.id} value={w.name}>{w.name}</option>
@@ -1185,9 +1185,8 @@ export default function RosterManagementPage() {
                                     className="w-full border border-slate-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
                                 >
                                     <option value="">담당자 선택</option>
-                                    <option value="SYNC_WITH_CLEANING">청소조와 동일하게 배정</option>
                                     {workers
-                                        .filter(w => (w.role === 'WORKER' || w.role === 'MANAGER') && (!w.resignationDate || new Date(w.resignationDate) > new Date()))
+                                        .filter(w => w.role === 'WORKER' || w.role === 'MANAGER')
                                         .sort((a, b) => a.name.localeCompare(b.name))
                                         .map(w => (
                                             <option key={w.id} value={w.name}>{w.name}</option>
